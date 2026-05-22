@@ -219,6 +219,9 @@ tr:hover td{background:#FAFAF8;}
     </div>
     <div class="auth-title">Bienvenido</div>
     <div class="auth-sub">Ingresá a tu cuenta para continuar</div>
+    <div id="login-hint" style="background:var(--green-light);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);margin-bottom:14px;cursor:pointer;" onclick="document.getElementById('login-email').value='administracion@nigrum.com.ar';document.getElementById('login-pass').value='nigrum2026';">
+      👋 <b>Admin Nigrum:</b> tocá acá para completar automáticamente
+    </div>
     <div class="auth-error" id="login-error">Usuario o contraseña incorrectos</div>
     <label class="auth-label">Email</label>
     <input class="auth-input" id="login-email" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/>
@@ -295,6 +298,7 @@ tr:hover td{background:#FAFAF8;}
     <div class="nav-item" onclick="goTo('clientes',this)"><span class="ni">👥</span>Clientes</div>
     <div class="nav-item" onclick="goTo('catalogo',this)"><span class="ni">📦</span>Catálogo</div>
     <div class="nav-item" onclick="goTo('facturacion',this)"><span class="ni">🧾</span>Facturación</div>
+    <div class="nav-item" onclick="goTo('resumenes',this)"><span class="ni">📋</span>Resúmenes</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Finanzas</div>
@@ -494,6 +498,133 @@ tr:hover td{background:#FAFAF8;}
       </div>
     </div>
 
+    <!-- RESÚMENES -->
+    <div class="page" id="page-resumenes">
+      <!-- Lista de resúmenes -->
+      <div id="res-lista-view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <div><div style="font-family:'Fraunces',sans-serif;font-size:22px;font-weight:700;">Resúmenes de clientes</div><div style="font-size:14px;color:var(--text3);margin-top:2px;" id="res-count">0 resúmenes</div></div>
+          <button class="tb-btn tb-btn-primary" onclick="nuevoResumen()">+ Nuevo resumen</button>
+        </div>
+        <div id="res-cards"></div>
+      </div>
+
+      <!-- Formulario de resumen -->
+      <div id="res-form-view" style="display:none;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
+          <button class="action-btn" onclick="volverListaRes()">← Volver</button>
+          <div style="font-family:'Fraunces',sans-serif;font-size:22px;font-weight:700;" id="res-form-title">Nuevo resumen</div>
+        </div>
+
+        <!-- Info básica -->
+        <div class="table-card" style="margin-bottom:16px;">
+          <div class="table-head"><div class="th-title">Datos del resumen</div></div>
+          <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+            <div class="form-group">
+              <label class="form-label">Cliente</label>
+              <select class="form-select" id="res-cliente-sel" onchange="resClienteChange()">
+                <option value="">Seleccioná un cliente</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mes / Período</label>
+              <input class="form-input" id="res-periodo" type="text" placeholder="Ej: Abril 2026"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">IVA %</label>
+              <input class="form-input" id="res-iva" type="number" value="21" placeholder="21"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Servicios -->
+        <div class="table-card" style="margin-bottom:16px;">
+          <div class="table-head">
+            <div><div class="th-title">Servicios</div><div class="th-sub">Consultoría, MT3, OUTs, etc.</div></div>
+            <button class="tb-btn tb-btn-primary" onclick="addServicioRes()">+ Agregar servicio</button>
+          </div>
+          <table>
+            <thead><tr><th>Descripción</th><th>Monto ($)</th><th></th></tr></thead>
+            <tbody id="res-servicios-tbody">
+              <tr id="res-srv-empty"><td colspan="3" style="text-align:center;color:var(--text3);padding:20px;">Agregá un servicio →</td></tr>
+            </tbody>
+          </table>
+          <div style="padding:14px 24px;background:#FAFAF8;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:30px;">
+            <span style="font-size:14px;color:var(--text3);">Subtotal servicios:</span>
+            <span style="font-weight:800;font-size:16px;" id="res-subtotal-srv">$0</span>
+          </div>
+        </div>
+
+        <!-- Logística -->
+        <div class="table-card" style="margin-bottom:16px;">
+          <div class="table-head">
+            <div><div class="th-title">Logística</div><div class="th-sub">Copiá y pegá las filas desde tu hoja de ruta</div></div>
+          </div>
+          <div style="padding:16px 24px;">
+            <div style="background:var(--blue-light);border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--blue);">
+              💡 <b>Cómo usarlo:</b> Abrí tu hoja de ruta en Excel → seleccioná todas las filas de envíos (sin el encabezado) → <b>Ctrl+C</b> → hacé clic acá abajo → <b>Ctrl+V</b> → presioná <b>Procesar envíos</b>
+            </div>
+            <div style="background:#FAFAF8;border:1.5px dashed var(--border);border-radius:10px;padding:12px;margin-bottom:10px;overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#1A1A2E;color:white;">
+                  <th style="padding:7px 10px;text-align:left;">Fecha</th>
+                  <th style="padding:7px 10px;text-align:left;">Mes</th>
+                  <th style="padding:7px 10px;text-align:left;"># Tracking</th>
+                  <th style="padding:7px 10px;text-align:left;">Cliente</th>
+                  <th style="padding:7px 10px;text-align:left;">Dirección</th>
+                  <th style="padding:7px 10px;text-align:left;">Localidad</th>
+                  <th style="padding:7px 10px;text-align:left;">CP</th>
+                  <th style="padding:7px 10px;text-align:left;">Zona</th>
+                  <th style="padding:7px 10px;text-align:left;">Tarifa</th>
+                </tr></thead>
+                <tbody><tr><td colspan="9" style="padding:10px;color:var(--text3);text-align:center;font-style:italic;">Tus envíos aparecerán acá después de procesar</td></tr></tbody>
+              </table>
+            </div>
+            <textarea id="res-logistica-paste" rows="5" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;resize:vertical;" placeholder="Pegá acá los datos copiados de Excel (Ctrl+V)..."></textarea>
+            <button class="tb-btn tb-btn-primary" style="margin-top:10px;" onclick="procesarLogistica()">Procesar envíos →</button>
+          </div>
+          <div id="res-logistica-tabla" style="display:none;">
+            <table>
+              <thead><tr><th>Fecha</th><th>Tracking</th><th>Cliente</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th>Tarifa</th><th></th></tr></thead>
+              <tbody id="res-log-tbody"></tbody>
+            </table>
+            <div style="padding:14px 24px;background:#FAFAF8;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:30px;">
+              <span style="font-size:14px;color:var(--text3);">Total logística (<span id="res-log-count">0</span> envíos):</span>
+              <span style="font-weight:800;font-size:16px;" id="res-subtotal-log">$0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totales -->
+        <div class="table-card" style="margin-bottom:16px;">
+          <div class="table-head"><div class="th-title">Totales</div></div>
+          <div style="padding:20px 24px;">
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:16px;">
+              <span style="color:var(--text3);">Servicios</span><span style="font-weight:700;" id="res-tot-srv">$0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:16px;">
+              <span style="color:var(--text3);">Logística</span><span style="font-weight:700;" id="res-tot-log">$0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:16px;">
+              <span style="color:var(--text3);">Subtotal</span><span style="font-weight:700;" id="res-subtotal">$0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:16px;">
+              <span style="color:var(--text3);">IVA (<span id="res-iva-pct">21</span>%)</span><span style="font-weight:700;" id="res-iva-monto">$0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:14px 0;font-size:22px;">
+              <span style="font-family:'Fraunces',sans-serif;font-weight:900;">TOTAL</span>
+              <span style="font-family:'Fraunces',sans-serif;font-weight:900;color:var(--green);" id="res-total-final">$0</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-bottom:32px;">
+          <button class="tb-btn tb-btn-primary" onclick="guardarResumen()">💾 Guardar resumen</button>
+          <button class="tb-btn tb-btn-sec" onclick="imprimirResumen()">🖨 Ver para imprimir</button>
+        </div>
+      </div>
+    </div>
+
     <!-- BOT -->
     <div class="page" id="page-bot">
       <div class="bot-container">
@@ -537,9 +668,24 @@ tr:hover td{background:#FAFAF8;}
 // AUTH
 // ══════════════════════════════════════════════
 const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
+const ADMIN_PASS  = 'nigrum2026';
 
-function getUsers(){ try{return JSON.parse(localStorage.getItem('zaifi_users'))||[];}catch(e){return [];} }
-function saveUsers(u){ localStorage.setItem('zaifi_users',JSON.stringify(u)); }
+// Cuenta admin siempre disponible aunque se borren los datos del navegador
+const ADMIN_ACCOUNT = {id:'admin_nigrum',nombre:'Zaira Velez',empresa:'Nigrum MKT',email:ADMIN_EMAIL,pass:ADMIN_PASS,role:'admin'};
+
+function getUsers(){
+  try{
+    const users = JSON.parse(localStorage.getItem('zaifi_users'))||[];
+    // Siempre asegurar que el admin existe
+    if(!users.find(u=>u.email===ADMIN_EMAIL)) users.unshift(ADMIN_ACCOUNT);
+    return users;
+  }catch(e){ return [ADMIN_ACCOUNT]; }
+}
+function saveUsers(u){
+  // Siempre asegurar que el admin está en la lista
+  if(!u.find(x=>x.email===ADMIN_EMAIL)) u.unshift(ADMIN_ACCOUNT);
+  localStorage.setItem('zaifi_users',JSON.stringify(u));
+}
 function getSession(){ try{return JSON.parse(localStorage.getItem('zaifi_session'));}catch(e){return null;} }
 function setSession(u){ localStorage.setItem('zaifi_session',JSON.stringify(u)); }
 function clearSession(){ localStorage.removeItem('zaifi_session'); }
@@ -599,7 +745,7 @@ function dbKey(table){
 function load(table){ try{return JSON.parse(localStorage.getItem(dbKey(table)))||[];}catch(e){return[];} }
 function save(table,data){ localStorage.setItem(dbKey(table),JSON.stringify(data)); }
 
-let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp;
+let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes;
 
 function loadData(){
   clientes   =load('clientes');
@@ -610,6 +756,7 @@ function loadData(){
   catalogo   =load('catalogo');
   cxc        =load('cxc');
   cxp        =load('cxp');
+  resumenes  =load('resumenes');
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
@@ -635,6 +782,7 @@ function loadApp(user){
 function renderAll(){
   renderClientes(); renderCatalogo(); renderFacturas(); renderGastos();
   renderEmpleados(); renderProveedores(); renderCxC(); renderCxP();
+  renderResumenes();
   updateDashboard();
 }
 
@@ -960,7 +1108,7 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Dashboard',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA'};
+  const titles={dashboard:'Dashboard',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
 }
 function clearFilter(p){
@@ -1207,6 +1355,268 @@ function addTyping(){
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// RESÚMENES
+// ══════════════════════════════════════════════
+let resEditId = null;
+let resServicios = [];
+let resEnvios = [];
+
+function renderResumenes(){
+  const cards = document.getElementById('res-cards');
+  document.getElementById('res-count').textContent = resumenes.length + ' resumen' + (resumenes.length!==1?'es':'');
+  if(!resumenes.length){
+    cards.innerHTML='<div style="text-align:center;color:var(--text3);padding:60px;font-size:15px;">No hay resúmenes. Creá el primero →</div>';
+    return;
+  }
+  cards.innerHTML = resumenes.map(r=>`
+    <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:20px 24px;margin-bottom:12px;display:flex;align-items:center;gap:20px;box-shadow:var(--shadow);">
+      <div style="width:50px;height:50px;background:#EEF0FF;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📋</div>
+      <div style="flex:1;">
+        <div style="font-family:'Fraunces',sans-serif;font-size:18px;font-weight:700;">${r.cliente}</div>
+        <div style="font-size:14px;color:var(--text3);margin-top:2px;">${r.periodo} · ${r.envios||0} envíos · ${r.serviciosCount||0} servicios</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'Fraunces',sans-serif;font-size:22px;font-weight:900;color:var(--green);">${fmt(r.totalFinal)}</div>
+        <div style="font-size:13px;color:var(--text3);">con IVA</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-left:12px;">
+        <button class="action-btn" onclick="editarResumen('${r.id}')">Editar</button>
+        <button class="action-btn" onclick="verResumen('${r.id}')">Ver</button>
+        <button class="action-btn" onclick="eliminarResumen('${r.id}')">Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+function nuevoResumen(){
+  resEditId = null;
+  resServicios = [];
+  resEnvios = [];
+  document.getElementById('res-form-title').textContent = 'Nuevo resumen';
+  document.getElementById('res-cliente-sel').innerHTML = '<option value="">Seleccioná un cliente</option>' +
+    clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  document.getElementById('res-periodo').value = '';
+  document.getElementById('res-iva').value = '21';
+  renderServiciosRes();
+  renderLogisticaRes();
+  recalcTotalesRes();
+  document.getElementById('res-logistica-tabla').style.display='none';
+  document.getElementById('res-logistica-paste').value='';
+  document.getElementById('res-lista-view').style.display='none';
+  document.getElementById('res-form-view').style.display='block';
+}
+
+function editarResumen(id){
+  const r = resumenes.find(x=>x.id===id);
+  if(!r) return;
+  resEditId = id;
+  resServicios = [...(r.servicios||[])];
+  resEnvios = [...(r.envios_data||[])];
+  document.getElementById('res-form-title').textContent = 'Editar resumen — '+r.cliente;
+  document.getElementById('res-cliente-sel').innerHTML = '<option value="">Seleccioná un cliente</option>' +
+    clientes.map(c=>`<option value="${c.nombre}" ${c.nombre===r.cliente?'selected':''}>${c.nombre}</option>`).join('');
+  document.getElementById('res-periodo').value = r.periodo||'';
+  document.getElementById('res-iva').value = r.iva||21;
+  renderServiciosRes();
+  renderLogisticaRes();
+  recalcTotalesRes();
+  document.getElementById('res-lista-view').style.display='none';
+  document.getElementById('res-form-view').style.display='block';
+}
+
+function volverListaRes(){
+  document.getElementById('res-form-view').style.display='none';
+  document.getElementById('res-lista-view').style.display='block';
+}
+
+function resClienteChange(){
+  // futuro: autocompletar datos del cliente
+}
+
+function addServicioRes(){
+  resServicios.push({id:uid(), desc:'', monto:0});
+  renderServiciosRes();
+}
+
+function renderServiciosRes(){
+  const tb = document.getElementById('res-servicios-tbody');
+  const empty = document.getElementById('res-srv-empty');
+  if(!resServicios.length){
+    tb.innerHTML = '<tr id="res-srv-empty"><td colspan="3" style="text-align:center;color:var(--text3);padding:20px;">Agregá un servicio →</td></tr>';
+    return;
+  }
+  tb.innerHTML = resServicios.map((s,i)=>`
+    <tr>
+      <td><input style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Outfit',sans-serif;" value="${s.desc}" placeholder="Ej: Consultoría" oninput="resServicios[${i}].desc=this.value"/></td>
+      <td><input style="width:140px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Outfit',sans-serif;text-align:right;" type="number" value="${s.monto}" oninput="resServicios[${i}].monto=+this.value;recalcTotalesRes()"/></td>
+      <td><button class="action-btn" onclick="resServicios.splice(${i},1);renderServiciosRes();recalcTotalesRes();">✕</button></td>
+    </tr>`).join('');
+  recalcTotalesRes();
+}
+
+function procesarLogistica(){
+  const raw = document.getElementById('res-logistica-paste').value.trim();
+  if(!raw){ toast('⚠️ Pegá datos primero'); return; }
+  const lines = raw.split('\n').filter(l=>l.trim());
+  resEnvios = [];
+  lines.forEach(line=>{
+    const cols = line.split('\t');
+    if(cols.length < 2) return;
+    // Formato hoja de ruta: Fecha · Mes · #Tracking · Cliente · Dirección · Localidad · CP · Zona · Tarifa
+    // col[0]=Fecha, col[1]=Mes, col[2]=Tracking, col[3]=Cliente, col[4]=Dirección, col[5]=Localidad, col[6]=CP, col[7]=Zona, col[8]=Tarifa
+    const parseMonto = v => {
+      if(!v) return 0;
+      const n = parseFloat(String(v).replace(/\./g,'').replace(',','.').replace(/[^0-9.]/g,''));
+      return isNaN(n) ? 0 : n;
+    };
+    const parseDate = v => {
+      if(!v) return '';
+      // Excel serial date
+      const n = parseInt(v);
+      if(n > 40000 && n < 50000){
+        const d = new Date((n - 25569) * 86400 * 1000);
+        return d.toLocaleDateString('es-AR');
+      }
+      return v;
+    };
+    const fecha    = parseDate(cols[0]||'');
+    const tracking = (cols[2]||'').trim();
+    const cliente  = (cols[3]||'').trim();
+    const calle    = (cols[4]||'').trim();
+    const localidad= (cols[5]||'').trim();
+    const cp       = (cols[6]||'').trim();
+    const zona     = (cols[7]||'').trim();
+    const tarifa   = parseMonto(cols[8]) || parseMonto(cols[cols.length-1]);
+    if(!calle && !tracking && !tarifa) return; // skip empty rows
+    resEnvios.push({fecha, tracking, cliente, calle, localidad, cp, zona, tarifa});
+  });
+  renderLogisticaRes();
+  recalcTotalesRes();
+  document.getElementById('res-logistica-paste').value='';
+  toast('✅ '+resEnvios.length+' envíos procesados');
+}
+
+function renderLogisticaRes(){
+  const tabla = document.getElementById('res-logistica-tabla');
+  const tb = document.getElementById('res-log-tbody');
+  if(!resEnvios.length){ tabla.style.display='none'; return; }
+  tabla.style.display='block';
+  tb.innerHTML = resEnvios.map((e,i)=>`
+    <tr>
+      <td style="font-size:13px;white-space:nowrap;">${e.fecha}</td>
+      <td style="font-size:11px;color:var(--text3);max-width:140px;overflow:hidden;text-overflow:ellipsis;">${e.tracking}</td>
+      <td style="font-size:13px;">${e.cliente}</td>
+      <td style="font-size:13px;">${e.calle}</td>
+      <td style="font-size:13px;">${e.localidad}</td>
+      <td><span class="badge badge-gray">${e.zona}</span></td>
+      <td style="font-weight:700;">${fmt(e.tarifa)}</td>
+      <td><button class="action-btn" onclick="resEnvios.splice(${i},1);renderLogisticaRes();recalcTotalesRes();">✕</button></td>
+    </tr>`).join('');
+  document.getElementById('res-log-count').textContent = resEnvios.length;
+}
+
+function recalcTotalesRes(){
+  const totalSrv = resServicios.reduce((a,s)=>a+(+s.monto||0),0);
+  const totalLog = resEnvios.reduce((a,e)=>a+(+e.tarifa||0),0);
+  const subtotal = totalSrv + totalLog;
+  const ivaPct = parseFloat(document.getElementById('res-iva').value)||21;
+  const ivaMonto = subtotal * (ivaPct/100);
+  const total = subtotal + ivaMonto;
+  document.getElementById('res-subtotal-srv').textContent = fmt(totalSrv);
+  document.getElementById('res-subtotal-log').textContent = fmt(totalLog);
+  document.getElementById('res-tot-srv').textContent = fmt(totalSrv);
+  document.getElementById('res-tot-log').textContent = fmt(totalLog);
+  document.getElementById('res-subtotal').textContent = fmt(subtotal);
+  document.getElementById('res-iva-pct').textContent = ivaPct;
+  document.getElementById('res-iva-monto').textContent = fmt(ivaMonto);
+  document.getElementById('res-total-final').textContent = fmt(total);
+}
+
+function guardarResumen(){
+  const cliente = document.getElementById('res-cliente-sel').value;
+  const periodo = document.getElementById('res-periodo').value.trim();
+  if(!cliente){ toast('⚠️ Seleccioná un cliente'); return; }
+  if(!periodo){ toast('⚠️ Ingresá el período'); return; }
+  const iva = parseFloat(document.getElementById('res-iva').value)||21;
+  const totalSrv = resServicios.reduce((a,s)=>a+(+s.monto||0),0);
+  const totalLog = resEnvios.reduce((a,e)=>a+(+e.tarifa||0),0);
+  const subtotal = totalSrv + totalLog;
+  const ivaMonto = subtotal*(iva/100);
+  const totalFinal = subtotal + ivaMonto;
+  const obj = {
+    id: resEditId||uid(), cliente, periodo, iva,
+    servicios: resServicios, envios_data: resEnvios,
+    serviciosCount: resServicios.length, envios: resEnvios.length,
+    totalSrv, totalLog, subtotal, ivaMonto, totalFinal,
+    fecha: today()
+  };
+  if(resEditId){ const i=resumenes.findIndex(x=>x.id===resEditId); if(i>=0)resumenes[i]=obj; }
+  else resumenes.unshift(obj);
+  save('resumenes', resumenes);
+  renderResumenes();
+  volverListaRes();
+  toast('✅ Resumen guardado');
+}
+
+function eliminarResumen(id){
+  if(!confirm('¿Eliminar este resumen?')) return;
+  resumenes = resumenes.filter(x=>x.id!==id);
+  save('resumenes', resumenes);
+  renderResumenes();
+  toast('🗑 Resumen eliminado');
+}
+
+function verResumen(id){
+  const r = resumenes.find(x=>x.id===id);
+  if(!r) return;
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Resumen ${r.cliente} — ${r.periodo}</title>
+  <style>
+    body{font-family:'Arial',sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#111;}
+    h1{font-size:28px;margin-bottom:4px;}
+    .sub{color:#666;font-size:15px;margin-bottom:30px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+    th{background:#1A1A2E;color:white;padding:10px 14px;text-align:left;font-size:13px;}
+    td{padding:10px 14px;border-bottom:1px solid #eee;font-size:14px;}
+    .total-row{font-weight:900;font-size:17px;background:#f5f5f5;}
+    .green{color:#2D9B6F;}
+    .section{font-size:18px;font-weight:700;margin:24px 0 10px;border-bottom:2px solid #6C5CE7;padding-bottom:6px;}
+    @media print{body{margin:20px;}}
+  </style></head><body>
+  <h1>📋 Resumen — ${r.cliente}</h1>
+  <div class="sub">Período: ${r.periodo} · Generado por Zaifi</div>
+  <div class="section">Servicios</div>
+  <table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>
+  ${(r.servicios||[]).map(s=>`<tr><td>${s.desc}</td><td style="text-align:right;font-weight:700;">$${(+s.monto||0).toLocaleString('es-AR')}</td></tr>`).join('')}
+  <tr class="total-row"><td>Subtotal servicios</td><td style="text-align:right">$${(r.totalSrv||0).toLocaleString('es-AR')}</td></tr>
+  </tbody></table>
+  ${r.envios_data&&r.envios_data.length?`
+  <div class="section">Logística (${r.envios_data.length} envíos)</div>
+  <table><thead><tr><th>Fecha</th><th>Tracking</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th style="text-align:right">Tarifa</th></tr></thead><tbody>
+  ${r.envios_data.map(e=>`<tr><td>${e.fecha}</td><td style="font-size:12px">${e.tracking}</td><td>${e.calle}</td><td>${e.localidad}</td><td>${e.zona}</td><td style="text-align:right;font-weight:700;">$${(+e.tarifa||0).toLocaleString('es-AR')}</td></tr>`).join('')}
+  <tr class="total-row"><td colspan="5">Subtotal logística</td><td style="text-align:right">$${(r.totalLog||0).toLocaleString('es-AR')}</td></tr>
+  </tbody></table>`:''}
+  <div class="section">Totales</div>
+  <table><tbody>
+  <tr><td>Subtotal</td><td style="text-align:right;font-weight:700;">$${(r.subtotal||0).toLocaleString('es-AR')}</td></tr>
+  <tr><td>IVA (${r.iva}%)</td><td style="text-align:right;font-weight:700;">$${(r.ivaMonto||0).toLocaleString('es-AR')}</td></tr>
+  <tr class="total-row"><td>TOTAL CON IVA</td><td style="text-align:right;color:#2D9B6F;">$${(r.totalFinal||0).toLocaleString('es-AR')}</td></tr>
+  </tbody></table>
+  <p style="text-align:center;margin-top:40px;color:#999;font-size:12px;">Generado por Zaifi · ${new Date().toLocaleDateString('es-AR')}</p>
+  <script>window.print();<\/script>
+  </body></html>`);
+}
+
+function imprimirResumen(){
+  // Guardar primero si hay datos
+  const cliente = document.getElementById('res-cliente-sel').value;
+  const periodo = document.getElementById('res-periodo').value.trim();
+  if(!cliente||!periodo){ toast('⚠️ Completá cliente y período para ver el resumen'); return; }
+  guardarResumen();
+  const r = resumenes[0];
+  verResumen(r.id);
+}
+
 const session=getSession();
 if(session){loadApp(session);}
 else{showScreen('login');}
