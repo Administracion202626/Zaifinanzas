@@ -505,11 +505,6 @@ tr:hover td{background:#FAFAF8;}
           </div>
         </div>
         <div class="bot-messages" id="bot-messages">
-          <div id="key-setup-box" class="key-setup">
-            <b>🔑 Activar Zaifi IA</b><br>Para usar el chat con IA necesitás una API key de Anthropic (gratuita en console.anthropic.com).
-            <input type="password" id="api-key-input" placeholder="sk-ant-api03-..."/>
-            <button onclick="saveApiKey()">Activar →</button>
-          </div>
           <div class="msg-row">
             <div class="bubble in">¡Hola! 👋 Soy <b>Zaifi IA</b>, tu asistente financiero personal.<br><br>Preguntame sobre tu facturación, gastos, clientes, o lo que necesites. 📊<br><br>
               <div class="qr-row">
@@ -978,76 +973,215 @@ function searchTable(input,id){const q=input.value.toLowerCase();document.queryS
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 
 // ══════════════════════════════════════════════
-// BOT ZAIFI IA
+// BOT ZAIFI IA — motor local inteligente
 // ══════════════════════════════════════════════
-let botHistory=[];let botBusy=false;
+let botBusy=false;
 
-function saveApiKey(){
-  const k=document.getElementById('api-key-input').value.trim();
-  if(!k.startsWith('sk-')){toast('⚠️ Key inválida');return;}
-  sessionStorage.setItem('zaifi_key',k);
-  document.getElementById('key-setup-box').style.display='none';
-  toast('✅ Zaifi IA activada');
-}
-
-function getApiKey(){return sessionStorage.getItem('zaifi_key');}
-
-function getBotContext(){
+function getData(){
   const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
   const tg=gastos.reduce((a,x)=>a+(+x.monto||0),0);
-  const tp=facturas.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+(+x.monto||0),0);
-  const cxcPend=cxc.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
-  const cxpPend=cxp.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+(+x.monto||0),0);
-  return `Sos Zaifi IA, el asistente financiero de ${currentUser.empresa}. Respondé siempre en español, de forma clara y concisa.
-
-DATOS ACTUALES:
-- Usuario: ${currentUser.nombre} (${currentUser.role==='admin'?'Admin':'Usuario'})
-- Empresa: ${currentUser.empresa}
-- Clientes activos: ${clientes.filter(c=>c.estado==='Activo').length}
-- Facturación total: $${tf.toLocaleString('es-AR')}
-- Gastos totales: $${tg.toLocaleString('es-AR')}
-- Ganancia neta: $${(tf-tg).toLocaleString('es-AR')}
-- Facturas pendientes de cobro: $${tp.toLocaleString('es-AR')}
-- Cuentas por cobrar pendientes: $${cxcPend.toLocaleString('es-AR')}
-- Cuentas por pagar pendientes: $${cxpPend.toLocaleString('es-AR')}
-- Empleados: ${empleados.length}
-- Proveedores: ${proveedores.length}
-
-Respondé preguntas sobre estos datos de forma amigable y útil. Si no hay datos suficientes, decilo.`;
+  const cobrado=facturas.filter(x=>x.estado==='cobrada').reduce((a,x)=>a+(+x.monto||0),0);
+  const pendFact=facturas.filter(x=>x.estado!=='cobrada');
+  const tp=pendFact.reduce((a,x)=>a+(+x.monto||0),0);
+  const cxcPend=cxc.filter(x=>x.estado!=='cobrado');
+  const cxcPendTotal=cxcPend.reduce((a,x)=>a+(+x.monto||0),0);
+  const cxpPend=cxp.filter(x=>x.estado!=='pagado');
+  const cxpPendTotal=cxpPend.reduce((a,x)=>a+(+x.monto||0),0);
+  const hoy=today();
+  const vencCxC=cxcPend.filter(x=>x.vencimiento&&x.vencimiento<hoy);
+  const vencCxP=cxpPend.filter(x=>x.vencimiento&&x.vencimiento<hoy);
+  const gan=tf-tg;
+  const margen=tf?Math.round((gan/tf)*100):0;
+  // top clientes por frecuencia en facturas
+  const clientesFact={};
+  facturas.forEach(f=>{clientesFact[f.cliente]=(clientesFact[f.cliente]||0)+(+f.monto||0);});
+  const topClientes=Object.entries(clientesFact).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  // top gastos
+  const catGastos={};
+  gastos.forEach(g=>{catGastos[g.categoria]=(catGastos[g.categoria]||0)+(+g.monto||0);});
+  const topGastos=Object.entries(catGastos).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  return {tf,tg,gan,margen,cobrado,tp,pendFact,cxcPend,cxcPendTotal,cxpPend,cxpPendTotal,vencCxC,vencCxP,topClientes,topGastos};
 }
 
-async function sendBot(text){
-  const k=getApiKey();
-  if(!k){
-    document.getElementById('key-setup-box').style.display='block';
-    toast('⚠️ Activá Zaifi IA primero');return;
+function zaifiResponde(msg){
+  const q=msg.toLowerCase();
+  const d=getData();
+  const sinDatos='<b>📭 Sin datos todavía</b><br>Aún no hay información cargada. Andá a la sección correspondiente y agregá registros para que pueda analizarlos.';
+
+  // FACTURACIÓN
+  if(q.match(/factur|ingreso|cobr|vend/)){
+    if(!facturas.length) return sinDatos;
+    let r=`<b>💰 Facturación de ${currentUser.empresa}</b><br><br>`;
+    r+=`📊 Total facturado: <b>${fmt(d.tf)}</b><br>`;
+    r+=`✅ Cobrado: <b>${fmt(d.cobrado)}</b><br>`;
+    r+=`⏳ Pendiente de cobro: <b>${fmt(d.tp)}</b> (${d.pendFact.length} factura${d.pendFact.length!==1?'s':''})<br>`;
+    if(d.topClientes.length){
+      r+='<br>🏆 <b>Top clientes:</b><br>';
+      d.topClientes.forEach(([c,m])=>{ r+=`• ${c}: ${fmt(m)}<br>`; });
+    }
+    if(d.tp>0) r+='<br>💡 Tenés facturas sin cobrar. Te recomiendo ir a <b>Facturación</b> y marcarlas como cobradas cuando llegue el pago.';
+    return r;
   }
+
+  // GASTOS
+  if(q.match(/gasto|egreso|pago|cost/)){
+    if(!gastos.length) return sinDatos;
+    let r=`<b>💸 Gastos de ${currentUser.empresa}</b><br><br>`;
+    r+=`📊 Total gastos: <b>${fmt(d.tg)}</b><br>`;
+    if(d.topGastos.length){
+      r+='<br>📋 <b>Por categoría:</b><br>';
+      d.topGastos.forEach(([c,m])=>{ r+=`• ${c}: ${fmt(m)}<br>`; });
+    }
+    if(d.tf>0){
+      const pct=Math.round((d.tg/d.tf)*100);
+      r+=`<br>📈 Los gastos representan el <b>${pct}%</b> de tu facturación.`;
+      if(pct>70) r+=' ⚠️ Esto es alto, revisá si hay costos que se puedan optimizar.';
+      else if(pct<40) r+=' ✅ Buen control de costos.';
+    }
+    return r;
+  }
+
+  // GANANCIA / RESULTADO
+  if(q.match(/ganan|result|margen|utilidad|profit|neto/)){
+    if(!facturas.length && !gastos.length) return sinDatos;
+    let r=`<b>📈 Resultado financiero</b><br><br>`;
+    r+=`💰 Facturación: <b>${fmt(d.tf)}</b><br>`;
+    r+=`💸 Gastos: <b>${fmt(d.tg)}</b><br>`;
+    r+=`<br>✅ Ganancia neta: <b>${fmt(d.gan)}</b><br>`;
+    r+=`📊 Margen: <b>${d.margen}%</b><br>`;
+    if(d.gan<0) r+='<br>⚠️ Estás en rojo. Los gastos superan la facturación. Revisá tus costos.';
+    else if(d.margen>50) r+='<br>🚀 Excelente margen. La empresa está muy saludable financieramente.';
+    else if(d.margen>30) r+='<br>✅ Buen margen. La empresa está en buena forma.';
+    else r+='<br>💡 El margen es ajustado. Buscar aumentar facturación o reducir gastos puede ayudar.';
+    return r;
+  }
+
+  // CLIENTES
+  if(q.match(/client|customer/)){
+    if(!clientes.length) return sinDatos;
+    const activos=clientes.filter(c=>c.estado==='Activo');
+    let r=`<b>👥 Clientes de ${currentUser.empresa}</b><br><br>`;
+    r+=`Total: <b>${clientes.length}</b> clientes<br>`;
+    r+=`✅ Activos: <b>${activos.length}</b><br>`;
+    r+=`⚠️ Otros: <b>${clientes.length-activos.length}</b><br>`;
+    if(d.topClientes.length){
+      r+='<br>🏆 <b>Quienes más facturan:</b><br>';
+      d.topClientes.forEach(([c,m])=>{ r+=`• ${c}: ${fmt(m)}<br>`; });
+    }
+    return r;
+  }
+
+  // CUENTAS POR COBRAR
+  if(q.match(/cobrar|cxc|cuenta.*cobr|deben|deuda.*favor/)){
+    if(!cxc.length) return sinDatos;
+    let r=`<b>💚 Cuentas por Cobrar</b><br><br>`;
+    r+=`📊 Total pendiente: <b>${fmt(d.cxcPendTotal)}</b> (${d.cxcPend.length} cuenta${d.cxcPend.length!==1?'s':''})<br>`;
+    if(d.vencCxC.length){
+      r+=`<br>🔴 <b>Vencidas sin cobrar (${d.vencCxC.length}):</b><br>`;
+      d.vencCxC.slice(0,3).forEach(x=>{ r+=`• ${x.cliente}: ${fmt(x.monto)} — venció ${x.vencimiento}<br>`; });
+      r+='<br>💡 Contactá a estos clientes lo antes posible.';
+    } else {
+      r+='<br>✅ No tenés cuentas vencidas. Bien!';
+    }
+    return r;
+  }
+
+  // CUENTAS POR PAGAR
+  if(q.match(/pagar|cxp|cuenta.*pag|debo|deuda.*contra|adeud/)){
+    if(!cxp.length) return sinDatos;
+    let r=`<b>🔴 Cuentas por Pagar</b><br><br>`;
+    r+=`📊 Total pendiente: <b>${fmt(d.cxpPendTotal)}</b> (${d.cxpPend.length} cuenta${d.cxpPend.length!==1?'s':''})<br>`;
+    if(d.vencCxP.length){
+      r+=`<br>⚠️ <b>Vencidas sin pagar (${d.vencCxP.length}):</b><br>`;
+      d.vencCxP.slice(0,3).forEach(x=>{ r+=`• ${x.proveedor}: ${fmt(x.monto)} — venció ${x.vencimiento}<br>`; });
+      r+='<br>💡 Pagá estas deudas cuanto antes para evitar mora.';
+    } else {
+      r+='<br>✅ No tenés deudas vencidas.';
+    }
+    return r;
+  }
+
+  // EMPLEADOS
+  if(q.match(/emplead|sueldo|salario|equipo|personal/)){
+    if(!empleados.length) return sinDatos;
+    const pendEmp=empleados.filter(e=>e.estado!=='pagado');
+    const totalSueldos=empleados.reduce((a,e)=>a+(+e.sueldo||0),0);
+    let r=`<b>👤 Empleados</b><br><br>`;
+    r+=`👥 Total: <b>${empleados.length}</b> empleado${empleados.length!==1?'s':''}<br>`;
+    r+=`💰 Total sueldos: <b>${fmt(totalSueldos)}</b><br>`;
+    if(pendEmp.length){
+      r+=`<br>⏳ <b>Sueldos pendientes (${pendEmp.length}):</b><br>`;
+      pendEmp.forEach(e=>{ r+=`• ${e.nombre}: ${fmt(e.sueldo)}<br>`; });
+    } else {
+      r+='<br>✅ Todos los sueldos están pagados.';
+    }
+    return r;
+  }
+
+  // PROVEEDORES
+  if(q.match(/proveedor|provider|servicio.*contrat/)){
+    if(!proveedores.length) return sinDatos;
+    const totalProv=proveedores.reduce((a,p)=>a+(+p.costo||0),0);
+    let r=`<b>🏭 Proveedores</b><br><br>`;
+    r+=`Total: <b>${proveedores.length}</b> proveedor${proveedores.length!==1?'es':''}<br>`;
+    r+=`💰 Costo mensual total: <b>${fmt(totalProv)}</b><br>`;
+    const hoy=today();
+    const vencProv=proveedores.filter(p=>p.vencimiento&&p.vencimiento<=hoy&&p.estado==='activo');
+    if(vencProv.length){
+      r+=`<br>⚠️ <b>Vencimientos próximos:</b><br>`;
+      vencProv.forEach(p=>{ r+=`• ${p.nombre}: ${fmt(p.costo)} — ${p.vencimiento}<br>`; });
+    }
+    return r;
+  }
+
+  // RESUMEN GENERAL
+  if(q.match(/resumen|cómo va|estado|panorama|situación|hola|ayuda|qué podés|que podes/)){
+    let r=`<b>📊 Resumen de ${currentUser.empresa}</b><br><br>`;
+    if(!facturas.length && !gastos.length && !clientes.length){
+      r+='Todavía no hay datos cargados. Empezá por agregar clientes, facturas y gastos para que pueda ayudarte con análisis financieros.<br><br>';
+      r+='💡 <b>Te sugiero empezar por:</b><br>• Agregar tus clientes activos<br>• Registrar las facturas del mes<br>• Anotar tus gastos principales';
+      return r;
+    }
+    r+=`👥 Clientes activos: <b>${clientes.filter(c=>c.estado==='Activo').length}</b><br>`;
+    r+=`💰 Facturación: <b>${fmt(d.tf)}</b><br>`;
+    r+=`💸 Gastos: <b>${fmt(d.tg)}</b><br>`;
+    r+=`📈 Ganancia neta: <b>${fmt(d.gan)}</b> (${d.margen}% margen)<br>`;
+    if(d.tp>0) r+=`⏳ Por cobrar: <b>${fmt(d.tp)}</b><br>`;
+    if(d.cxpPendTotal>0) r+=`🔴 Por pagar: <b>${fmt(d.cxpPendTotal)}</b><br>`;
+    if(d.vencCxC.length) r+=`<br>⚠️ Tenés <b>${d.vencCxC.length}</b> cuenta${d.vencCxC.length!==1?'s':''} por cobrar vencida${d.vencCxC.length!==1?'s':''}.`;
+    if(d.vencCxP.length) r+=`<br>⚠️ Tenés <b>${d.vencCxP.length}</b> cuenta${d.vencCxP.length!==1?'s':''} por pagar vencida${d.vencCxP.length!==1?'s':''}.`;
+    return r;
+  }
+
+  // DEFAULT
+  return `Hola! Puedo ayudarte con:<br><br>
+📊 <b>Facturación</b> — preguntame sobre tus ingresos<br>
+💸 <b>Gastos</b> — revisamos tus egresos<br>
+📈 <b>Ganancia</b> — calculamos tu resultado<br>
+👥 <b>Clientes</b> — quiénes te generan más<br>
+💚 <b>Cuentas por cobrar</b> — lo que te deben<br>
+🔴 <b>Cuentas por pagar</b> — lo que debés<br>
+👤 <b>Empleados</b> — estado de sueldos<br>
+🏭 <b>Proveedores</b> — costos contratados<br><br>
+También podés preguntarme el <b>resumen general</b> de la empresa.`;
+}
+
+function sendBot(text){
   const input=document.getElementById('bot-input');
   const msg=text||input.value.trim();
   if(!msg||botBusy)return;
   input.value='';
   addBotMsg(msg,'out');
-  botHistory.push({role:'user',content:msg});
   botBusy=true;
   document.getElementById('bot-send').disabled=true;
   const typing=addTyping();
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:getBotContext(),messages:botHistory})
-    });
-    const data=await res.json();
+  setTimeout(()=>{
     typing.remove();
-    if(data.error){addBotMsg('⚠️ '+data.error.message,'in');}
-    else{
-      const reply=data.content?.[0]?.text||'Ups, algo salió mal.';
-      botHistory.push({role:'assistant',content:reply});
-      addBotMsg(reply.replace(/\n/g,'<br>'),'in');
-    }
-  }catch(e){typing.remove();addBotMsg('Sin conexión. Revisá tu API key 😅','in');}
-  botBusy=false;
-  document.getElementById('bot-send').disabled=false;
+    const reply=zaifiResponde(msg);
+    addBotMsg(reply,'in');
+    botBusy=false;
+    document.getElementById('bot-send').disabled=false;
+  },600);
 }
 
 function addBotMsg(text,dir){
