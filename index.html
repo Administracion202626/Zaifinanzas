@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zaifi — Gestión Empresarial</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;0,900;1,300&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
   --bg:#F8F7F4;--white:#FFFFFF;
-  --z1:#1A1A2E;--z2:#2E4057;
+  --z1:#1E293B;--z2:#334155;
   --accent:#6C5CE7;--accent2:#A89AF7;--accent-dark:#4834D4;
   --green:#2D9B6F;--green-light:#E8F7F0;
   --red:#D64545;--red-light:#FDF0F0;
@@ -20,7 +21,7 @@
   --shadow-lg:0 8px 40px rgba(13,13,13,0.12);
   --radius:16px;--radius-lg:24px;
 }
-body{font-family:'Outfit',sans-serif;font-size:16px;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Inter',sans-serif;font-size:16px;background:#F8FAFC;color:#334155;min-height:100vh;}
 
 /* ── AUTH SCREENS ── */
 .auth-screen{display:none;min-height:100vh;background:linear-gradient(135deg,#1A1A2E 0%,#2E1A5E 100%);align-items:center;justify-content:center;padding:20px;}
@@ -28,11 +29,11 @@ body{font-family:'Outfit',sans-serif;font-size:16px;background:var(--bg);color:v
 .auth-card{background:white;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
 .auth-logo{text-align:center;margin-bottom:28px;}
 .auth-logo svg{width:200px;}
-.auth-title{font-family:'Fraunces',sans-serif;font-size:24px;font-weight:900;color:var(--z1);margin-bottom:6px;text-align:center;}
+.auth-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:900;color:var(--z1);margin-bottom:6px;text-align:center;}
 .auth-sub{font-size:14px;color:var(--text3);text-align:center;margin-bottom:28px;}
-.auth-input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-family:'Outfit',sans-serif;color:var(--text);outline:none;margin-bottom:14px;transition:border-color 0.2s;}
+.auth-input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-family:'Inter',sans-serif;color:var(--text);outline:none;margin-bottom:14px;transition:border-color 0.2s;}
 .auth-input:focus{border-color:var(--accent);}
-.auth-btn{width:100%;padding:14px;background:var(--z1);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;margin-top:6px;transition:background 0.2s;}
+.auth-btn{width:100%;padding:14px;background:var(--z1);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px;transition:background 0.2s;}
 .auth-btn:hover{background:#333;}
 .auth-switch{text-align:center;margin-top:20px;font-size:14px;color:var(--text3);}
 .auth-switch a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none;}
@@ -42,74 +43,74 @@ body{font-family:'Outfit',sans-serif;font-size:16px;background:var(--bg);color:v
 /* ── APP ── */
 .app-screen{display:none;min-height:100vh;}
 .app-screen.active{display:flex;}
-.sidebar{width:270px;min-height:100vh;background:var(--z1);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;}
+.sidebar{width:270px;min-height:100vh;background:#F1F5F9;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#CBD5E1 transparent;}
 .sidebar::-webkit-scrollbar{width:4px;}
-.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px;}
 .main{margin-left:270px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
-.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.empresa-badge{margin:14px 18px;background:rgba(108,92,231,0.12);border:1px solid rgba(108,92,231,0.2);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid #E2E8F0;}
+.empresa-badge{margin:14px 18px;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
 .empresa-dot{width:8px;height:8px;background:#6C5CE7;border-radius:50%;flex-shrink:0;}
-.empresa-name{font-size:15px;font-weight:600;color:rgba(255,255,255,0.8);}
+.empresa-name{font-size:15px;font-weight:600;color:#3730A3;}
 .nav-section{padding:6px 10px;}
-.nav-section-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:1.5px;padding:10px 12px 5px;}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all 0.2s;color:rgba(255,255,255,0.45);font-size:15px;font-weight:500;margin-bottom:2px;}
-.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
-.nav-item.active{background:rgba(108,92,231,0.15);color:#A89AF7;}
-.nav-item .ni{font-size:17px;width:22px;text-align:center;}
-.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,0.06);}
+.nav-section-label{font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1.5px;padding:10px 12px 5px;font-family:'Inter',sans-serif;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all 0.2s;color:#475569;font-size:15px;font-weight:500;margin-bottom:2px;}
+.nav-item:hover{background:#E2E8F0;color:#1E293B;}
+.nav-item.active{background:#EEF2FF;color:#6C5CE7;font-weight:600;}
+.nav-item .ni{font-size:17px;width:22px;text-align:center;flex-shrink:0;line-height:1;}
+.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid #E2E8F0;}
 .user-row{display:flex;align-items:center;gap:10px;}
-.user-av{width:36px;height:36px;background:linear-gradient(135deg,#6C5CE7,#4834D4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0;}
-.user-name{font-size:15px;font-weight:600;color:white;}
-.user-role{font-size:11px;color:rgba(255,255,255,0.3);}
-.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.topbar-title{font-family:'Fraunces',sans-serif;font-size:26px;font-weight:700;color:var(--text);}
+.user-av{width:36px;height:36px;background:linear-gradient(135deg,#6C5CE7,#5A4BD1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0;}
+.user-name{font-size:15px;font-weight:600;color:#1E293B;}
+.user-role{font-size:11px;color:#94A3B8;}
+.topbar{background:#F8FAFC;border-bottom:1px solid #E2E8F0;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;letter-spacing:-0.5px;}
 .topbar-right{display:flex;align-items:center;gap:12px;}
-.tb-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Outfit',sans-serif;transition:all 0.2s;}
-.tb-btn-primary{background:var(--z1);color:white;}
-.tb-btn-primary:hover{background:#333;}
-.tb-btn-sec{background:var(--bg);color:var(--text);border:1.5px solid var(--border);}
-.tb-btn-sec:hover{border-color:#6C5CE7;}
-.content{padding:28px 32px;flex:1;}
+.tb-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all 0.2s;}
+.tb-btn-primary{background:#6C5CE7;color:white;border-radius:10px;}
+.tb-btn-primary:hover{background:#5A4BD1;}
+.tb-btn-sec{background:#F1F5F9;color:#475569;border:1.5px solid #E2E8F0;}
+.tb-btn-sec:hover{border-color:#6C5CE7;color:#6C5CE7;}
+.content{padding:28px 32px;flex:1;background:#F8FAFC;}
 .page{display:none;}
 .page.active{display:block;}
 
 /* ── FILTER BAR ── */
-.filter-bar{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;}
-.filter-bar label{font-size:13px;font-weight:600;color:var(--text3);}
-.filter-bar input[type=date],.filter-bar select{border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:14px;font-family:'Outfit',sans-serif;color:var(--text);outline:none;background:var(--bg);}
+.filter-bar{display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(15,23,42,0.04);}
+.filter-bar label{font-size:12px;font-weight:600;color:#94A3B8;font-family:'Inter',sans-serif;}
+.filter-bar input[type=date],.filter-bar select{border:1.5px solid #E2E8F0;border-radius:8px;padding:6px 10px;font-size:13px;font-family:'Inter',sans-serif;color:#334155;outline:none;background:#F8FAFC;}
 .filter-bar input[type=date]:focus,.filter-bar select:focus{border-color:#6C5CE7;}
-.filter-clear{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);}
+.filter-clear{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #E2E8F0;font-family:'Inter',sans-serif;background:#F1F5F9;color:#475569;}
 
 /* ── STATS ── */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
-.stat-card{background:var(--white);border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);}
+.stat-card{background:#FFFFFF;border-radius:16px;padding:20px;border:1px solid #E2E8F0;box-shadow:0 1px 8px rgba(15,23,42,0.06);}
 .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;}
-.stat-val{font-family:'Fraunces',sans-serif;font-size:30px;font-weight:700;color:var(--text);margin-bottom:4px;}
-.stat-label{font-size:15px;color:var(--text3);font-weight:500;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;color:#1E293B;margin-bottom:4px;letter-spacing:-0.5px;}
+.stat-label{font-size:13px;color:#64748B;font-weight:500;font-family:'Inter',sans-serif;}
 .up{color:var(--green);}.down{color:var(--red);}
 
 /* ── TABLE ── */
-.table-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);}
+.table-card{background:#FFFFFF;border-radius:16px;border:1px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(15,23,42,0.06);}
 .table-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
-.th-title{font-family:'Fraunces',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
-.th-sub{font-size:14px;color:var(--text3);margin-top:2px;}
-.search-box{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);}
-.search-box input{border:none;outline:none;background:none;font-size:14px;font-family:'Outfit',sans-serif;color:var(--text);width:170px;}
+.th-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:#1E293B;}
+.th-sub{font-size:13px;color:#94A3B8;margin-top:2px;font-family:'Inter',sans-serif;}
+.search-box{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid #E2E8F0;border-radius:10px;background:#F8FAFC;}
+.search-box input{border:none;outline:none;background:none;font-size:13px;font-family:'Inter',sans-serif;color:#334155;width:170px;}
 table{width:100%;border-collapse:collapse;}
-th{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:12px 20px;text-align:left;border-bottom:1px solid var(--border);background:#FAFAF8;}
-td{padding:14px 20px;font-size:15px;border-bottom:1px solid var(--border);vertical-align:middle;}
+th{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;padding:12px 20px;text-align:left;border-bottom:1px solid #E2E8F0;background:#F8FAFC;font-family:'Inter',sans-serif;}
+td{padding:13px 20px;font-size:14px;border-bottom:1px solid #F1F5F9;vertical-align:middle;font-family:'Inter',sans-serif;color:#334155;}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:#FAFAF8;}
-.td-main{font-weight:700;color:var(--text);}
-.td-sub{font-size:13px;color:var(--text3);margin-top:2px;}
-.badge{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:700;gap:4px;}
+tr:hover td{background:#F8FAFC;}
+.td-main{font-weight:600;color:#1E293B;font-size:14px;}
+.td-sub{font-size:12px;color:#94A3B8;margin-top:2px;}
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;gap:4px;font-family:'Inter',sans-serif;letter-spacing:0.2px;}
 .badge-green{background:var(--green-light);color:var(--green);}
 .badge-red{background:var(--red-light);color:var(--red);}
 .badge-yellow{background:var(--yellow-light);color:var(--yellow);}
 .badge-blue{background:var(--blue-light);color:var(--blue);}
 .badge-gray{background:#F0F0F0;color:var(--text3);}
-.action-btn{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);transition:all 0.2s;}
-.action-btn:hover{background:var(--z1);color:white;}
+.action-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;font-family:'Inter',sans-serif;background:#F8FAFC;color:#475569;transition:all 0.2s;}
+.action-btn:hover{background:#6C5CE7;color:white;border-color:#6C5CE7;}
 .action-btns{display:flex;gap:6px;}
 .client-av{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white;flex-shrink:0;}
 
@@ -117,9 +118,9 @@ tr:hover td{background:#FAFAF8;}
 .catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .catalog-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow);transition:all 0.2s;}
 .catalog-card:hover{border-color:#6C5CE7;transform:translateY(-2px);}
-.catalog-name{font-family:'Fraunces',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.catalog-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
 .catalog-desc{font-size:14px;color:var(--text3);margin-bottom:12px;}
-.catalog-price{font-family:'Fraunces',sans-serif;font-size:22px;font-weight:900;color:var(--text);}
+.catalog-price{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:900;color:var(--text);}
 
 /* ── FACTURAS ── */
 .factura-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px 22px;display:flex;align-items:center;gap:18px;margin-bottom:8px;box-shadow:var(--shadow);transition:all 0.2s;}
@@ -131,34 +132,34 @@ tr:hover td{background:#FAFAF8;}
 .sum-card.green{background:linear-gradient(135deg,#2D9B6F,#1f7a57);}
 .sum-card.red{background:linear-gradient(135deg,#D64545,#b03535);}
 .sum-card.yellow{background:linear-gradient(135deg,#D4A017,#b08010);}
-.sum-card .sum-label{font-size:13px;opacity:0.8;margin-bottom:6px;}
-.sum-card .sum-val{font-family:'Fraunces',sans-serif;font-size:28px;font-weight:900;}
+.sum-card .sum-label{font-size:12px;opacity:0.85;margin-bottom:6px;font-family:'Inter',sans-serif;}
+.sum-card .sum-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;}
 .sum-card .sum-count{font-size:13px;opacity:0.75;margin-top:4px;}
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
-.modal{background:var(--white);border-radius:var(--radius-lg);padding:30px;max-width:520px;width:92%;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;}
+.modal{background:#FFFFFF;border-radius:20px;padding:32px;max-width:520px;width:92%;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;box-shadow:0 20px 60px rgba(15,23,42,0.15);}
 @keyframes popIn{from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);}}
-.modal-title{font-family:'Fraunces',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
-.modal-sub{font-size:14px;color:var(--text3);margin-bottom:22px;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#1E293B;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:#94A3B8;margin-bottom:20px;font-family:'Inter',sans-serif;}
 .form-group{margin-bottom:14px;}
-.form-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;}
-.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'Outfit',sans-serif;color:var(--text);outline:none;transition:border-color 0.2s;background:var(--white);}
-.form-input:focus{border-color:#6C5CE7;}
-.form-select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'Outfit',sans-serif;color:var(--text);outline:none;background:var(--white);cursor:pointer;}
+.form-label{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;display:block;font-family:'Inter',sans-serif;}
+.form-input{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:#1E293B;outline:none;transition:border-color 0.2s;background:#FFFFFF;}
+.form-input:focus{border-color:#6C5CE7;box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
+.form-select{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:#1E293B;outline:none;background:#FFFFFF;cursor:pointer;}
 .modal-btns{display:flex;gap:10px;margin-top:22px;}
-.modal-btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
-.modal-btn-primary{background:var(--z1);color:white;}
-.modal-btn-cancel{background:var(--bg);color:var(--text);}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--z1);color:white;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:400;transform:translateY(80px);opacity:0;transition:all 0.3s;}
+.modal-btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.modal-btn-primary{background:#6C5CE7;color:white;}
+.modal-btn-cancel{background:#F1F5F9;color:#475569;}
+.toast{position:fixed;bottom:24px;right:80px;background:#1E293B;color:white;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:400;transform:translateY(80px);opacity:0;transition:all 0.3s;}
 .toast.show{transform:translateY(0);opacity:1;}
 
 /* ── BOT ── */
 .bot-container{display:flex;flex-direction:column;height:calc(100vh - 73px);}
 .bot-header{background:var(--z1);padding:16px 24px;display:flex;align-items:center;gap:14px;border-radius:16px 16px 0 0;}
 .bot-av{width:46px;height:46px;background:linear-gradient(135deg,#6C5CE7,#4834D4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
-.bot-name{font-family:'Fraunces',sans-serif;font-size:18px;font-weight:700;color:white;}
+.bot-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;color:white;}
 .bot-status{font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:6px;margin-top:2px;}
 .online-dot{width:7px;height:7px;background:#25D366;border-radius:50%;animation:blink 2s infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
@@ -178,20 +179,25 @@ tr:hover td{background:#FAFAF8;}
 .typing span:nth-child(3){animation-delay:0.4s;}
 @keyframes typing{0%,60%,100%{transform:translateY(0);opacity:0.4;}30%{transform:translateY(-5px);opacity:1;}}
 .qr-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
-.qr-btn{border:1.5px solid var(--accent);color:var(--accent);background:white;font-size:13px;font-weight:700;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.15s;}
+.qr-btn{border:1.5px solid var(--accent);color:var(--accent);background:white;font-size:13px;font-weight:700;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;}
 .qr-btn:hover{background:var(--accent);color:white;}
 .bot-input-area{background:white;border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;align-items:center;}
-.bot-input{flex:1;border:1.5px solid var(--border);border-radius:24px;padding:10px 18px;font-size:15px;font-family:'Outfit',sans-serif;color:var(--text);outline:none;}
+.bot-input{flex:1;border:1.5px solid var(--border);border-radius:24px;padding:10px 18px;font-size:15px;font-family:'Inter',sans-serif;color:var(--text);outline:none;}
 .bot-input:focus{border-color:var(--accent);}
 .bot-send{width:44px;height:44px;background:var(--z1);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all 0.2s;flex-shrink:0;}
 .bot-send:hover{background:var(--accent);}
 .bot-send:disabled{opacity:0.4;cursor:not-allowed;}
 .key-setup{background:var(--yellow-light);border:1px solid var(--yellow);border-radius:12px;padding:16px;margin-bottom:16px;font-size:14px;color:var(--text2);}
-.key-setup input{width:100%;margin-top:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;}
-.key-setup button{margin-top:8px;padding:8px 16px;background:var(--z1);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+.key-setup input{width:100%;margin-top:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+.key-setup button{margin-top:8px;padding:8px 16px;background:var(--z1);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
 
 /* ── DASH ── */
 .dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-bottom:24px;}
+
+/* ── SCROLL TO TOP ── */
+.scroll-top{position:fixed;bottom:28px;right:28px;width:40px;height:40px;background:#6C5CE7;color:white;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transform:translateY(10px);transition:all 0.3s;z-index:300;font-family:'Inter',sans-serif;}
+.scroll-top.visible{opacity:1;transform:translateY(0);}
+.scroll-top:hover{background:#6C5CE7;}
 </style>
 </head>
 <body>
@@ -272,21 +278,31 @@ tr:hover td{background:#FAFAF8;}
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-brand">
-    <svg width="210" height="64" viewBox="0 0 420 128" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="8" width="88" height="88" rx="22" fill="#6C5CE7"/>
-      <ellipse cx="43" cy="62" rx="19" ry="15" fill="white"/>
-      <rect x="49" y="44" width="8" height="16" rx="4" fill="white"/>
-      <circle cx="55" cy="37" r="11" fill="white"/>
-      <ellipse cx="49" cy="26" rx="2.8" ry="4.5" fill="#E63946"/>
-      <ellipse cx="57" cy="23" rx="2.8" ry="5" fill="#E63946"/>
-      <ellipse cx="60" cy="46" rx="2.8" ry="4" fill="#E63946"/>
-      <polygon points="63,35 72,32 63,40" fill="#FFD93D"/>
-      <circle cx="59" cy="33" r="2.5" fill="#1A1A2E"/>
-      <text x="43" y="67" text-anchor="middle" font-size="16" font-weight="900" fill="#6C5CE7" font-family="system-ui">$</text>
-      <text x="102" y="66" font-size="54" font-weight="900" fill="white" font-family="system-ui" letter-spacing="-2">Zai</text>
-      <text x="196" y="66" font-size="54" font-weight="900" fill="#A89AF7" font-family="system-ui" letter-spacing="-2">fi</text>
-      <text x="103" y="84" font-size="13" fill="rgba(255,255,255,0.3)" font-family="system-ui" letter-spacing="2.5">GESTIÓN EMPRESARIAL</text>
-    </svg>
+    <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <!-- Gallinita grande -->
+        <div style="width:58px;height:58px;background:#6C5CE7;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(108,92,231,0.3);">
+          <svg width="38" height="38" viewBox="0 0 88 104" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="43" cy="72" rx="19" ry="15" fill="white"/>
+            <rect x="49" y="50" width="8" height="16" rx="4" fill="white"/>
+            <circle cx="55" cy="43" r="11" fill="white"/>
+            <ellipse cx="49" cy="30" rx="2.8" ry="4.5" fill="#E63946"/>
+            <ellipse cx="57" cy="27" rx="2.8" ry="5" fill="#E63946"/>
+            <ellipse cx="60" cy="52" rx="2.8" ry="4" fill="#E63946"/>
+            <polygon points="63,41 72,38 63,46" fill="#FFD93D"/>
+            <circle cx="59" cy="39" r="2.5" fill="#1A1A2E"/>
+            <circle cx="60" cy="37.5" r="0.9" fill="white"/>
+            <text x="43" y="77" text-anchor="middle" font-size="14" font-weight="900" fill="#6C5CE7" font-family="system-ui">$</text>
+          </svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div style="display:flex;align-items:baseline;gap:0;line-height:1;">
+            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:900;color:#1E293B;letter-spacing:-2px;">Zai</span><span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:900;color:#6C5CE7;letter-spacing:-2px;">fi</span>
+          </div>
+          <span style="font-size:9px;font-weight:700;color:#94A3B8;letter-spacing:2.5px;text-transform:uppercase;font-family:'Inter',sans-serif;">GESTIÓN EMPRESARIAL</span>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="empresa-badge">
     <div class="empresa-dot"></div>
@@ -294,27 +310,29 @@ tr:hover td{background:#FAFAF8;}
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Principal</div>
-    <div class="nav-item active" onclick="goTo('dashboard',this)"><span class="ni">🏠</span>Dashboard</div>
-    <div class="nav-item" onclick="goTo('clientes',this)"><span class="ni">👥</span>Clientes</div>
-    <div class="nav-item" onclick="goTo('catalogo',this)"><span class="ni">📦</span>Catálogo</div>
-    <div class="nav-item" onclick="goTo('facturacion',this)"><span class="ni">🧾</span>Facturación</div>
-    <div class="nav-item" onclick="goTo('resumenes',this)"><span class="ni">📋</span>Resúmenes</div>
+    <div class="nav-item active" onclick="goTo('dashboard',this)"><span class="ni">◉</span>Home</div>
+    <div class="nav-item" onclick="goTo('clientes',this)"><span class="ni">◈</span>Clientes</div>
+    <div class="nav-item" onclick="goTo('catalogo',this)"><span class="ni">▦</span>Catálogo</div>
+    <div class="nav-item" onclick="goTo('facturacion',this)"><span class="ni">◫</span>Facturación</div>
+    <div class="nav-item" onclick="goTo('resumenes',this)"><span class="ni">◪</span>Resúmenes</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Finanzas</div>
-    <div class="nav-item" onclick="goTo('cxc',this)"><span class="ni">💚</span>Cuentas por Cobrar</div>
-    <div class="nav-item" onclick="goTo('cxp',this)"><span class="ni">🔴</span>Cuentas por Pagar</div>
+    <div class="nav-item" onclick="goTo('cxc',this)"><span class="ni" style="color:#2D9B6F;font-size:9px;font-weight:900;background:#E8F7F0;border-radius:4px;padding:2px 4px;width:auto;">CxC</span>Cuentas por Cobrar</div>
+    <div class="nav-item" onclick="goTo('cxp',this)"><span class="ni" style="color:#D64545;font-size:9px;font-weight:900;background:#FDF0F0;border-radius:4px;padding:2px 4px;width:auto;">CxP</span>Cuentas por Pagar</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Operaciones</div>
-    <div class="nav-item" onclick="goTo('proveedores',this)"><span class="ni">🏭</span>Proveedores</div>
-    <div class="nav-item" id="nav-empleados" onclick="goTo('empleados',this)"><span class="ni">👤</span>Empleados</div>
-    <div class="nav-item" onclick="goTo('gastos',this)"><span class="ni">💸</span>Gastos</div>
+    <div class="nav-item" onclick="goTo('proveedores',this)"><span class="ni">◧</span>Proveedores</div>
+    <div class="nav-item" id="nav-empleados" onclick="goTo('empleados',this)"><span class="ni">◉</span>Empleados</div>
+    <div class="nav-item" onclick="goTo('gastos',this)"><span class="ni">◫</span>Gastos</div>
+    <div class="nav-item" onclick="goTo('bancos',this)"><span class="ni" style="font-size:13px;">⬡</span>Datos bancarios</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Zaifi IA</div>
-    <div class="nav-item" onclick="goTo('bot',this)"><span class="ni">✨</span>Chat con Zaifi</div>
-    <div class="nav-item" onclick="doLogout()" style="color:rgba(255,100,100,0.6);margin-top:8px;"><span class="ni">🚪</span>Cerrar sesión</div>
+    <div class="nav-item" onclick="goTo('estadisticas',this)"><span class="ni">◈</span>Estadísticas</div>
+    <div class="nav-item" onclick="goTo('bot',this)"><span class="ni">◎</span>Chat con Zaifi</div>
+    <div class="nav-item" onclick="doLogout()" style="color:#EF4444;margin-top:8px;"><span class="ni">→</span>Cerrar sesión</div>
   </div>
   <div class="sidebar-bottom">
     <div class="user-row">
@@ -330,7 +348,7 @@ tr:hover td{background:#FAFAF8;}
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-title" id="topbar-title">Home</div>
     <div class="topbar-right">
       <button class="tb-btn tb-btn-sec" onclick="openAddModal()">+ Agregar</button>
     </div>
@@ -340,10 +358,10 @@ tr:hover td{background:#FAFAF8;}
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-icon" style="background:#EEF0FF;">💰</div><div class="stat-val" id="dash-facturacion">$0</div><div class="stat-label">Facturación total</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--green-light);">👥</div><div class="stat-val" id="dash-clientes">0</div><div class="stat-label">Clientes activos</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--yellow-light);">🧾</div><div class="stat-val" id="dash-pendientes">$0</div><div class="stat-label">Por cobrar</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--red-light);">💸</div><div class="stat-val" id="dash-gastos">$0</div><div class="stat-label">Gastos totales</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" id="dash-facturacion">$0</div><div class="stat-label">Facturación total</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-val" id="dash-clientes">0</div><div class="stat-label">Clientes activos</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FEFCE8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="stat-val" id="dash-pendientes">$0</div><div class="stat-label">Por cobrar</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D64545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-val" id="dash-gastos">$0</div><div class="stat-label">Gastos totales</div></div>
       </div>
       <div class="dash-grid">
         <div class="table-card">
@@ -353,9 +371,9 @@ tr:hover td{background:#FAFAF8;}
         <div class="table-card">
           <div class="table-head"><div><div class="th-title">Resumen financiero</div></div></div>
           <div style="padding:16px 24px;">
-            <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);"><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Total facturado</div><div style="font-family:'Fraunces',sans-serif;font-size:24px;font-weight:800;color:var(--green);" id="r-total-fact">$0</div></div>
-            <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);"><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Total gastos</div><div style="font-family:'Fraunces',sans-serif;font-size:24px;font-weight:800;color:var(--red);" id="r-total-gast">$0</div></div>
-            <div><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Ganancia neta</div><div style="font-family:'Fraunces',sans-serif;font-size:28px;font-weight:900;" id="r-ganancia">$0</div></div>
+            <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);"><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Total facturado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:var(--green);" id="r-total-fact">$0</div></div>
+            <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);"><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Total gastos</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:var(--red);" id="r-total-gast">$0</div></div>
+            <div><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Ganancia neta</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:900;" id="r-ganancia">$0</div></div>
           </div>
         </div>
       </div>
@@ -379,7 +397,7 @@ tr:hover td{background:#FAFAF8;}
     <!-- CATÁLOGO -->
     <div class="page" id="page-catalogo">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-        <div><div style="font-family:'Fraunces',sans-serif;font-size:20px;font-weight:700;">Catálogo de servicios</div><div style="font-size:14px;color:var(--text3);margin-top:2px;" id="catalogo-count">0 servicios</div></div>
+        <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;">Catálogo de servicios</div><div style="font-size:14px;color:var(--text3);margin-top:2px;" id="catalogo-count">0 servicios</div></div>
         <button class="tb-btn tb-btn-primary" onclick="openModal('add-servicio')">+ Nuevo servicio</button>
       </div>
       <div class="catalog-grid" id="catalog-grid"><div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:40px;">No hay servicios aún →</div></div>
@@ -388,9 +406,9 @@ tr:hover td{background:#FAFAF8;}
     <!-- FACTURACIÓN -->
     <div class="page" id="page-facturacion">
       <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
-        <div class="stat-card"><div class="stat-icon" style="background:var(--green-light);">✅</div><div class="stat-val" style="color:var(--green)" id="fact-cobrado">$0</div><div class="stat-label">Cobrado</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:var(--yellow-light);">⏳</div><div class="stat-val" style="color:var(--yellow)" id="fact-pendiente">$0</div><div class="stat-label">Pendiente</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#EEF0FF;">🧾</div><div class="stat-val" id="fact-total">0</div><div class="stat-label">Facturas emitidas</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:var(--green)" id="fact-cobrado">$0</div><div class="stat-label">Cobrado</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FEFCE8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:var(--yellow)" id="fact-pendiente">$0</div><div class="stat-label">Pendiente</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-val" id="fact-total">0</div><div class="stat-label">Facturas emitidas</div></div>
       </div>
       <div class="filter-bar">
         <label>Desde</label><input type="date" id="fact-desde" onchange="renderFacturas()">
@@ -399,7 +417,7 @@ tr:hover td{background:#FAFAF8;}
         <button class="filter-clear" onclick="clearFilter('facturacion')">Limpiar</button>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <div style="font-family:'Fraunces',sans-serif;font-size:18px;font-weight:700;">Facturas</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;">Facturas</div>
         <button class="tb-btn tb-btn-primary" onclick="openModal('nueva-factura')">+ Nueva factura</button>
       </div>
       <div id="facturas-list"></div>
@@ -503,7 +521,7 @@ tr:hover td{background:#FAFAF8;}
       <!-- Lista de resúmenes -->
       <div id="res-lista-view">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-          <div><div style="font-family:'Fraunces',sans-serif;font-size:22px;font-weight:700;">Resúmenes de clientes</div><div style="font-size:14px;color:var(--text3);margin-top:2px;" id="res-count">0 resúmenes</div></div>
+          <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;">Resúmenes de clientes</div><div style="font-size:14px;color:var(--text3);margin-top:2px;" id="res-count">0 resúmenes</div></div>
           <button class="tb-btn tb-btn-primary" onclick="nuevoResumen()">+ Nuevo resumen</button>
         </div>
         <div id="res-cards"></div>
@@ -513,7 +531,7 @@ tr:hover td{background:#FAFAF8;}
       <div id="res-form-view" style="display:none;">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
           <button class="action-btn" onclick="volverListaRes()">← Volver</button>
-          <div style="font-family:'Fraunces',sans-serif;font-size:22px;font-weight:700;" id="res-form-title">Nuevo resumen</div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:700;" id="res-form-title">Nuevo resumen</div>
         </div>
 
         <!-- Info básica -->
@@ -580,7 +598,7 @@ tr:hover td{background:#FAFAF8;}
                 <tbody><tr><td colspan="9" style="padding:10px;color:var(--text3);text-align:center;font-style:italic;">Tus envíos aparecerán acá después de procesar</td></tr></tbody>
               </table>
             </div>
-            <textarea id="res-logistica-paste" rows="5" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'Outfit',sans-serif;resize:vertical;" placeholder="Pegá acá los datos copiados de Excel (Ctrl+V)..."></textarea>
+            <textarea id="res-logistica-paste" rows="5" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;resize:vertical;" placeholder="Pegá acá los datos copiados de Excel (Ctrl+V)..."></textarea>
             <button class="tb-btn tb-btn-primary" style="margin-top:10px;" onclick="procesarLogistica()">Procesar envíos →</button>
           </div>
           <div id="res-logistica-tabla" style="display:none;">
@@ -612,8 +630,8 @@ tr:hover td{background:#FAFAF8;}
               <span style="color:var(--text3);">IVA (<span id="res-iva-pct">21</span>%)</span><span style="font-weight:700;" id="res-iva-monto">$0</span>
             </div>
             <div style="display:flex;justify-content:space-between;padding:14px 0;font-size:22px;">
-              <span style="font-family:'Fraunces',sans-serif;font-weight:900;">TOTAL</span>
-              <span style="font-family:'Fraunces',sans-serif;font-weight:900;color:var(--green);" id="res-total-final">$0</span>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:900;">TOTAL</span>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:900;color:var(--green);" id="res-total-final">$0</span>
             </div>
           </div>
         </div>
@@ -626,11 +644,81 @@ tr:hover td{background:#FAFAF8;}
       </div>
     </div>
 
+    <!-- DATOS BANCARIOS -->
+    <div class="page" id="page-bancos">
+
+      <!-- Nuestros datos -->
+      <div class="table-card" style="margin-bottom:20px;">
+        <div class="table-head">
+          <div>
+            <div class="th-title">🏦 Nuestros datos bancarios</div>
+            <div class="th-sub">Datos de Nigrum MKT para recibir pagos</div>
+          </div>
+          <button class="tb-btn tb-btn-primary" onclick="openModal('add-banco-propio')">+ Agregar cuenta</button>
+        </div>
+        <div id="bancos-propios-list" style="padding:16px 24px;"></div>
+      </div>
+
+      <!-- Datos de terceros -->
+      <div class="table-card">
+        <div class="table-head">
+          <div>
+            <div class="th-title">👤 Datos de proveedores y empleados</div>
+            <div class="th-sub">Para transferencias y pagos</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div class="search-box"><span style="color:#94A3B8;font-size:14px;">⌕</span><input placeholder="Buscar..." oninput="searchTable(this,'bancos-tbody')"/></div>
+            <button class="tb-btn tb-btn-primary" onclick="openModal('add-banco-tercero')">+ Agregar</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Nombre</th><th>Tipo</th><th>Banco</th><th>CBU / Alias</th><th>CUIT</th><th>Acciones</th></tr></thead>
+          <tbody id="bancos-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="page" id="page-estadisticas">
+      <div class="stats-row" style="margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" style="color:var(--green)" id="est-facturacion">$0</div><div class="stat-label">Total facturado</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D64545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-val" style="color:var(--red)" id="est-gastos">$0</div><div class="stat-label">Total gastos</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--green-light);">📈</div><div class="stat-val" id="est-ganancia">$0</div><div class="stat-label">Ganancia neta</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--yellow-light);">🎯</div><div class="stat-val" id="est-margen">0%</div><div class="stat-label">Margen neto</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+        <!-- Facturación por mes -->
+        <div class="table-card" style="padding:20px;">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;margin-bottom:16px;">📅 Facturación por mes</div>
+          <canvas id="chart-facturacion" height="200"></canvas>
+        </div>
+        <!-- Ganancia vs Gastos -->
+        <div class="table-card" style="padding:20px;">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;margin-bottom:16px;">📊 Ganancia neta vs Gastos</div>
+          <canvas id="chart-ganancia" height="200"></canvas>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <!-- Gastos por categoría -->
+        <div class="table-card" style="padding:20px;">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;margin-bottom:16px;">🥧 Gastos por categoría</div>
+          <canvas id="chart-gastos-cat" height="220"></canvas>
+        </div>
+        <!-- Top clientes -->
+        <div class="table-card" style="padding:20px;">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;margin-bottom:16px;">🏆 Clientes que más facturan</div>
+          <canvas id="chart-clientes" height="220"></canvas>
+        </div>
+      </div>
+    </div>
+
     <!-- BOT -->
     <div class="page" id="page-bot">
       <div class="bot-container">
         <div class="bot-header">
-          <div class="bot-av">✨</div>
+          <div class="bot-av"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
           <div>
             <div class="bot-name">Zaifi IA</div>
             <div class="bot-status"><div class="online-dot"></div><span>analizando tus datos</span></div>
@@ -657,6 +745,8 @@ tr:hover td{background:#FAFAF8;}
   </div>
 </div>
 </div>
+
+<button class="scroll-top" id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Volver arriba">↑</button>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
@@ -746,7 +836,7 @@ function dbKey(table){
 function load(table){ try{return JSON.parse(localStorage.getItem(dbKey(table)))||[];}catch(e){return[];} }
 function save(table,data){ localStorage.setItem(dbKey(table),JSON.stringify(data)); }
 
-let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes;
+let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc;
 
 function loadData(){
   clientes   =load('clientes');
@@ -757,7 +847,9 @@ function loadData(){
   catalogo   =load('catalogo');
   cxc        =load('cxc');
   cxp        =load('cxp');
-  resumenes  =load('resumenes');
+  resumenes   =load('resumenes');
+  bancosPropios=load('bancosPropios');
+  bancosTerc  =load('bancosTerc');
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
@@ -783,7 +875,7 @@ function loadApp(user){
 function renderAll(){
   renderClientes(); renderCatalogo(); renderFacturas(); renderGastos();
   renderEmpleados(); renderProveedores(); renderCxC(); renderCxP();
-  renderResumenes();
+  renderResumenes(); renderBancos();
   updateDashboard();
 }
 
@@ -829,9 +921,9 @@ function renderFacturas(){
   const el=document.getElementById('facturas-list');
   el.innerHTML=f.length?f.map(x=>`
     <div class="factura-card">
-      <div style="width:44px;height:44px;background:#EEF0FF;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🧾</div>
-      <div><div style="font-family:'Fraunces',sans-serif;font-size:16px;font-weight:700;">${x.numero||'FAC-'+x.id.slice(-4).toUpperCase()}</div><div style="font-size:14px;color:var(--text3);">${x.cliente} · ${x.fecha||''}</div></div>
-      <div style="margin-left:auto;text-align:right;"><div style="font-family:'Fraunces',sans-serif;font-size:22px;font-weight:900;">${fmt(x.monto)}</div><span class="badge ${x.estado==='cobrada'?'badge-green':x.estado==='vencida'?'badge-red':'badge-yellow'}" style="margin-top:4px;">${x.estado==='cobrada'?'✓ Cobrada':x.estado==='vencida'?'Vencida':'⏳ Pendiente'}</span></div>
+      <div style="width:44px;height:44px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;">${x.numero||'FAC-'+x.id.slice(-4).toUpperCase()}</div><div style="font-size:14px;color:var(--text3);">${x.cliente} · ${x.fecha||''}</div></div>
+      <div style="margin-left:auto;text-align:right;"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:900;">${fmt(x.monto)}</div><span class="badge ${x.estado==='cobrada'?'badge-green':x.estado==='vencida'?'badge-red':'badge-yellow'}" style="margin-top:4px;">${x.estado==='cobrada'?'✓ Cobrada':x.estado==='vencida'?'Vencida':'⏳ Pendiente'}</span></div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;">
         ${x.estado!=='cobrada'?`<button class="action-btn" style="color:var(--green)" onclick="marcarCobrada('${x.id}')">Cobrar</button>`:''}
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
@@ -1109,8 +1201,9 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Dashboard',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',bancos:'Datos Bancarios'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
+  if(page==='estadisticas') renderEstadisticas();
 }
 function clearFilter(p){
   const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat']};
@@ -1372,13 +1465,13 @@ function renderResumenes(){
   }
   cards.innerHTML = resumenes.map(r=>`
     <div style="background:white;border-radius:16px;border:1px solid var(--border);padding:20px 24px;margin-bottom:12px;display:flex;align-items:center;gap:20px;box-shadow:var(--shadow);">
-      <div style="width:50px;height:50px;background:#EEF0FF;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📋</div>
+      <div style="width:50px;height:50px;background:#EEF2FF;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
       <div style="flex:1;">
-        <div style="font-family:'Fraunces',sans-serif;font-size:18px;font-weight:700;">${r.cliente}</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;">${r.cliente}</div>
         <div style="font-size:14px;color:var(--text3);margin-top:2px;">${r.periodo} · ${r.envios||0} envíos · ${r.serviciosCount||0} servicios</div>
       </div>
       <div style="text-align:right;">
-        <div style="font-family:'Fraunces',sans-serif;font-size:22px;font-weight:900;color:var(--green);">${fmt(r.totalFinal)}</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:900;color:var(--green);">${fmt(r.totalFinal)}</div>
         <div style="font-size:13px;color:var(--text3);">con IVA</div>
       </div>
       <div style="display:flex;gap:8px;margin-left:12px;">
@@ -1448,8 +1541,8 @@ function renderServiciosRes(){
   }
   tb.innerHTML = resServicios.map((s,i)=>`
     <tr>
-      <td><input style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Outfit',sans-serif;" value="${s.desc}" placeholder="Ej: Consultoría" oninput="resServicios[${i}].desc=this.value"/></td>
-      <td><input style="width:140px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Outfit',sans-serif;text-align:right;" type="number" value="${s.monto}" oninput="resServicios[${i}].monto=+this.value;recalcTotalesRes()"/></td>
+      <td><input style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Inter',sans-serif;" value="${s.desc}" placeholder="Ej: Consultoría" oninput="resServicios[${i}].desc=this.value"/></td>
+      <td><input style="width:140px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Inter',sans-serif;text-align:right;" type="number" value="${s.monto}" oninput="resServicios[${i}].monto=+this.value;recalcTotalesRes()"/></td>
       <td><button class="action-btn" onclick="resServicios.splice(${i},1);renderServiciosRes();recalcTotalesRes();">✕</button></td>
     </tr>`).join('');
   recalcTotalesRes();
@@ -1685,6 +1778,302 @@ function generarFactura(tipo, id){
   win.document.write(html);
 }
 
+
+
+// ── SCROLL TO TOP BUTTON ──
+window.addEventListener('scroll', function(){
+  const btn = document.getElementById('scroll-top-btn');
+  if(btn){ btn.classList.toggle('visible', window.scrollY > 200); }
+});
+
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// DATOS BANCARIOS
+// ══════════════════════════════════════════════
+function renderBancos(){
+  // Nuestros datos
+  const propioEl = document.getElementById('bancos-propios-list');
+  if(propioEl){
+    if(!bancosPropios.length){
+      propioEl.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:24px;font-size:14px;">No hay cuentas propias. Agregá las de Nigrum MKT →</div>';
+    } else {
+      propioEl.innerHTML = bancosPropios.map(b=>`
+        <div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #F1F5F9;">
+          <div style="width:44px;height:44px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="13" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:600;color:#1E293B;font-size:14px;">${b.banco} <span style="background:#EEF2FF;color:#6C5CE7;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:6px;">${b.tipo}</span></div>
+            <div style="font-size:13px;color:#64748B;margin-top:3px;">CBU: <b>${b.cbu}</b> · Alias: <b>${b.alias}</b></div>
+            ${b.cuit?`<div style="font-size:12px;color:#94A3B8;margin-top:2px;">CUIT: ${b.cuit}</div>`:''}
+          </div>
+          <button class="action-btn" onclick="copiarTexto('${b.cbu}')">Copiar CBU</button>
+          <button class="action-btn" onclick="copiarTexto('${b.alias}')">Copiar Alias</button>
+          <button class="action-btn" onclick="eliminarBanco('propio','${b.id}')">Eliminar</button>
+        </div>`).join('');
+    }
+  }
+
+  // Terceros
+  const tb = document.getElementById('bancos-tbody');
+  if(!tb) return;
+  if(!bancosTerc.length){
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">No hay datos bancarios de terceros →</td></tr>';
+    return;
+  }
+  tb.innerHTML = bancosTerc.map(b=>`
+    <tr>
+      <td><div class="td-main">${b.nombre}</div></td>
+      <td><span class="badge ${b.tipo==='Proveedor'?'badge-blue':'badge-gray'}">${b.tipo}</span></td>
+      <td style="color:#475569;">${b.banco}</td>
+      <td>
+        <div style="font-size:13px;font-weight:600;color:#1E293B;">${b.cbu}</div>
+        ${b.alias?`<div style="font-size:12px;color:#94A3B8;">Alias: ${b.alias}</div>`:''}
+      </td>
+      <td style="color:#64748B;font-size:13px;">${b.cuit||'—'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="action-btn" onclick="copiarTexto('${b.cbu}')">Copiar CBU</button>
+          ${b.alias?`<button class="action-btn" onclick="copiarTexto('${b.alias}')">Copiar Alias</button>`:''}
+          <button class="action-btn" onclick="eliminarBanco('tercero','${b.id}')">Eliminar</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function copiarTexto(texto){
+  navigator.clipboard.writeText(texto).then(()=>toast('✓ Copiado al portapapeles')).catch(()=>{
+    const el = document.createElement('textarea');
+    el.value = texto; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    toast('✓ Copiado al portapapeles');
+  });
+}
+
+function eliminarBanco(tipo, id){
+  if(!confirm('¿Eliminar este dato bancario?')) return;
+  if(tipo==='propio'){ bancosPropios=bancosPropios.filter(x=>x.id!==id); save('bancosPropios',bancosPropios); }
+  else { bancosTerc=bancosTerc.filter(x=>x.id!==id); save('bancosTerc',bancosTerc); }
+  renderBancos(); toast('🗑 Eliminado');
+}
+
+// Bancos modals
+const bancosModals = {
+  'add-banco-propio': {
+    title:'Nueva cuenta propia', sub:'Datos bancarios de Nigrum MKT para recibir pagos',
+    fields:[
+      {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Galicia'},
+      {id:'tipo',label:'Tipo de cuenta',type:'select',opts:['Cuenta Corriente','Caja de Ahorro','Cuenta Virtual (CVU)']},
+      {id:'cbu',label:'CBU',type:'text',ph:'22 dígitos'},
+      {id:'alias',label:'Alias',type:'text',ph:'Ej: NIGRUM.MKT'},
+      {id:'cuit',label:'CUIT',type:'text',ph:'30-XXXXXXXX-X'},
+    ]
+  },
+  'add-banco-tercero': {
+    title:'Datos bancarios de tercero', sub:'Proveedor, empleado u otro contacto',
+    fields:[
+      {id:'nombre',label:'Nombre / Razón social',type:'text',ph:'Ej: Juan Pérez'},
+      {id:'tipo',label:'Tipo',type:'select',opts:['Proveedor','Empleado','Otro']},
+      {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Nación'},
+      {id:'cbu',label:'CBU',type:'text',ph:'22 dígitos'},
+      {id:'alias',label:'Alias',type:'text',ph:'Ej: JUAN.PEREZ'},
+      {id:'cuit',label:'CUIT / DNI',type:'text',ph:''},
+    ]
+  },
+};
+
+// Override openModal to also handle bancos
+const _origOpenModal = openModal;
+function openModal(type){
+  const bm = bancosModals[type];
+  if(bm){
+    document.getElementById('modal-content').innerHTML=`
+      <div class="modal-title">${bm.title}</div><div class="modal-sub">${bm.sub}</div>
+      ${bm.fields.map(f=>f.type==='select'
+        ?`<div class="form-group"><label class="form-label">${f.label}</label><select class="form-select" id="mf_${f.id}">${f.opts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select></div>`
+        :`<div class="form-group"><label class="form-label">${f.label}</label><input class="form-input" id="mf_${f.id}" type="${f.type}" placeholder="${f.ph||''}"/></div>`
+      ).join('')}
+      <div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn modal-btn-primary" onclick="saveBancoModal('${type}')">Guardar →</button></div>`;
+    document.getElementById('modal').classList.add('open');
+    return;
+  }
+  _origOpenModal(type);
+}
+
+function saveBancoModal(type){
+  const gf = id => { const el=document.getElementById('mf_'+id); return el?el.value.trim():''; };
+  if(type==='add-banco-propio'){
+    const banco=gf('banco'),cbu=gf('cbu');
+    if(!banco||!cbu){toast('⚠️ Banco y CBU son obligatorios');return;}
+    bancosPropios.push({id:uid(),banco,tipo:gf('tipo'),cbu,alias:gf('alias'),cuit:gf('cuit')});
+    save('bancosPropios',bancosPropios);
+  } else {
+    const nombre=gf('nombre'),cbu=gf('cbu');
+    if(!nombre||!cbu){toast('⚠️ Nombre y CBU son obligatorios');return;}
+    bancosTerc.push({id:uid(),nombre,tipo:gf('tipo'),banco:gf('banco'),cbu,alias:gf('alias'),cuit:gf('cuit')});
+    save('bancosTerc',bancosTerc);
+  }
+  closeModal(); renderBancos(); toast('✅ Datos guardados');
+}
+
+// ESTADÍSTICAS / GRÁFICOS
+// ══════════════════════════════════════════════
+let chartInstances = {};
+
+function destroyChart(id){
+  if(chartInstances[id]){ chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function renderEstadisticas(){
+  // Stats cards
+  const tf = facturas.reduce((a,x)=>a+(+x.monto||0),0);
+  const tg = gastos.reduce((a,x)=>a+(+x.monto||0),0);
+  const gan = tf - tg;
+  const margen = tf ? Math.round((gan/tf)*100) : 0;
+  document.getElementById('est-facturacion').textContent = fmt(tf);
+  document.getElementById('est-gastos').textContent = fmt(tg);
+  const eg = document.getElementById('est-ganancia');
+  eg.textContent = fmt(gan);
+  eg.style.color = gan >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('est-margen').textContent = margen + '%';
+
+  // Paleta
+  const paleta = ['#6C5CE7','#2D9B6F','#D64545','#D4A017','#3B82F6','#E63946','#F4A261','#2A9D8F','#E9C46A','#264653'];
+
+  // ── 1. FACTURACIÓN POR MES ──
+  const facPorMes = {};
+  facturas.forEach(f=>{
+    if(!f.fecha) return;
+    const mes = f.fecha.substring(0,7); // YYYY-MM
+    facPorMes[mes] = (facPorMes[mes]||0) + (+f.monto||0);
+  });
+  const mesesOrdenados = Object.keys(facPorMes).sort();
+  const labelsMes = mesesOrdenados.map(m=>{
+    const [y,mo] = m.split('-');
+    const nombres = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return nombres[parseInt(mo)-1]+' '+y;
+  });
+  destroyChart('facturacion');
+  if(mesesOrdenados.length){
+    chartInstances['facturacion'] = new Chart(document.getElementById('chart-facturacion'), {
+      type: 'bar',
+      data: {
+        labels: labelsMes,
+        datasets: [{
+          label: 'Facturación',
+          data: mesesOrdenados.map(m=>facPorMes[m]),
+          backgroundColor: '#6C5CE7',
+          borderRadius: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { callback: v => '$'+v.toLocaleString('es-AR') }, grid: { color: '#f0f0f0' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  } else {
+    const ctx = document.getElementById('chart-facturacion');
+    const c = ctx.getContext('2d');
+    c.font = '14px Outfit'; c.fillStyle = '#9898A8'; c.textAlign = 'center';
+    c.fillText('Sin datos de facturación', ctx.width/2, 100);
+  }
+
+  // ── 2. GANANCIA VS GASTOS ──
+  destroyChart('ganancia');
+  chartInstances['ganancia'] = new Chart(document.getElementById('chart-ganancia'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Ganancia neta', 'Gastos'],
+      datasets: [{
+        data: [Math.max(gan,0), tg],
+        backgroundColor: ['#2D9B6F', '#D64545'],
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 20, font: { family: 'Outfit', size: 13 } } },
+        tooltip: { callbacks: { label: ctx => ' $'+ctx.raw.toLocaleString('es-AR') } }
+      }
+    }
+  });
+
+  // ── 3. GASTOS POR CATEGORÍA ──
+  const gastosXCat = {};
+  gastos.forEach(g=>{ gastosXCat[g.categoria||'Otro'] = (gastosXCat[g.categoria||'Otro']||0) + (+g.monto||0); });
+  const catLabels = Object.keys(gastosXCat);
+  const catData   = catLabels.map(k=>gastosXCat[k]);
+  destroyChart('gastos-cat');
+  if(catLabels.length){
+    chartInstances['gastos-cat'] = new Chart(document.getElementById('chart-gastos-cat'), {
+      type: 'pie',
+      data: {
+        labels: catLabels,
+        datasets: [{
+          data: catData,
+          backgroundColor: paleta.slice(0, catLabels.length),
+          borderWidth: 0,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 14, font: { family: 'Outfit', size: 12 }, boxWidth: 14 } },
+          tooltip: { callbacks: { label: ctx => ' $'+ctx.raw.toLocaleString('es-AR') } }
+        }
+      }
+    });
+  } else {
+    const ctx = document.getElementById('chart-gastos-cat');
+    const c = ctx.getContext('2d');
+    c.font = '14px Outfit'; c.fillStyle = '#9898A8'; c.textAlign = 'center';
+    c.fillText('Sin gastos registrados', ctx.width/2, 110);
+  }
+
+  // ── 4. TOP CLIENTES ──
+  const clientesFact = {};
+  facturas.forEach(f=>{ clientesFact[f.cliente] = (clientesFact[f.cliente]||0) + (+f.monto||0); });
+  const topCli = Object.entries(clientesFact).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  destroyChart('clientes');
+  if(topCli.length){
+    chartInstances['clientes'] = new Chart(document.getElementById('chart-clientes'), {
+      type: 'bar',
+      data: {
+        labels: topCli.map(([n])=>n.length>16?n.slice(0,14)+'…':n),
+        datasets: [{
+          label: 'Facturado',
+          data: topCli.map(([,v])=>v),
+          backgroundColor: paleta.slice(0, topCli.length),
+          borderRadius: 8,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' $'+ctx.raw.toLocaleString('es-AR') } }
+        },
+        scales: {
+          x: { ticks: { callback: v => '$'+v.toLocaleString('es-AR') }, grid: { color: '#f0f0f0' } },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  } else {
+    const ctx = document.getElementById('chart-clientes');
+    const c = ctx.getContext('2d');
+    c.font = '14px Outfit'; c.fillStyle = '#9898A8'; c.textAlign = 'center';
+    c.fillText('Sin facturas registradas', ctx.width/2, 110);
+  }
+}
 
 const session=getSession();
 if(session){loadApp(session);}
