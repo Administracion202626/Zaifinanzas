@@ -330,6 +330,8 @@ tr:hover td{background:#F8FAFC;}
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Zaifi IA</div>
+    <div class="nav-item" onclick="goTo('vencimientos',this)"><span class="ni">◷</span>Vencimientos</div>
+    <div class="nav-item" onclick="goTo('estadocuenta',this)"><span class="ni">◈</span>Estado de cuenta</div>
     <div class="nav-item" onclick="goTo('estadisticas',this)"><span class="ni">◈</span>Estadísticas</div>
     <div class="nav-item" onclick="goTo('bot',this)"><span class="ni">◎</span>Chat con Zaifi</div>
     <div class="nav-item" onclick="doLogout()" style="color:#EF4444;margin-top:8px;"><span class="ni">→</span>Cerrar sesión</div>
@@ -678,6 +680,33 @@ tr:hover td{background:#F8FAFC;}
       </div>
     </div>
 
+    <!-- VENCIMIENTOS -->
+    <div class="page" id="page-vencimientos">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D64545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-val" style="color:#D64545" id="venc-vencidos">0</div><div class="stat-label">Vencidos sin resolver</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FEFCE8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:#D4A017" id="venc-semana">0</div><div class="stat-label">Vencen esta semana</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:#2D9B6F" id="venc-ok">0</div><div class="stat-label">Al día</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-head"><div><div class="th-title">Próximos vencimientos</div><div class="th-sub">Facturas, CxC, CxP y proveedores ordenados por fecha</div></div></div>
+        <table><thead><tr><th>Tipo</th><th>Descripción</th><th>Vencimiento</th><th>Monto</th><th>Estado</th><th>Acción</th></tr></thead>
+        <tbody id="venc-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ESTADO DE CUENTA -->
+    <div class="page" id="page-estadocuenta">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+        <div class="search-box" style="flex:1;max-width:300px;"><span style="color:#94A3B8;">⌕</span><input id="ec-search" placeholder="Buscar cliente..." oninput="filtrarEstadoCuenta()" style="width:100%;"/></div>
+        <select class="form-select" id="ec-cliente-sel" onchange="verEstadoCuenta()" style="max-width:260px;">
+          <option value="">Seleccioná un cliente</option>
+        </select>
+      </div>
+      <div id="ec-content">
+        <div style="text-align:center;color:#94A3B8;padding:60px;font-size:15px;">Seleccioná un cliente para ver su estado de cuenta</div>
+      </div>
+    </div>
+
     <!-- ESTADÍSTICAS -->
     <div class="page" id="page-estadisticas">
       <div class="stats-row" style="margin-bottom:24px;">
@@ -890,7 +919,7 @@ function renderClientes(){
     <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#6C5CE7;">${c.nombre[0].toUpperCase()}</div><div><div class="td-main">${c.nombre}</div><div class="td-sub">${c.email||''}</div></div></div></td>
     <td>${c.sector||'—'}</td><td><span class="badge badge-blue">${c.servicio||'—'}</span></td>
     <td><span class="badge ${c.estado==='Activo'?'badge-green':'badge-yellow'}">${c.estado==='Activo'?'✓ Activo':'⚠️ '+c.estado}</span></td>
-    <td><button class="action-btn" onclick="eliminar('clientes','${c.id}')">Eliminar</button></td></tr>`).join(''):empty('No hay clientes. Agregá el primero →');
+    <td><div class="action-btns"><button class="action-btn" onclick="editarItem('clientes','${c.id}')">Editar</button><button class="action-btn" onclick="eliminar('clientes','${c.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay clientes. Agregá el primero →');
   document.getElementById('clientes-count').textContent=clientes.length+' cliente'+(clientes.length!==1?'s':'');
   document.getElementById('dash-clientes').textContent=clientes.filter(c=>c.estado==='Activo').length;
 }
@@ -901,7 +930,7 @@ function renderCatalogo(){
     <div class="catalog-card"><div style="font-size:28px;margin-bottom:8px;">${s.icono||'📦'}</div>
     <div class="catalog-name">${s.nombre}</div><div class="catalog-desc">${s.descripcion||''}</div>
     <div class="catalog-price">${fmt(s.precio)}<span style="font-size:13px;font-weight:400;color:var(--text3);">/mes</span></div>
-    <div style="margin-top:10px;text-align:right;"><button class="action-btn" onclick="eliminar('catalogo','${s.id}')">Eliminar</button></div></div>`).join(''):'<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:40px;">No hay servicios →</div>';
+    <div style="margin-top:10px;display:flex;gap:6px;justify-content:flex-end;"><button class="action-btn" onclick="editarItem('catalogo','${s.id}')">Editar</button><button class="action-btn" onclick="eliminar('catalogo','${s.id}')">Eliminar</button></div></div>`).join(''):'<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:40px;">No hay servicios →</div>';
   document.getElementById('catalogo-count').textContent=catalogo.length+' servicio'+(catalogo.length!==1?'s':'');
 }
 
@@ -926,6 +955,7 @@ function renderFacturas(){
       <div style="margin-left:auto;text-align:right;"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:900;">${fmt(x.monto)}</div><span class="badge ${x.estado==='cobrada'?'badge-green':x.estado==='vencida'?'badge-red':'badge-yellow'}" style="margin-top:4px;">${x.estado==='cobrada'?'✓ Cobrada':x.estado==='vencida'?'Vencida':'⏳ Pendiente'}</span></div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;">
         ${x.estado!=='cobrada'?`<button class="action-btn" style="color:var(--green)" onclick="marcarCobrada('${x.id}')">Cobrar</button>`:''}
+        <button class="action-btn" onclick="editarItem('facturas','${x.id}')">Editar</button>
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
       </div>
     </div>`).join(''):'<div style="text-align:center;color:var(--text3);padding:40px;">No hay facturas con esos filtros.</div>';
@@ -952,7 +982,7 @@ function renderGastos(){
   tb.innerHTML=g.length?g.map(x=>`
     <tr><td><div class="td-main">${x.descripcion}</div></td><td><span class="badge badge-gray">${x.categoria||'—'}</span></td>
     <td style="color:var(--text3);">${x.fecha||'—'}</td><td style="font-weight:800;color:var(--red);">${fmt(x.monto)}</td>
-    <td><button class="action-btn" onclick="eliminar('gastos','${x.id}')">Eliminar</button></td></tr>`).join(''):empty('No hay gastos con esos filtros.');
+    <td><div class="action-btns"><button class="action-btn" onclick="editarItem('gastos','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('gastos','${x.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay gastos con esos filtros.');
   updateDashboard();
 }
 
@@ -962,7 +992,7 @@ function renderEmpleados(){
     <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#5B7EBF;">${e.nombre[0].toUpperCase()}</div><div><div class="td-main">${e.nombre}</div><div class="td-sub">${e.email||''}</div></div></div></td>
     <td>${e.rol||'—'}</td><td><span class="badge badge-gray">${e.empresa||'—'}</span></td><td style="font-weight:800;">${fmt(e.sueldo)}</td>
     <td><span class="badge ${e.estado==='pagado'?'badge-green':'badge-yellow'}">${e.estado==='pagado'?'✓ Pagado':'⏳ Pendiente'}</span></td>
-    <td><div class="action-btns">${e.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="marcarPagoEmp('${e.id}')">Pagar</button>`:''}<button class="action-btn" onclick="eliminar('empleados','${e.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay empleados →');
+    <td><div class="action-btns">${e.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="marcarPagoEmp('${e.id}')">Pagar</button>`:''}<button class="action-btn" onclick="editarItem('empleados','${e.id}')">Editar</button><button class="action-btn" onclick="eliminar('empleados','${e.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay empleados →');
   document.getElementById('emp-count').textContent=empleados.length+' empleado'+(empleados.length!==1?'s':'');
 }
 
@@ -977,7 +1007,7 @@ function renderProveedores(){
     <td><span class="badge badge-gray">${x.categoria||'—'}</span></td><td style="font-weight:800;color:var(--red);">${fmt(x.costo)}</td>
     <td style="color:var(--text3);">${x.vencimiento||'—'}</td>
     <td><span class="badge ${x.estado==='activo'?'badge-green':'badge-red'}">${x.estado==='activo'?'✓ Activo':'Inactivo'}</span></td>
-    <td><button class="action-btn" onclick="eliminar('proveedores','${x.id}')">Eliminar</button></td></tr>`).join(''):empty('No hay proveedores →');
+    <td><div class="action-btns"><button class="action-btn" onclick="editarItem('proveedores','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('proveedores','${x.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay proveedores →');
   document.getElementById('prov-count').textContent=p.length+' proveedor'+(p.length!==1?'es':'');
 }
 
@@ -1005,7 +1035,7 @@ function renderCxC(){
     <td style="color:${x.vencimiento<hoy&&x.estado!=='cobrado'?'var(--red)':'var(--text3)'};">${x.vencimiento||'—'}</td>
     <td style="font-weight:800;color:var(--green);">${fmt(x.monto)}</td>
     <td><span class="badge ${venc==='cobrado'?'badge-green':venc==='vencido'?'badge-red':'badge-yellow'}">${venc==='cobrado'?'✓ Cobrado':venc==='vencido'?'🔴 Vencido':'⏳ Pendiente'}</span></td>
-    <td><div class="action-btns">${x.estado!=='cobrado'?`<button class="action-btn" style="color:var(--green)" onclick="cobrarCxC('${x.id}')">Cobrar</button>`:''}<button class="action-btn" onclick="eliminar('cxc','${x.id}')">Eliminar</button></div></td></tr>`;
+    <td><div class="action-btns">${x.estado!=='cobrado'?`<button class="action-btn" style="color:var(--green)" onclick="cobrarCxC('${x.id}')">Cobrar</button>`:''}<button class="action-btn" onclick="editarItem('cxc','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('cxc','${x.id}')">Eliminar</button></div></td></tr>`;
   }).join(''):empty('No hay cuentas por cobrar.');
 }
 
@@ -1035,7 +1065,7 @@ function renderCxP(){
     <td style="color:${x.vencimiento<hoy&&x.estado!=='pagado'?'var(--red)':'var(--text3)'};">${x.vencimiento||'—'}</td>
     <td style="font-weight:800;color:var(--red);">${fmt(x.monto)}</td>
     <td><span class="badge ${venc==='pagado'?'badge-green':venc==='vencido'?'badge-red':'badge-yellow'}">${venc==='pagado'?'✓ Pagado':venc==='vencido'?'🔴 Vencido':'⏳ Pendiente'}</span></td>
-    <td><div class="action-btns">${x.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="pagarCxP('${x.id}')">Pagar</button>`:''}<button class="action-btn" onclick="eliminar('cxp','${x.id}')">Eliminar</button></div></td></tr>`;
+    <td><div class="action-btns">${x.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="pagarCxP('${x.id}')">Pagar</button>`:''}<button class="action-btn" onclick="editarItem('cxp','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('cxp','${x.id}')">Eliminar</button></div></td></tr>`;
   }).join(''):empty('No hay cuentas por pagar.');
 }
 
@@ -1067,6 +1097,30 @@ function eliminar(tipo,id){
 // ══════════════════════════════════════════════
 // MODALES
 // ══════════════════════════════════════════════
+const bancosModals = {
+  'add-banco-propio': {
+    title:'Nueva cuenta propia', sub:'Datos bancarios de Nigrum MKT para recibir pagos',
+    fields:[
+      {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Galicia'},
+      {id:'tipo',label:'Tipo de cuenta',type:'select',opts:['Cuenta Corriente','Caja de Ahorro','Cuenta Virtual (CVU)']},
+      {id:'cbu',label:'CBU',type:'text',ph:'22 dígitos'},
+      {id:'alias',label:'Alias',type:'text',ph:'Ej: NIGRUM.MKT'},
+      {id:'cuit',label:'CUIT',type:'text',ph:'30-XXXXXXXX-X'},
+    ]
+  },
+  'add-banco-tercero': {
+    title:'Datos bancarios de tercero', sub:'Proveedor, empleado u otro contacto',
+    fields:[
+      {id:'nombre',label:'Nombre / Razón social',type:'text',ph:'Ej: Juan Pérez'},
+      {id:'tipo',label:'Tipo',type:'select',opts:['Proveedor','Empleado','Otro']},
+      {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Nación'},
+      {id:'cbu',label:'CBU',type:'text',ph:'22 dígitos'},
+      {id:'alias',label:'Alias',type:'text',ph:'Ej: JUAN.PEREZ'},
+      {id:'cuit',label:'CUIT / DNI',type:'text',ph:''},
+    ]
+  },
+};
+
 const modals={
   'add-cliente':{title:'Nuevo cliente',sub:'Completá los datos del cliente',fields:[
     {id:'nombre',label:'Nombre / Empresa',type:'text',ph:'Ej: RetailMax SA'},
@@ -1131,6 +1185,18 @@ const modals={
 function gf(id){const el=document.getElementById('mf_'+id);return el?el.value.trim():'';}
 
 function openModal(type){
+  const bm = (typeof bancosModals!=='undefined') && bancosModals[type];
+  if(bm){
+    document.getElementById('modal-content').innerHTML=`
+      <div class="modal-title">${bm.title}</div><div class="modal-sub">${bm.sub}</div>
+      ${bm.fields.map(f=>f.type==='select'
+        ?`<div class="form-group"><label class="form-label">${f.label}</label><select class="form-select" id="mf_${f.id}">${f.opts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select></div>`
+        :`<div class="form-group"><label class="form-label">${f.label}</label><input class="form-input" id="mf_${f.id}" type="${f.type}" placeholder="${f.ph||''}"/></div>`
+      ).join('')}
+      <div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn modal-btn-primary" onclick="saveBancoModal('${type}')">Guardar →</button></div>`;
+    document.getElementById('modal').classList.add('open');
+    return;
+  }
   const m=modals[type];if(!m)return;
   document.getElementById('modal-content').innerHTML=`
     <div class="modal-title">${m.title}</div><div class="modal-sub">${m.sub}</div>
@@ -1201,9 +1267,11 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',bancos:'Datos Bancarios'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
   if(page==='estadisticas') renderEstadisticas();
+  if(page==='vencimientos') renderVencimientos();
+  if(page==='estadocuenta') initEstadoCuenta();
 }
 function clearFilter(p){
   const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat']};
@@ -1858,48 +1926,6 @@ function eliminarBanco(tipo, id){
 }
 
 // Bancos modals
-const bancosModals = {
-  'add-banco-propio': {
-    title:'Nueva cuenta propia', sub:'Datos bancarios de Nigrum MKT para recibir pagos',
-    fields:[
-      {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Galicia'},
-      {id:'tipo',label:'Tipo de cuenta',type:'select',opts:['Cuenta Corriente','Caja de Ahorro','Cuenta Virtual (CVU)']},
-      {id:'cbu',label:'CBU',type:'text',ph:'22 dígitos'},
-      {id:'alias',label:'Alias',type:'text',ph:'Ej: NIGRUM.MKT'},
-      {id:'cuit',label:'CUIT',type:'text',ph:'30-XXXXXXXX-X'},
-    ]
-  },
-  'add-banco-tercero': {
-    title:'Datos bancarios de tercero', sub:'Proveedor, empleado u otro contacto',
-    fields:[
-      {id:'nombre',label:'Nombre / Razón social',type:'text',ph:'Ej: Juan Pérez'},
-      {id:'tipo',label:'Tipo',type:'select',opts:['Proveedor','Empleado','Otro']},
-      {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Nación'},
-      {id:'cbu',label:'CBU',type:'text',ph:'22 dígitos'},
-      {id:'alias',label:'Alias',type:'text',ph:'Ej: JUAN.PEREZ'},
-      {id:'cuit',label:'CUIT / DNI',type:'text',ph:''},
-    ]
-  },
-};
-
-// Override openModal to also handle bancos
-const _origOpenModal = openModal;
-function openModal(type){
-  const bm = bancosModals[type];
-  if(bm){
-    document.getElementById('modal-content').innerHTML=`
-      <div class="modal-title">${bm.title}</div><div class="modal-sub">${bm.sub}</div>
-      ${bm.fields.map(f=>f.type==='select'
-        ?`<div class="form-group"><label class="form-label">${f.label}</label><select class="form-select" id="mf_${f.id}">${f.opts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select></div>`
-        :`<div class="form-group"><label class="form-label">${f.label}</label><input class="form-input" id="mf_${f.id}" type="${f.type}" placeholder="${f.ph||''}"/></div>`
-      ).join('')}
-      <div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn modal-btn-primary" onclick="saveBancoModal('${type}')">Guardar →</button></div>`;
-    document.getElementById('modal').classList.add('open');
-    return;
-  }
-  _origOpenModal(type);
-}
-
 function saveBancoModal(type){
   const gf = id => { const el=document.getElementById('mf_'+id); return el?el.value.trim():''; };
   if(type==='add-banco-propio'){
@@ -1914,6 +1940,145 @@ function saveBancoModal(type){
     save('bancosTerc',bancosTerc);
   }
   closeModal(); renderBancos(); toast('✅ Datos guardados');
+}
+
+// ══════════════════════════════════════════════
+// EDITAR ITEMS
+// ══════════════════════════════════════════════
+const editFields = {
+  clientes:   [{id:'nombre',label:'Nombre / Empresa',type:'text'},{id:'email',label:'Email',type:'email'},{id:'sector',label:'Sector',type:'text'},{id:'servicio',label:'Servicio',type:'text'},{id:'estado',label:'Estado',type:'select',opts:['Activo','Pendiente','Inactivo']}],
+  catalogo:   [{id:'nombre',label:'Nombre del servicio',type:'text'},{id:'descripcion',label:'Descripción',type:'text'},{id:'precio',label:'Precio ($)',type:'number'},{id:'icono',label:'Ícono (emoji)',type:'text'}],
+  facturas:   [{id:'numero',label:'Número',type:'text'},{id:'cliente',label:'Cliente',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrada','vencida']}],
+  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'}],
+  empleados:  [{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'rol',label:'Rol',type:'text'},{id:'empresa',label:'Empresa',type:'text'},{id:'sueldo',label:'Sueldo ($)',type:'number'},{id:'estado',label:'Estado pago',type:'select',opts:['pendiente','pagado']}],
+  proveedores:[{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Servicios','Alquiler','Logística','Otro']},{id:'costo',label:'Costo ($)',type:'number'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']}],
+  cxc:        [{id:'cliente',label:'Cliente',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']}],
+  cxp:        [{id:'proveedor',label:'Proveedor',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','pagado']}],
+};
+const dataMap  = {clientes:()=>clientes,catalogo:()=>catalogo,facturas:()=>facturas,gastos:()=>gastos,empleados:()=>empleados,proveedores:()=>proveedores,cxc:()=>cxc,cxp:()=>cxp};
+const renderMap= {clientes:renderClientes,catalogo:renderCatalogo,facturas:renderFacturas,gastos:renderGastos,empleados:renderEmpleados,proveedores:renderProveedores,cxc:renderCxC,cxp:renderCxP};
+
+function editarItem(tipo, id){
+  const arr = dataMap[tipo](); const item = arr.find(x=>x.id===id); if(!item) return;
+  const fields = editFields[tipo]||[];
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Editar</div><div class="modal-sub">Modificá los campos que necesites</div>
+    ${fields.map(f=>f.type==='select'
+      ?`<div class="form-group"><label class="form-label">${f.label}</label><select class="form-select" id="ef_${f.id}">${(f.opts||[]).map(o=>`<option value="${o}" ${item[f.id]===o?'selected':''}>${o}</option>`).join('')}</select></div>`
+      :`<div class="form-group"><label class="form-label">${f.label}</label><input class="form-input" id="ef_${f.id}" type="${f.type}" value="${item[f.id]||''}"/></div>`
+    ).join('')}
+    <div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn modal-btn-primary" onclick="guardarEdicion('${tipo}','${id}')">Guardar →</button></div>`;
+  document.getElementById('modal').classList.add('open');
+}
+
+function guardarEdicion(tipo, id){
+  const arr = dataMap[tipo](); const item = arr.find(x=>x.id===id); if(!item) return;
+  (editFields[tipo]||[]).forEach(f=>{const el=document.getElementById('ef_'+f.id);if(el)item[f.id]=el.value.trim();});
+  save(tipo,arr); closeModal(); renderMap[tipo](); updateDashboard(); toast('✅ Cambios guardados');
+}
+
+// ══════════════════════════════════════════════
+// VENCIMIENTOS
+// ══════════════════════════════════════════════
+function renderVencimientos(){
+  const hoy=today();
+  const en7=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+  const items=[];
+  facturas.filter(f=>f.estado!=='cobrada').forEach(f=>items.push({tipo:'Factura',tipoClass:'badge-blue',desc:f.cliente+(f.numero?' · '+f.numero:''),venc:f.fecha,monto:+f.monto||0,id:f.id,table:'facturas'}));
+  cxc.filter(x=>x.estado!=='cobrado'&&x.vencimiento).forEach(x=>items.push({tipo:'CxC',tipoClass:'badge-green',desc:x.cliente+(x.concepto?' · '+x.concepto:''),venc:x.vencimiento,monto:+x.monto||0,id:x.id,table:'cxc'}));
+  cxp.filter(x=>x.estado!=='pagado'&&x.vencimiento).forEach(x=>items.push({tipo:'CxP',tipoClass:'badge-red',desc:x.proveedor+(x.concepto?' · '+x.concepto:''),venc:x.vencimiento,monto:+x.monto||0,id:x.id,table:'cxp'}));
+  proveedores.filter(p=>p.estado==='activo'&&p.vencimiento).forEach(p=>items.push({tipo:'Proveedor',tipoClass:'badge-gray',desc:p.nombre,venc:p.vencimiento,monto:+p.costo||0,id:p.id,table:'proveedores'}));
+  items.sort((a,b)=>a.venc>b.venc?1:-1);
+  document.getElementById('venc-vencidos').textContent=items.filter(x=>x.venc<hoy).length;
+  document.getElementById('venc-semana').textContent=items.filter(x=>x.venc>=hoy&&x.venc<=en7).length;
+  document.getElementById('venc-ok').textContent=items.filter(x=>x.venc>en7).length;
+  const tb=document.getElementById('venc-tbody');
+  if(!items.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">¡Todo al día! No hay vencimientos pendientes ✓</td></tr>';return;}
+  tb.innerHTML=items.map(x=>{
+    const vencido=x.venc<hoy; const pronto=x.venc>=hoy&&x.venc<=en7;
+    const color=vencido?'#D64545':pronto?'#D4A017':'#2D9B6F';
+    const dias=Math.round((new Date(x.venc)-new Date(hoy))/(1000*60*60*24));
+    const label=vencido?`Venció hace ${Math.abs(dias)}d`:dias===0?'Hoy':dias===1?'Mañana':`En ${dias}d`;
+    return `<tr><td><span class="badge ${x.tipoClass}">${x.tipo}</span></td><td><div class="td-main">${x.desc}</div></td>
+    <td><div style="color:${color};font-weight:600;font-size:13px;">${x.venc}</div><div style="font-size:11px;color:${color};">${label}</div></td>
+    <td style="font-weight:700;">${fmt(x.monto)}</td>
+    <td><span class="badge ${vencido?'badge-red':pronto?'badge-yellow':'badge-green'}">${vencido?'Vencido':pronto?'Urgente':'OK'}</span></td>
+    <td><button class="action-btn" onclick="editarItem('${x.table}','${x.id}')">Editar</button></td></tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// ESTADO DE CUENTA
+// ══════════════════════════════════════════════
+function initEstadoCuenta(){
+  const sel=document.getElementById('ec-cliente-sel');
+  sel.innerHTML='<option value="">Seleccioná un cliente</option>'+clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+}
+
+function verEstadoCuenta(){
+  const cliente=document.getElementById('ec-cliente-sel').value;
+  if(!cliente)return;
+  const cli=clientes.find(c=>c.nombre===cliente)||{};
+  const facsCli=facturas.filter(f=>f.cliente===cliente);
+  const cxcCli=cxc.filter(x=>x.cliente===cliente);
+  const totalFact=facsCli.reduce((a,f)=>a+(+f.monto||0),0);
+  const cobrado=facsCli.filter(f=>f.estado==='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
+  const pendiente=facsCli.filter(f=>f.estado!=='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
+  const cxcPend=cxcCli.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
+  const facRows=facsCli.map(f=>`<tr>
+    <td style="font-size:13px;">${f.fecha||'—'}</td><td><div class="td-main">${f.numero||'—'}</div></td>
+    <td style="font-weight:700;">${fmt(f.monto)}</td>
+    <td><span class="badge ${f.estado==='cobrada'?'badge-green':f.estado==='vencida'?'badge-red':'badge-yellow'}">${f.estado==='cobrada'?'Cobrada':f.estado==='vencida'?'Vencida':'Pendiente'}</span></td>
+    <td>${f.estado!=='cobrada'?`<button class="action-btn" style="color:#2D9B6F" onclick="marcarCobrada('${f.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
+  const cxcRows=cxcCli.map(x=>`<tr>
+    <td style="font-size:13px;">${x.vencimiento||'—'}</td><td><div class="td-main">${x.concepto||'—'}</div></td>
+    <td style="font-weight:700;">${fmt(x.monto)}</td>
+    <td><span class="badge ${x.estado==='cobrado'?'badge-green':'badge-yellow'}">${x.estado==='cobrado'?'Cobrado':'Pendiente'}</span></td>
+    <td>${x.estado!=='cobrado'?`<button class="action-btn" style="color:#2D9B6F" onclick="cobrarCxC('${x.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
+  document.getElementById('ec-content').innerHTML=`
+    <div style="background:white;border-radius:16px;border:1px solid #E2E8F0;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 8px rgba(15,23,42,0.06);">
+      <div style="width:56px;height:56px;background:#EEF2FF;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#6C5CE7;flex-shrink:0;">${cliente[0].toUpperCase()}</div>
+      <div style="flex:1;"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#1E293B;">${cliente}</div><div style="font-size:13px;color:#64748B;margin-top:3px;">${cli.email||''} ${cli.sector?'· '+cli.sector:''}</div></div>
+      <button class="tb-btn tb-btn-primary" onclick="generarLinkPago('${cliente}')">🔗 Link de pago</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Total facturado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;">${fmt(totalFact)}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Cobrado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#2D9B6F;">${fmt(cobrado)}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#D4A017;">${fmt(pendiente)}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">CxC pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#D64545;">${fmt(cxcPend)}</div></div>
+    </div>
+    ${facsCli.length?`<div class="table-card" style="margin-bottom:16px;"><div class="table-head"><div><div class="th-title">Facturas</div><div class="th-sub">${facsCli.length} factura${facsCli.length!==1?'s':''}</div></div></div><table><thead><tr><th>Fecha</th><th>Número</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>${facRows}</tbody></table></div>`:''}
+    ${cxcCli.length?`<div class="table-card"><div class="table-head"><div><div class="th-title">Cuentas por cobrar</div></div></div><table><thead><tr><th>Vencimiento</th><th>Concepto</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>${cxcRows}</tbody></table></div>`:''}
+    ${!facsCli.length&&!cxcCli.length?'<div style="text-align:center;color:#94A3B8;padding:40px;">Este cliente no tiene registros aún.</div>':''}`;
+}
+
+// ══════════════════════════════════════════════
+// LINK DE PAGO
+// ══════════════════════════════════════════════
+function generarLinkPago(clienteNombre){
+  const cli=clientes.find(c=>c.nombre===clienteNombre)||{};
+  const facsPend=facturas.filter(f=>f.cliente===clienteNombre&&f.estado!=='cobrada');
+  const cxcP=cxc.filter(x=>x.cliente===clienteNombre&&x.estado!=='cobrado');
+  const totalPend=[...facsPend,...cxcP].reduce((a,x)=>a+(+x.monto||0),0);
+  const bp=bancosPropios[0]||{banco:'Banco',cbu:'—',alias:'—',cuit:''};
+  const fechaHoy=new Date().toLocaleDateString('es-AR');
+  const itemsHtml=[...facsPend.map(f=>`<div class="item"><span class="item-desc">${f.numero||'Factura'} · ${f.fecha||''}</span><span class="item-monto">$${(+f.monto||0).toLocaleString('es-AR')}</span></div>`),...cxcP.map(x=>`<div class="item"><span class="item-desc">${x.concepto||'Cuenta por cobrar'} · ${x.vencimiento||''}</span><span class="item-monto">$${(+x.monto||0).toLocaleString('es-AR')}</span></div>`)].join('');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pago — ${clienteNombre}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1E293B,#2E1A5E);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}.card{background:white;border-radius:24px;max-width:460px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);}.top{background:#6C5CE7;padding:28px;text-align:center;}.brand{font-size:28px;font-weight:900;color:white;letter-spacing:-1px;margin-bottom:8px;}.title{font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}.cname{font-size:20px;font-weight:800;color:white;}.body{padding:24px;}.monto-box{background:#F8FAFC;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px;}.ml{font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.monto{font-size:40px;font-weight:900;color:#1E293B;}.items{margin-bottom:20px;}.item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:13px;}.item-desc{color:#475569;}.item-monto{font-weight:700;color:#1E293B;}.banco{background:#EEF2FF;border-radius:14px;padding:18px;margin-bottom:16px;}.bt{font-size:11px;font-weight:700;color:#6C5CE7;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}.br{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;}.bk{color:#64748B;}.bv{font-weight:700;color:#1E293B;cursor:pointer;}.bv:active{color:#6C5CE7;}.hint{font-size:11px;color:#6C5CE7;text-align:right;margin-top:6px;}.footer{font-size:11px;color:#94A3B8;text-align:center;}</style></head>
+<body><div class="card">
+<div class="top"><div class="brand">Zaifi</div><div class="title">Solicitud de pago</div><div class="cname">${clienteNombre}</div></div>
+<div class="body">
+<div class="monto-box"><div class="ml">Total a pagar</div><div class="monto">$${totalPend.toLocaleString('es-AR')}</div></div>
+${itemsHtml?`<div class="items">${itemsHtml}</div>`:''}
+<div class="banco"><div class="bt">Datos para transferir</div>
+<div class="br"><span class="bk">Banco</span><span class="bv">${bp.banco}</span></div>
+<div class="br"><span class="bk">CBU</span><span class="bv" onclick="navigator.clipboard.writeText('${bp.cbu}').then(()=>alert('CBU copiado!'))">${bp.cbu}</span></div>
+${bp.alias?`<div class="br"><span class="bk">Alias</span><span class="bv" onclick="navigator.clipboard.writeText('${bp.alias}').then(()=>alert('Alias copiado!'))">${bp.alias}</span></div>`:''}
+${bp.cuit?`<div class="br"><span class="bk">CUIT</span><span class="bv">${bp.cuit}</span></div>`:''}
+<div class="hint">Tocá el CBU o Alias para copiar</div></div>
+<div class="footer">Generado por Zaifi · ${fechaHoy} · Nigrum MKT</div>
+</div></div></body></html>`);
 }
 
 // ESTADÍSTICAS / GRÁFICOS
