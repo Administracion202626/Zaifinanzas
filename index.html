@@ -2944,9 +2944,44 @@ function renderEstadisticas(){
   }
 }
 
+function generarHTMLResumen(r){
+  const cli = clientes.find(c=>c.nombre===r.cliente)||{};
+  const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
+  const fechaHoy = new Date().toLocaleDateString('es-AR');
+  const bp = bancosPropios[0]||{banco:'',cbu:'',alias:'',cuit:''};
+  const logoSrc = typeof NIGRUM_LOGO !== 'undefined' ? NIGRUM_LOGO : '';
+  let srvRows='';
+  (r.servicios||[]).forEach(s=>{ srvRows+=`<tr><td style="padding:10px 14px;border-bottom:1px solid #f0f0f0;">${s.desc}</td><td style="padding:10px 14px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:700;">${fmtN(s.monto)}</td></tr>`; });
+  let logRows='';
+  (r.envios_data||[]).forEach(e=>{ logRows+=`<tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">${e.fecha}</td><td style="padding:7px 10px;font-size:11px;color:#666;border-bottom:1px solid #f0f0f0;">${e.tracking}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.calle}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.localidad}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.zona}</td><td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:700;border-bottom:1px solid #f0f0f0;">${fmtN(e.tarifa)}</td></tr>`; });
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Resumen ${r.periodo} — ${r.cliente}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #6C5CE7;padding-bottom:20px;margin-bottom:24px;}.logo{height:46px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#6C5CE7;}.badge-sub{font-size:12px;color:#94A3B8;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#1E293B;margin-bottom:3px;}.info-sub{font-size:12px;color:#64748B;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;background:#F8FAFC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#1E293B;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#2D9B6F;}.banco{background:#EEF2FF;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#6C5CE7;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#64748B;}.bv{font-weight:700;color:#1E293B;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#94A3B8;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}</style>
+</head><body>
+<div class="header"><img src="${logoSrc}" class="logo" alt="Nigrum" onerror="this.style.display='none'"/><div class="badge"><div class="badge-title">RESUMEN</div><div class="badge-sub">Período: ${r.periodo}</div><div class="badge-sub">Fecha: ${fechaHoy}</div></div></div>
+<div class="info-row"><div class="info-box"><div class="info-label">Emisor</div><div class="info-val">Nigrum MKT</div><div class="info-sub">administracion@nigrum.com.ar</div></div><div class="info-box"><div class="info-label">Cliente</div><div class="info-val">${r.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.email?`<div class="info-sub">${cli.email}</div>`:''}</div></div>
+${r.servicios&&r.servicios.length?`<div class="sec">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalSrv)}</td></tr></tfoot></table>`:''}
+${r.envios_data&&r.envios_data.length?`<div class="sec sep">Logística — ${r.envios_data.length} envíos</div><table><thead><tr><th>Fecha</th><th>Tracking</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th style="text-align:right">Tarifa</th></tr></thead><tbody>${logRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td colspan="5" style="padding:10px 14px;">Subtotal logística</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalLog)}</td></tr></tfoot></table>`:''}
+<div class="totales"><div class="tot-row"><span>Subtotal</span><span style="font-weight:700;">${fmtN(r.subtotal)}</span></div><div class="tot-row"><span>IVA (${r.iva}%)</span><span style="font-weight:700;">${fmtN(r.ivaMonto)}</span></div><div class="tot-final"><span>TOTAL</span><span class="amt">${fmtN(r.totalFinal)}</span></div></div>
+${bp.cbu?`<div class="banco"><div class="banco-title">Datos para transferir</div><div class="banco-row"><span class="bk">Banco</span><span class="bv">${bp.banco}</span></div><div class="banco-row"><span class="bk">CBU</span><span class="bv">${bp.cbu}</span></div>${bp.alias?`<div class="banco-row"><span class="bk">Alias</span><span class="bv">${bp.alias}</span></div>`:''}${bp.cuit?`<div class="banco-row"><span class="bk">CUIT</span><span class="bv">${bp.cuit}</span></div>`:''}</div>`:''}
+<div class="footer">Generado por Zaifi · ${fechaHoy} · Nigrum MKT</div>
+</body></html>`;
+}
+
+function descargarPDFResumen(r, callback){
+  toast('📄 Generando PDF... guardalo como PDF cuando aparezca el diálogo');
+  const html = generarHTMLResumen(r);
+  const win = window.open('','_blank','width=900,height=700');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{
+    win.print();
+    setTimeout(()=>{ if(callback) callback(); }, 2500);
+  }, 700);
+}
+
 function enviarResumenWA(id){
-  const r = resumenes.find(x=>x.id===id);
-  if(!r) return;
+  const r = resumenes.find(x=>x.id===id); if(!r) return;
   const cli = clientes.find(c=>c.nombre===r.cliente)||{};
   let tel = cli.telefono;
   if(!tel){
@@ -2958,79 +2993,35 @@ function enviarResumenWA(id){
   }
   const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
   const bp = bancosPropios[0]||{banco:'',cbu:'',alias:''};
-
   let msg = `Hola ${r.cliente}! 👋\n\nTe enviamos el resumen del período *${r.periodo}*.\n\n`;
-
-  if(r.servicios&&r.servicios.length){
-    msg += `📋 *Servicios:*\n`;
-    r.servicios.forEach(s=>{ msg += `• ${s.desc}: ${fmtN(s.monto)}\n`; });
-    msg += '\n';
-  }
-  if(r.envios_data&&r.envios_data.length){
-    msg += `📦 *Logística:* ${r.envios_data.length} envíos — ${fmtN(r.totalLog)}\n\n`;
-  }
-  msg += `💰 *Subtotal:* ${fmtN(r.subtotal)}\n`;
-  msg += `📊 *IVA (${r.iva}%):* ${fmtN(r.ivaMonto)}\n`;
-  msg += `✅ *TOTAL: ${fmtN(r.totalFinal)}*\n\n`;
-
-  if(bp.cbu){
-    msg += `🏦 *Datos para transferir:*\nBanco: ${bp.banco}\nCBU: ${bp.cbu}`;
-    if(bp.alias) msg += `\nAlias: ${bp.alias}`;
-    msg += '\n\n';
-  }
-  msg += `Ante cualquier consulta, estamos disponibles. ¡Gracias! 🙌\n*Nigrum MKT*`;
-
-  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+  if(r.servicios&&r.servicios.length){ msg+=`📋 *Servicios:*\n`; r.servicios.forEach(s=>{ msg+=`• ${s.desc}: ${fmtN(s.monto)}\n`; }); msg+='\n'; }
+  if(r.envios_data&&r.envios_data.length){ msg+=`📦 *Logística:* ${r.envios_data.length} envíos — ${fmtN(r.totalLog)}\n\n`; }
+  msg+=`✅ *TOTAL: ${fmtN(r.totalFinal)}*\n\n`;
+  if(bp.cbu){ msg+=`🏦 *Datos para transferir:*\nBanco: ${bp.banco}\nCBU: ${bp.cbu}`; if(bp.alias) msg+=`\nAlias: ${bp.alias}`; msg+='\n\n'; }
+  msg+=`Te adjuntamos el PDF con el detalle completo.\n¡Gracias! 🙌\n*Nigrum MKT*`;
+  const waUrl = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+  descargarPDFResumen(r, ()=>{ window.open(waUrl,'_blank'); });
 }
 
 function enviarResumenMail(id){
-  const r = resumenes.find(x=>x.id===id);
-  if(!r) return;
+  const r = resumenes.find(x=>x.id===id); if(!r) return;
   const cli = clientes.find(c=>c.nombre===r.cliente)||{};
-  const email = cli.email || prompt('Ingresá el email de '+r.cliente+':');
-  if(!email) return;
-  if(cli.email!==email){ const i=clientes.findIndex(c=>c.nombre===r.cliente); if(i>=0){clientes[i].email=email;save('clientes',clientes);} }
-
+  let email = cli.email;
+  if(!email){
+    email = prompt('Ingresá el email de '+r.cliente+':');
+    if(!email) return;
+    const i = clientes.findIndex(c=>c.nombre===r.cliente);
+    if(i>=0){ clientes[i].email=email; save('clientes',clientes); }
+  }
   const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
   const bp = bancosPropios[0]||{banco:'',cbu:'',alias:''};
-
   const subject = encodeURIComponent(`Resumen ${r.periodo} — ${r.cliente} | Nigrum MKT`);
-
-  let body = `Hola ${r.cliente},\n\nAdjunto el detalle del resumen correspondiente al período ${r.periodo}.\n\n`;
-  body += `── DETALLE ──────────────────\n\n`;
-
-  if(r.servicios&&r.servicios.length){
-    body += `SERVICIOS:\n`;
-    r.servicios.forEach(s=>{ body += `  • ${s.desc}: ${fmtN(s.monto)}\n`; });
-    body += `  Subtotal servicios: ${fmtN(r.totalSrv)}\n\n`;
-  }
-  if(r.envios_data&&r.envios_data.length){
-    body += `LOGÍSTICA (${r.envios_data.length} envíos):\n`;
-    r.envios_data.slice(0,5).forEach(e=>{ body += `  • ${e.fecha} | ${e.calle}, ${e.localidad} | ${fmtN(e.tarifa)}\n`; });
-    if(r.envios_data.length>5) body += `  ... y ${r.envios_data.length-5} envíos más\n`;
-    body += `  Subtotal logística: ${fmtN(r.totalLog)}\n\n`;
-  }
-
-  body += `── TOTALES ──────────────────\n`;
-  body += `Subtotal:        ${fmtN(r.subtotal)}\n`;
-  body += `IVA (${r.iva}%):     ${fmtN(r.ivaMonto)}\n`;
-  body += `TOTAL:           ${fmtN(r.totalFinal)}\n\n`;
-
-  if(bp.cbu){
-    body += `── DATOS BANCARIOS ──────────\n`;
-    body += `Banco: ${bp.banco}\n`;
-    body += `CBU: ${bp.cbu}\n`;
-    if(bp.alias) body += `Alias: ${bp.alias}\n`;
-    if(bp.cuit) body += `CUIT: ${bp.cuit}\n`;
-    body += '\n';
-  }
-
-  body += `Ante cualquier consulta, estamos a disposición.\n\nSaludos,\nNigrum MKT\nadministracion@nigrum.com.ar`;
-
-  window.open(`mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
-  toast('📧 Abriendo cliente de correo...');
+  let body = `Hola ${r.cliente},\n\nAdjunto el PDF con el resumen del período ${r.periodo}.\n\nTOTAL: ${fmtN(r.totalFinal)}\n`;
+  if(bp.cbu){ body+=`\nDatos bancarios:\nBanco: ${bp.banco}\nCBU: ${bp.cbu}`; if(bp.alias) body+=`\nAlias: ${bp.alias}`; body+='\n'; }
+  body+=`\nAnte cualquier consulta estamos disponibles.\n\nSaludos,\nNigrum MKT\nadministracion@nigrum.com.ar`;
+  const mailUrl = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`;
+  descargarPDFResumen(r, ()=>{ window.open(mailUrl,'_blank'); toast('📧 Adjuntá el PDF descargado al email'); });
 }
-
 const session=getSession();
 if(session){loadApp(session);}
 else{showScreen('login');}
