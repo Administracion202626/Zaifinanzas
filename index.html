@@ -250,7 +250,8 @@ tr:hover td{background:#F8FAFC;}
     </div>
 
     <button class="auth-btn" style="margin-top:16px;" onclick="doLogin()">Ingresar →</button>
-    <div class="auth-switch" style="margin-top:14px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:#6C5CE7;font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
+    <div style="text-align:right;margin-top:10px;"><a onclick="showScreen('forgot')" style="font-size:13px;color:#6C5CE7;cursor:pointer;font-weight:600;">¿Olvidaste tu contraseña?</a></div>
+    <div class="auth-switch" style="margin-top:10px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:#6C5CE7;font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
   </div>
 </div>
 
@@ -291,6 +292,33 @@ tr:hover td{background:#F8FAFC;}
     <input class="auth-input" id="reg-mensaje" type="text" placeholder="Ej: Soy asistente administrativa de Nigrum"/>
     <button class="auth-btn" style="margin-top:14px;" onclick="doRegister()">Enviar solicitud →</button>
     <div class="auth-switch">¿Ya tenés cuenta? <a onclick="showScreen('login')">Iniciá sesión</a></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     RECUPERAR CONTRASEÑA
+══════════════════════════════════════════════ -->
+<div class="auth-screen" id="screen-forgot">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg viewBox="0 0 360 90" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="5" width="78" height="78" rx="18" fill="#6C5CE7"/>
+        <ellipse cx="38" cy="52" rx="17" ry="13" fill="white"/>
+        <rect x="43" y="36" width="7" height="14" rx="3.5" fill="white"/>
+        <circle cx="48" cy="30" r="10" fill="white"/>
+        <text x="43" y="57" text-anchor="middle" font-size="15" font-weight="900" fill="#6C5CE7" font-family="system-ui">$</text>
+        <text x="92" y="60" font-size="52" font-weight="900" fill="#1A1A2E" font-family="system-ui" letter-spacing="-2">Zai</text>
+        <text x="182" y="60" font-size="52" font-weight="900" fill="#6C5CE7" font-family="system-ui" letter-spacing="-2">fi</text>
+      </svg>
+    </div>
+    <div class="auth-title">Recuperar acceso</div>
+    <div class="auth-sub">Ingresá tu email y te mostramos tu contraseña</div>
+    <div class="auth-error" id="forgot-error"></div>
+    <div id="forgot-success" style="background:#ECFDF5;border-radius:10px;padding:14px;font-size:14px;color:#2D9B6F;margin-bottom:14px;display:none;text-align:center;"></div>
+    <label class="auth-label">Email</label>
+    <input class="auth-input" id="forgot-email" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doForgot()"/>
+    <button class="auth-btn" style="margin-top:14px;" onclick="doForgot()">Recuperar acceso →</button>
+    <div class="auth-switch" style="margin-top:14px;"><a onclick="showScreen('login')" style="color:#6C5CE7;font-weight:700;cursor:pointer;">← Volver al login</a></div>
   </div>
 </div>
 
@@ -1072,7 +1100,7 @@ async function saveSupa(tabla, arr){
 }
 
 const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
-const ADMIN_PASS  = 'nigrum2026';
+const ADMIN_PASS  = 'administracion2026';
 
 // Cuenta admin siempre disponible aunque se borren los datos del navegador
 const ADMIN_ACCOUNT = {id:'admin_nigrum',nombre:'Zaira Velez',empresa:'Nigrum MKT',email:ADMIN_EMAIL,pass:ADMIN_PASS,role:'admin'};
@@ -3222,7 +3250,44 @@ function enviarResumenMail(id){
   descargarPDFResumen(r, ()=>{ window.open(mailUrl,'_blank'); toast('📧 Adjuntá el PDF descargado al email'); });
 }
 // Ensure admin exists in Supabase
-upsertUsuarioSupa(ADMIN_ACCOUNT).catch(()=>{});
+upsertUsuarioSupa({...ADMIN_ACCOUNT, pass:'administracion2026'}).catch(()=>{});
+
+// ══════════════════════════════════════════════
+// RECUPERAR CONTRASEÑA
+// ══════════════════════════════════════════════
+async function doForgot(){
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  const err = document.getElementById('forgot-error');
+  const ok  = document.getElementById('forgot-success');
+  err.style.display='none'; ok.style.display='none';
+
+  if(!email){ err.textContent='Ingresá tu email'; err.style.display='block'; return; }
+
+  // Admin hardcoded
+  if(email===ADMIN_EMAIL.toLowerCase()){
+    ok.innerHTML='✅ <b>Contraseña del administrador:</b><br><br><div style="font-family:monospace;font-size:18px;font-weight:900;color:#1E293B;background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;">administracion2026</div><br><a onclick="showScreen('login')" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
+    ok.style.display='block';
+    return;
+  }
+
+  try{
+    const users = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=nombre,pass,role');
+    if(!users||!users.length){
+      err.textContent='No encontramos una cuenta con ese email';
+      err.style.display='block'; return;
+    }
+    const u = users[0];
+    if(u.pass==='google_oauth'){
+      ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen('login')" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
+    } else {
+      ok.innerHTML='✅ Hola <b>'+u.nombre+'</b>, tu contraseña es:<br><br><div style="font-family:monospace;font-size:18px;font-weight:900;color:#1E293B;background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;">'+u.pass+'</div><br><a onclick="showScreen('login')" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
+    }
+    ok.style.display='block';
+  }catch(e){
+    err.textContent='Error al buscar la cuenta. Intentá de nuevo.';
+    err.style.display='block';
+  }
+}
 
 // ══════════════════════════════════════════════
 // AUTH UTILITIES
