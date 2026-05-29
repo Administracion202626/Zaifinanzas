@@ -3265,7 +3265,7 @@ async function doForgot(){
 
   // Admin hardcoded
   if(email===ADMIN_EMAIL.toLowerCase()){
-    ok.innerHTML='✅ <b>Contraseña del administrador:</b><br><br><div style="font-family:monospace;font-size:18px;font-weight:900;color:#1E293B;background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;">administracion2026</div><br><a onclick="showScreen('login')" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
+    ok.innerHTML='\u2705 <b>Contrase\u00f1a del administrador:</b><br><br><div style="background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">administracion2026</div><br><button onclick="showScreen(\"login\")" style="background:#6C5CE7;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login →</button>';
     ok.style.display='block';
     return;
   }
@@ -3278,9 +3278,9 @@ async function doForgot(){
     }
     const u = users[0];
     if(u.pass==='google_oauth'){
-      ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen('login')" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
+      ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen(\"login\")" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
     } else {
-      ok.innerHTML='✅ Hola <b>'+u.nombre+'</b>, tu contraseña es:<br><br><div style="font-family:monospace;font-size:18px;font-weight:900;color:#1E293B;background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;">'+u.pass+'</div><br><a onclick="showScreen('login')" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
+      ok.innerHTML='\u2705 Hola <b>'+u.nombre+'</b>, tu contrase\u00f1a es:<br><br><div style="background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">'+u.pass+'</div><br><button onclick="showScreen(\"login\")" style="background:#6C5CE7;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login \u2192</button>';
     }
     ok.style.display='block';
   }catch(e){
