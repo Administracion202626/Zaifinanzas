@@ -967,25 +967,94 @@ tr:hover td{background:#F8FAFC;}
 // ══════════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════════
+const SUPA_URL = 'https://idvzrkadkqhxuboyctsa.supabase.co';
+const SUPA_KEY = 'sb_publishable_NvTG8MMuxyotB5pWuD7PQg_GVWi7S75';
+
+async function supaFetch(path, method='GET', body=null){
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Prefer': method==='POST'?'resolution=merge-duplicates':''
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
+  if(!res.ok){ const e=await res.text(); console.error('Supabase error:',e); return null; }
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : null;
+}
+
+// ── USUARIOS ──────────────────────────────────
+async function getUsuariosSupa(){
+  const data = await supaFetch('usuarios?select=*');
+  return data||[];
+}
+
+async function upsertUsuarioSupa(u){
+  await supaFetch('usuarios', 'POST', u);
+}
+
+// ── DATOS (tabla zaifi_data para usuarios, zaifi_global para admin) ──
+function isAdmin(){ return currentUser && currentUser.role==='admin'; }
+
+async function loadSupa(tabla){
+  if(isAdmin()){
+    const data = await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&select=data`);
+    return (data||[]).map(r=>r.data);
+  } else {
+    const uid = currentUser.id;
+    const data = await supaFetch(`zaifi_data?user_id=eq.${uid}&tabla=eq.${encodeURIComponent(tabla)}&select=data`);
+    return (data||[]).map(r=>r.data);
+  }
+}
+
+async function saveSupa(tabla, arr){
+  // Delete all records for this table first, then reinsert
+  if(isAdmin()){
+    await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
+    if(arr.length){
+      const rows = arr.map(item=>({tabla, record_id: item.id||String(Math.random()), data: item}));
+      await supaFetch('zaifi_global', 'POST', rows);
+    }
+  } else {
+    const uid = currentUser.id;
+    await supaFetch(`zaifi_data?user_id=eq.${uid}&tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
+    if(arr.length){
+      const rows = arr.map(item=>({user_id:uid, tabla, record_id: item.id||String(Math.random()), data: item}));
+      await supaFetch('zaifi_data', 'POST', rows);
+    }
+  }
+  // Also keep localStorage as cache
+  localStorage.setItem(dbKey(tabla), JSON.stringify(arr));
+}
+
 const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
 const ADMIN_PASS  = 'nigrum2026';
 
 // Cuenta admin siempre disponible aunque se borren los datos del navegador
 const ADMIN_ACCOUNT = {id:'admin_nigrum',nombre:'Zaira Velez',empresa:'Nigrum MKT',email:ADMIN_EMAIL,pass:ADMIN_PASS,role:'admin'};
 
-function getUsers(){
+// Users are now loaded from Supabase async
+// Sync cache for login speed
+function getUsersCache(){
   try{
     const users = JSON.parse(localStorage.getItem('zaifi_users'))||[];
-    // Siempre asegurar que el admin existe
     if(!users.find(u=>u.email===ADMIN_EMAIL)) users.unshift(ADMIN_ACCOUNT);
     return users;
   }catch(e){ return [ADMIN_ACCOUNT]; }
 }
-function saveUsers(u){
-  // Siempre asegurar que el admin está en la lista
+function saveUsersCache(u){
   if(!u.find(x=>x.email===ADMIN_EMAIL)) u.unshift(ADMIN_ACCOUNT);
   localStorage.setItem('zaifi_users',JSON.stringify(u));
 }
+function getUsers(){ return getUsersCache(); }
+function saveUsers(u){ saveUsersCache(u); }
 function getSession(){ try{return JSON.parse(localStorage.getItem('zaifi_session'));}catch(e){return null;} }
 function setSession(u){ localStorage.setItem('zaifi_session',JSON.stringify(u)); }
 function clearSession(){ localStorage.removeItem('zaifi_session'); }
@@ -995,13 +1064,21 @@ function showScreen(name){
   document.getElementById('screen-'+name).classList.add('active');
 }
 
-function doLogin(){
+async function doLogin(){
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const pass  = document.getElementById('login-pass').value;
   const err   = document.getElementById('login-error');
   err.style.display='none';
-  const users = getUsers();
-  const user  = users.find(u=>u.email===email && u.pass===pass);
+  // Check local cache first (fast)
+  let users = getUsers();
+  let user  = users.find(u=>u.email===email && u.pass===pass);
+  if(!user){
+    // Try Supabase
+    try{
+      const supaUsers = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&pass=eq.${encodeURIComponent(pass)}&select=*`);
+      if(supaUsers&&supaUsers.length){ user=supaUsers[0]; users.push(user); saveUsersCache(users); }
+    }catch(e){}
+  }
   if(!user){ err.style.display='block'; return; }
   setSession(user);
   loadApp(user);
@@ -1019,9 +1096,12 @@ function doRegister(){
   const users = getUsers();
   if(users.find(u=>u.email===email)){ err.textContent='Ya existe una cuenta con ese email'; err.style.display='block'; return; }
   const isAdmin = email===ADMIN_EMAIL;
-  const user = {id:'u'+Date.now(),nombre,empresa,email,pass,role:isAdmin?'admin':'user'};
+  const isAdminEmail = email===ADMIN_EMAIL;
+  const user = {id:'u'+Date.now(),nombre,empresa,email,pass,role:isAdminEmail?'admin':'user'};
   users.push(user);
   saveUsers(users);
+  // Save to Supabase
+  upsertUsuarioSupa(user).catch(e=>console.log('Supabase register error:',e));
   setSession(user);
   loadApp(user);
 }
@@ -1043,7 +1123,23 @@ function dbKey(table){
 }
 
 function load(table){ try{return JSON.parse(localStorage.getItem(dbKey(table)))||[];}catch(e){return[];} }
-function save(table,data){ localStorage.setItem(dbKey(table),JSON.stringify(data)); }
+function save(table,data){ 
+  localStorage.setItem(dbKey(table),JSON.stringify(data));
+  // Async save to Supabase (fire and forget)
+  saveSupa(table, data).catch(e=>console.log('Supabase save error:',e));
+}
+
+// Load all data from Supabase on login
+async function loadDataFromSupa(){
+  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','resumenes','bancosPropios','bancosTerc'];
+  const promises = tables.map(async t=>{
+    try{
+      const data = await loadSupa(t);
+      if(data&&data.length){ localStorage.setItem(dbKey(t), JSON.stringify(data)); }
+    }catch(e){ console.log('Error loading',t,e); }
+  });
+  await Promise.all(promises);
+}
 
 let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc;
 
@@ -1079,6 +1175,12 @@ function loadApp(user){
   showScreen('app');
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
+  // Sync from Supabase in background
+  loadDataFromSupa().then(()=>{
+    loadData();
+    renderAll();
+    toast('✅ Datos sincronizados');
+  }).catch(e=>console.log('Sync error:',e));
 }
 
 function renderAll(){
@@ -3022,6 +3124,9 @@ function enviarResumenMail(id){
   const mailUrl = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`;
   descargarPDFResumen(r, ()=>{ window.open(mailUrl,'_blank'); toast('📧 Adjuntá el PDF descargado al email'); });
 }
+// Ensure admin exists in Supabase
+upsertUsuarioSupa(ADMIN_ACCOUNT).catch(()=>{});
+
 const session=getSession();
 if(session){loadApp(session);}
 else{showScreen('login');}
