@@ -856,7 +856,7 @@ tr:hover td{background:#F8FAFC;}
         <div class="table-head">
           <div>
             <div class="th-title">🏦 Nuestros datos bancarios</div>
-            <div class="th-sub">Datos de Nigrum MKT para recibir pagos</div>
+            <div class="th-sub">Datos de ODSA SRL para recibir pagos</div>
           </div>
           <button class="tb-btn tb-btn-primary" onclick="openModal('add-banco-propio')">+ Agregar cuenta</button>
         </div>
@@ -1120,11 +1120,11 @@ async function saveSupa(tabla, arr){
   localStorage.setItem(dbKey(tabla), JSON.stringify(arr));
 }
 
-const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
+const ADMIN_EMAIL = 'administracion@odsa.com.ar';
 const ADMIN_PASS  = 'administracion2026';
 
 // Cuenta admin siempre disponible aunque se borren los datos del navegador
-const ADMIN_ACCOUNT = {id:'admin_nigrum',nombre:'Zaira Velez',empresa:'Nigrum MKT',email:ADMIN_EMAIL,pass:ADMIN_PASS,role:'admin'};
+const ADMIN_ACCOUNT = {id:'admin_nigrum',nombre:'Zaira Velez',empresa:'ODSA SRL',email:ADMIN_EMAIL,pass:ADMIN_PASS,role:'admin'};
 
 // Users are now loaded from Supabase async
 // Sync cache for login speed
@@ -1544,7 +1544,7 @@ function eliminar(tipo,id){
 // ══════════════════════════════════════════════
 const bancosModals = {
   'add-banco-propio': {
-    title:'Nueva cuenta propia', sub:'Datos bancarios de Nigrum MKT para recibir pagos',
+    title:'Nueva cuenta propia', sub:'Datos bancarios de ODSA SRL para recibir pagos',
     fields:[
       {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Galicia'},
       {id:'tipo',label:'Tipo de cuenta',type:'select',opts:['Cuenta Corriente','Caja de Ahorro','Cuenta Virtual (CVU)']},
@@ -1595,7 +1595,7 @@ const modals={
     {id:'nombre',label:'Nombre completo',type:'text',ph:'Nombre Apellido'},
     {id:'email',label:'Email',type:'email',ph:'empleado@empresa.com'},
     {id:'rol',label:'Rol / Cargo',type:'text',ph:'Ej: Community Manager'},
-    {id:'empresa',label:'Empresa',type:'text',ph:'Nigrum / MKT / etc'},
+    {id:'empresa',label:'Empresa',type:'text',ph:'ODSA SRL'},
     {id:'sueldo',label:'Sueldo ($)',type:'number',ph:'0'},
     {id:'estado',label:'Estado de pago',type:'select',opts:['pendiente','pagado']},
   ]},
@@ -2367,13 +2367,13 @@ function generarFactura(tipo, id){
     +'.fiscal-badge{background:'+colorPrimary+';color:white;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;}'
     +'@media print{body{background:white;padding:0;}.doc{box-shadow:none;max-width:100%;}}'
     +'</style></head><body><div class="doc">'
-    +'<div class="header"><img src="'+NIGRUM_LOGO+'" class="logo" alt="Nigrum"/>'
+    +'<div class="header"><img src="'+NIGRUM_LOGO+'" class="logo" alt="ODSA SRL"/>'
     +'<div class="fac-badge"><div class="fac-tipo">'+tipoLabel+'</div>'
     +'<div class="fac-nro">N\u00b0 '+nroFac+'</div>'
     +'<div class="fac-fecha">Fecha: '+fechaHoy+'</div>'
     +'<span class="fac-tag">'+fiscal+'</span></div></div>'
     +'<div class="info-row">'
-    +'<div class="info-box"><div class="info-label">Emisor</div><div class="info-val">Nigrum MKT</div>'+emisorExtra+'<div class="info-sub">administracion@nigrum.com.ar</div></div>'
+    +'<div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>'+emisorExtra+'<div class="info-sub">administracion@odsa.com.ar</div></div>'
     +'<div class="info-box"><div class="info-label">Receptor</div><div class="info-val">'+r.cliente+'</div>'+cliEmail+cliSector+'<div class="info-sub">Per\u00edodo: '+r.periodo+'</div></div>'
     +'</div>'
     +srvSection
@@ -2416,7 +2416,7 @@ function renderBancos(){
   const propioEl = document.getElementById('bancos-propios-list');
   if(propioEl){
     if(!bancosPropios.length){
-      propioEl.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:24px;font-size:14px;">No hay cuentas propias. Agregá las de Nigrum MKT →</div>';
+      propioEl.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:24px;font-size:14px;">No hay cuentas propias. Agregá las de ODSA SRL →</div>';
     } else {
       propioEl.innerHTML = bancosPropios.map(b=>`
         <div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #F1F5F9;">
@@ -2840,12 +2840,12 @@ function enviarWhatsApp(clienteNombre, tipo){
     if(facsPend.length) mensaje += `📄 Facturas pendientes:\n${facsPend.map(f=>`• ${f.numero||'Factura'}: ${fmt(f.monto)}`).join('\n')}\n\n`;
     mensaje += `🏦 *Datos para transferir:*\nBanco: ${bp.banco}\nCBU: ${bp.cbu}${bp.alias?'\nAlias: '+bp.alias:''}\n\nCualquier consulta estamos disponibles. ¡Gracias!`;
   } else if(tipo==='saludo'){
-    mensaje = `Hola ${clienteNombre}! 👋\n\nTe escribimos desde *Nigrum MKT*. ¿En qué podemos ayudarte hoy?`;
+    mensaje = `Hola ${clienteNombre}! 👋\n\nTe escribimos desde *ODSA SRL*. ¿En qué podemos ayudarte hoy?`;
   } else if(tipo==='factura'){
     const facs = facturas.filter(f=>f.cliente===clienteNombre).slice(-1);
     const f = facs[0];
-    if(f) mensaje = `Hola ${clienteNombre}! 👋\n\nTe informamos que se emitió la factura *${f.numero||''}* por *${fmt(f.monto)}*.\n\nAntes cualquier consulta, ¡estamos a disposición!\n\n*Nigrum MKT*`;
-    else mensaje = `Hola ${clienteNombre}! Te escribimos desde Nigrum MKT.`;
+    if(f) mensaje = `Hola ${clienteNombre}! 👋\n\nTe informamos que se emitió la factura *${f.numero||''}* por *${fmt(f.monto)}*.\n\nAntes cualquier consulta, ¡estamos a disposición!\n\n*ODSA SRL*`;
+    else mensaje = `Hola ${clienteNombre}! Te escribimos desde ODSA SRL.`;
   }
 
   const url = `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}`;
@@ -3115,10 +3115,10 @@ function generarDocFactura(f, tipoOverride){
   const win = window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${tipoLabel} — ${f.cliente}</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#f0f0f0;padding:30px;color:#111;}.doc{background:white;max-width:870px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.12);}.header{padding:26px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid ${colorPrimary};}.logo{height:64px;object-fit:contain;}.fac-badge{text-align:right;}.fac-tipo{font-size:24px;font-weight:900;color:${colorPrimary};}.fac-nro{font-size:13px;color:#555;margin-top:4px;}.fac-fecha{font-size:12px;color:#999;margin-top:2px;}.fac-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:5px;background:${colorPrimary}18;color:${colorPrimary};}.info-row{display:flex;border-bottom:1px solid #eee;}.info-box{flex:1;padding:18px 28px;}.info-box:first-child{border-right:1px solid #eee;}.info-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:14px;font-weight:700;margin-bottom:3px;}.info-sub{font-size:12px;color:#555;margin-top:2px;}.sec-title{padding:10px 28px;background:#f8f8f8;font-size:11px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:1px;border-top:1px solid #eee;border-bottom:1px solid #eee;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#1A1A2E;color:white;font-size:11px;text-align:left;}.totales{padding:18px 28px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.tot-final .amt{color:${colorPrimary};}.footer{padding:16px 28px;background:#f8f8f8;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#999;}.fiscal-badge{background:${colorPrimary};color:white;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;}@media print{body{background:white;padding:0;}.doc{box-shadow:none;max-width:100%;}}</style></head><body><div class="doc">
-<div class="header"><img src="${typeof NIGRUM_LOGO!=='undefined'?NIGRUM_LOGO:''}" class="logo" alt="Nigrum" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div style="display:none;font-family:Arial;font-size:22px;font-weight:900;color:#1E293B;">Nigrum<span style="color:${colorPrimary}">.</span></div>
+<div class="header"><img src="${typeof NIGRUM_LOGO!=='undefined'?NIGRUM_LOGO:''}" class="logo" alt="ODSA SRL" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div style="display:none;font-family:Arial;font-size:22px;font-weight:900;color:#1E293B;">Nigrum<span style="color:${colorPrimary}">.</span></div>
 <div class="fac-badge"><div class="fac-tipo">${tipoLabel}</div><div class="fac-nro">N° ${f.numero||'—'}</div><div class="fac-fecha">Fecha: ${fechaHoy}</div><span class="fac-tag">${esFacA?'Responsable Inscripto':f.tipo==='presupuesto'?'Presupuesto':'Uso interno'}</span></div></div>
 <div class="info-row">
-  <div class="info-box"><div class="info-label">Emisor</div><div class="info-val">Nigrum MKT</div>${esFacA?'<div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">IVA Responsable Inscripto</div>':''}<div class="info-sub">administracion@nigrum.com.ar</div></div>
+  <div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>${esFacA?'<div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">IVA Responsable Inscripto</div>':''}<div class="info-sub">administracion@odsa.com.ar</div></div>
   <div class="info-box"><div class="info-label">Receptor</div><div class="info-val">${f.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.condicion?`<div class="info-sub">${cli.condicion}</div>`:''} ${cli.domicilio?`<div class="info-sub">${cli.domicilio}</div>`:''}</div>
 </div>
 ${f.servicios&&f.servicios.length?`<div class="sec-title">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#f8f8f8;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(f.totalSrv)}</td></tr></tfoot></table>`:''}
@@ -3325,8 +3325,8 @@ function generarHTMLResumen(r){
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Resumen ${r.periodo} — ${r.cliente}</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #6C5CE7;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#6C5CE7;}.badge-sub{font-size:12px;color:#94A3B8;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#1E293B;margin-bottom:3px;}.info-sub{font-size:12px;color:#64748B;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;background:#F8FAFC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#1E293B;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#2D9B6F;}.banco{background:#EEF2FF;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#6C5CE7;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#64748B;}.bv{font-weight:700;color:#1E293B;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#94A3B8;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}</style>
 </head><body>
-<div class="header"><img src="${logoSrc}" class="logo" alt="Nigrum" onerror="this.style.display='none'"/><div class="badge"><div class="badge-title">RESUMEN</div><div class="badge-sub">Período: ${r.periodo}</div><div class="badge-sub">Fecha: ${fechaHoy}</div></div></div>
-<div class="info-row"><div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div><div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">administracion@nigrum.com.ar</div></div><div class="info-box"><div class="info-label">Cliente</div><div class="info-val">${r.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.email?`<div class="info-sub">${cli.email}</div>`:''}</div></div>
+<div class="header"><img src="${logoSrc}" class="logo" alt="ODSA SRL" onerror="this.style.display='none'"/><div class="badge"><div class="badge-title">RESUMEN</div><div class="badge-sub">Período: ${r.periodo}</div><div class="badge-sub">Fecha: ${fechaHoy}</div></div></div>
+<div class="info-row"><div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div><div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">administracion@odsa.com.ar</div></div><div class="info-box"><div class="info-label">Cliente</div><div class="info-val">${r.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.email?`<div class="info-sub">${cli.email}</div>`:''}</div></div>
 ${r.servicios&&r.servicios.length?`<div class="sec">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalSrv)}</td></tr></tfoot></table>`:''}
 ${r.envios_data&&r.envios_data.length?`<div class="sec sep">Logística — ${r.envios_data.length} envíos</div><table><thead><tr><th>Fecha</th><th>Tracking</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th style="text-align:right">Tarifa</th></tr></thead><tbody>${logRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td colspan="5" style="padding:10px 14px;">Subtotal logística</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalLog)}</td></tr></tfoot></table>`:''}
 <div class="totales"><div class="tot-row"><span>Subtotal</span><span style="font-weight:700;">${fmtN(r.subtotal)}</span></div><div class="tot-row"><span>IVA (${r.iva}%)</span><span style="font-weight:700;">${fmtN(r.ivaMonto)}</span></div><div class="tot-final"><span>TOTAL</span><span class="amt">${fmtN(r.totalFinal)}</span></div></div>
@@ -3363,7 +3363,7 @@ function enviarResumenWA(id){
   if(r.envios_data&&r.envios_data.length){ msg+=`📦 *Logística:* ${r.envios_data.length} envíos — ${fmtN(r.totalLog)}\n\n`; }
   msg+=`✅ *TOTAL: ${fmtN(r.totalFinal)}*\n\n`;
   if(bp.cbu){ msg+=`🏦 *Datos para transferir:*\nBanco: ${bp.banco}\nCBU: ${bp.cbu}`; if(bp.alias) msg+=`\nAlias: ${bp.alias}`; msg+='\n\n'; }
-  msg+=`Te adjuntamos el PDF con el detalle completo.\n¡Gracias! 🙌\n*Nigrum MKT*`;
+  msg+=`Te adjuntamos el PDF con el detalle completo.\n¡Gracias! 🙌\n*ODSA SRL*`;
   const waUrl = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
   descargarPDFResumen(r, ()=>{ window.open(waUrl,'_blank'); });
 }
@@ -3380,10 +3380,10 @@ function enviarResumenMail(id){
   }
   const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
   const bp = bancosPropios[0]||{banco:'',cbu:'',alias:''};
-  const subject = encodeURIComponent(`Resumen ${r.periodo} — ${r.cliente} | Nigrum MKT`);
+  const subject = encodeURIComponent(`Resumen ${r.periodo} — ${r.cliente} | ODSA SRL`);
   let body = `Hola ${r.cliente},\n\nAdjunto el PDF con el resumen del período ${r.periodo}.\n\nTOTAL: ${fmtN(r.totalFinal)}\n`;
   if(bp.cbu){ body+=`\nDatos bancarios:\nBanco: ${bp.banco}\nCBU: ${bp.cbu}`; if(bp.alias) body+=`\nAlias: ${bp.alias}`; body+='\n'; }
-  body+=`\nAnte cualquier consulta estamos disponibles.\n\nSaludos,\nNigrum MKT\nadministracion@nigrum.com.ar`;
+  body+=`\nAnte cualquier consulta estamos disponibles.\n\nSaludos,\nODSA SRL\nadministracion@odsa.com.ar`;
   const mailUrl = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`;
   descargarPDFResumen(r, ()=>{ window.open(mailUrl,'_blank'); toast('📧 Adjuntá el PDF descargado al email'); });
 }
