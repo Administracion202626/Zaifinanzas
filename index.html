@@ -587,6 +587,19 @@ tr:hover td{background:#F8FAFC;}
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">Logística</span><span style="font-weight:700;" id="fac-tot-log">$0</span></div>
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">Subtotal</span><span style="font-weight:700;" id="fac-subtotal">$0</span></div>
             <div id="fac-iva-block" style="display:none;">
+              <div style="padding:10px 0;border-bottom:1px solid #F1F5F9;">
+                <div style="font-size:12px;color:#94A3B8;font-weight:600;margin-bottom:8px;">Modo IVA</div>
+                <div style="display:flex;gap:8px;">
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#475569;">
+                    <input type="radio" name="fac-iva-modo" value="incluido" id="iva-incluido" checked onchange="recalcTotalesFac()" style="accent-color:#6C5CE7;"/>
+                    El monto ya incluye IVA
+                  </label>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#475569;">
+                    <input type="radio" name="fac-iva-modo" value="agregar" id="iva-agregar" onchange="recalcTotalesFac()" style="accent-color:#6C5CE7;"/>
+                    Sumar IVA al monto
+                  </label>
+                </div>
+              </div>
               <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">Neto gravado</span><span style="font-weight:700;" id="fac-neto">$0</span></div>
               <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">IVA (21%)</span><span style="font-weight:700;" id="fac-iva">$0</span></div>
             </div>
@@ -1382,6 +1395,7 @@ function renderFacturas(){
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;">
         ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#2D9B6F" onclick="marcarCobrada('${x.id}')">Cobrar</button>`:''}
+        <button class="action-btn" style="color:#6C5CE7;" onclick="generarDocFactura(facturas.find(f=>f.id==='${x.id}'),'${x.tipo||'A'}')">📄 Ver doc</button>
         <button class="action-btn" onclick="editarItem('facturas','${x.id}')">Editar</button>
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
       </div>
@@ -2367,7 +2381,15 @@ function generarFactura(tipo, id){
     +'</div>'
     +'<div class="footer"><div class="footer-note">Generado por Zaifi \u00b7 '+fechaHoy+'<br>'+footerNote+'</div>'
     +'<span class="fiscal-badge">'+tipoLabel+'</span></div>'
-    +'</div><script>setTimeout(function(){window.print();},400);<\/script></body></html>';
+    +'</div>'
+    +'<div style="position:fixed;bottom:20px;right:20px;display:flex;gap:10px;z-index:999;">'
+    +'<button onclick="window.print()" style="padding:12px 20px;background:#6C5CE7;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(108,92,231,0.4);">🖨 Imprimir / Guardar PDF</button>'
+    +'<button onclick="window.close()" style="padding:12px 20px;background:#F1F5F9;color:#475569;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">✕ Cerrar</button>'
+    +'</div>'
+    +'<style>@media print{.no-print{display:none!important;}}</style>'
+    +'<div class="no-print" style="height:80px;"></div>'
+    +'<script>window.onload=function(){window.print();}<\/script>'
+    +'</body></html>';
 
   var win = window.open('','_blank');
   win.document.write(html);
@@ -3003,9 +3025,23 @@ function recalcTotalesFac(){
   const subtotal = totalSrv + totalLog;
   const tipo = document.getElementById('fac-tipo')?.value;
   const showIva = tipo==='A'||tipo==='B'||tipo==='C';
-  const neto = showIva ? Math.round(subtotal/1.21*100)/100 : 0;
-  const iva  = showIva ? Math.round((subtotal-neto)*100)/100 : 0;
-  const total = showIva ? subtotal : subtotal;
+
+  // IVA mode: 'incluido' = el monto ya tiene IVA, 'agregar' = sumar IVA encima
+  const modoEl = document.querySelector('input[name="fac-iva-modo"]:checked');
+  const modo = modoEl ? modoEl.value : 'incluido';
+
+  let neto=0, iva=0, total=subtotal;
+  if(showIva){
+    if(modo==='incluido'){
+      neto = Math.round(subtotal/1.21*100)/100;
+      iva  = Math.round((subtotal-neto)*100)/100;
+      total = subtotal;
+    } else {
+      neto = subtotal;
+      iva  = Math.round(subtotal*0.21*100)/100;
+      total = subtotal + iva;
+    }
+  }
 
   ['fac-subtotal-srv','fac-tot-srv'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt(totalSrv);});
   ['fac-subtotal-log','fac-tot-log'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt(totalLog);});
@@ -3029,9 +3065,20 @@ function guardarFacturaFull(){
   const totalLog = facEnvios.reduce((a,e)=>a+(+e.tarifa||0),0);
   const subtotal = totalSrv+totalLog;
   const showIva  = tipo==='A'||tipo==='B'||tipo==='C';
-  const neto     = showIva ? Math.round(subtotal/1.21*100)/100 : 0;
-  const ivaM     = showIva ? Math.round((subtotal-neto)*100)/100 : 0;
-  const monto    = subtotal;
+  const modoEl   = document.querySelector('input[name="fac-iva-modo"]:checked');
+  const modoIva  = modoEl ? modoEl.value : 'incluido';
+  let neto=0, ivaM=0, monto=subtotal;
+  if(showIva){
+    if(modoIva==='incluido'){
+      neto  = Math.round(subtotal/1.21*100)/100;
+      ivaM  = Math.round((subtotal-neto)*100)/100;
+      monto = subtotal;
+    } else {
+      neto  = subtotal;
+      ivaM  = Math.round(subtotal*0.21*100)/100;
+      monto = subtotal + ivaM;
+    }
+  }
 
   const obj = {id:facEditId||uid(),tipo,numero,cliente,fecha:fecha||today(),estado,monto,servicios:facServicios,envios_data:facEnvios,totalSrv,totalLog,subtotal,neto,ivaM,cuit:cli.cuit,condicion:cli.condicion,domicilio:cli.domicilio};
   if(facEditId){ const i=facturas.findIndex(x=>x.id===facEditId); if(i>=0)facturas[i]=obj; }
@@ -3046,9 +3093,12 @@ function guardarFacturaFull(){
 function emitirDocFac(tipoDoc){
   const cliente = document.getElementById('fac-cliente').value;
   if(!cliente){ toast('⚠️ Seleccioná un cliente'); return; }
+  if(!facServicios.length&&!facEnvios.length){ toast('⚠️ Agregá al menos un servicio o envío'); return; }
   guardarFacturaFull();
-  const f = facturas[facturas.findIndex(x=>x.cliente===cliente&&x.numero===document.getElementById('fac-numero')?.value)||0]||facturas[facturas.length-1];
-  if(!f) return;
+  // Find the just-saved factura by numero
+  const numero = document.getElementById('fac-numero')?.value;
+  const f = facturas.find(x=>x.numero===numero) || facturas[0];
+  if(!f){ toast('⚠️ Guardá la factura primero'); return; }
   generarDocFactura(f, tipoDoc);
 }
 
@@ -3289,16 +3339,13 @@ ${bp.cbu?`<div class="banco"><div class="banco-title">Datos para transferir</div
 }
 
 function descargarPDFResumen(r, callback){
-  toast('📄 Generando PDF... guardalo como PDF cuando aparezca el diálogo');
+  toast('📄 Abriendo documento...');
   const html = generarHTMLResumen(r);
-  const win = window.open('','_blank','width=900,height=700');
+  const win = window.open('','_blank');
   win.document.write(html);
   win.document.close();
   win.focus();
-  setTimeout(()=>{
-    win.print();
-    setTimeout(()=>{ if(callback) callback(); }, 2500);
-  }, 700);
+  if(callback) setTimeout(()=>callback(), 1500);
 }
 
 function enviarResumenWA(id){
