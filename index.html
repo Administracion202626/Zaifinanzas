@@ -223,18 +223,34 @@ tr:hover td{background:#F8FAFC;}
         <text x="182" y="60" font-size="52" font-weight="900" fill="#6C5CE7" font-family="system-ui" letter-spacing="-2">fi</text>
       </svg>
     </div>
-    <div class="auth-title">Bienvenido</div>
+    <div class="auth-title">Bienvenido a Zaifi</div>
     <div class="auth-sub">Ingresá a tu cuenta para continuar</div>
-    <div id="login-hint" style="background:var(--green-light);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--green);margin-bottom:14px;cursor:pointer;" onclick="document.getElementById('login-email').value='administracion@nigrum.com.ar';document.getElementById('login-pass').value='nigrum2026';">
-      👋 <b>Admin Nigrum:</b> tocá acá para completar automáticamente
+
+    <div class="auth-error" id="login-error"></div>
+
+    <!-- Google Login -->
+    <button onclick="loginConGoogle()" style="width:100%;padding:12px;background:white;border:1.5px solid #E2E8F0;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;color:#1E293B;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#6C5CE7'" onmouseout="this.style.borderColor='#E2E8F0'">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continuar con Google
+    </button>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div style="flex:1;height:1px;background:#E2E8F0;"></div>
+      <span style="font-size:11px;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:1px;">o con email</span>
+      <div style="flex:1;height:1px;background:#E2E8F0;"></div>
     </div>
-    <div class="auth-error" id="login-error">Usuario o contraseña incorrectos</div>
+
     <label class="auth-label">Email</label>
-    <input class="auth-input" id="login-email" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <input class="auth-input" id="login-email" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="email"/>
+
     <label class="auth-label">Contraseña</label>
-    <input class="auth-input" id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <button class="auth-btn" onclick="doLogin()">Ingresar →</button>
-    <div class="auth-switch">¿No tenés cuenta? <a onclick="showScreen('register')">Registrate gratis</a></div>
+    <div style="position:relative;margin-bottom:0;">
+      <input class="auth-input" id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:48px;margin-bottom:0;" autocomplete="current-password"/>
+      <button type="button" onclick="togglePass('login-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94A3B8;font-size:18px;line-height:1;">👁</button>
+    </div>
+
+    <button class="auth-btn" style="margin-top:16px;" onclick="doLogin()">Ingresar →</button>
+    <div class="auth-switch" style="margin-top:14px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:#6C5CE7;font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
   </div>
 </div>
 
@@ -254,9 +270,12 @@ tr:hover td{background:#F8FAFC;}
         <text x="182" y="60" font-size="52" font-weight="900" fill="#6C5CE7" font-family="system-ui" letter-spacing="-2">fi</text>
       </svg>
     </div>
-    <div class="auth-title">Crear cuenta</div>
-    <div class="auth-sub">Completá tus datos para registrarte</div>
+    <div class="auth-title">Solicitar acceso</div>
+    <div class="auth-sub">Tu cuenta será revisada por el administrador antes de activarse</div>
     <div class="auth-error" id="reg-error"></div>
+    <div id="reg-success" style="background:#ECFDF5;border-radius:10px;padding:14px;font-size:14px;color:#2D9B6F;margin-bottom:14px;display:none;text-align:center;">
+      ✅ <b>Solicitud enviada.</b><br>El administrador recibirá tu pedido y te activará la cuenta.
+    </div>
     <label class="auth-label">Nombre completo</label>
     <input class="auth-input" id="reg-nombre" type="text" placeholder="Tu nombre"/>
     <label class="auth-label">Empresa</label>
@@ -264,8 +283,13 @@ tr:hover td{background:#F8FAFC;}
     <label class="auth-label">Email</label>
     <input class="auth-input" id="reg-email" type="email" placeholder="tu@email.com"/>
     <label class="auth-label">Contraseña</label>
-    <input class="auth-input" id="reg-pass" type="password" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doRegister()"/>
-    <button class="auth-btn" onclick="doRegister()">Crear cuenta →</button>
+    <div style="position:relative;">
+      <input class="auth-input" id="reg-pass" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:44px;" onkeydown="if(event.key==='Enter')doRegister()"/>
+      <button type="button" onclick="togglePass('reg-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94A3B8;font-size:18px;padding:4px;">👁</button>
+    </div>
+    <label class="auth-label" style="margin-top:4px;">Mensaje para el administrador <span style="color:#94A3B8;font-weight:400;">(opcional)</span></label>
+    <input class="auth-input" id="reg-mensaje" type="text" placeholder="Ej: Soy asistente administrativa de Nigrum"/>
+    <button class="auth-btn" style="margin-top:14px;" onclick="doRegister()">Enviar solicitud →</button>
     <div class="auth-switch">¿Ya tenés cuenta? <a onclick="showScreen('login')">Iniciá sesión</a></div>
   </div>
 </div>
@@ -336,6 +360,7 @@ tr:hover td{background:#F8FAFC;}
     <div class="nav-item" onclick="goTo('proyeccion',this)"><span class="ni">◉</span>Proyección</div>
     <div class="nav-item" onclick="goTo('estadisticas',this)"><span class="ni">◈</span>Estadísticas</div>
     <div class="nav-item" onclick="goTo('bot',this)"><span class="ni">◎</span>Chat con Zaifi</div>
+    <div class="nav-item" id="nav-invitaciones" onclick="goTo('invitaciones',this)" style="display:none;"><span class="ni">◈</span>Invitaciones</div>
     <div class="nav-item" onclick="doLogout()" style="color:#EF4444;margin-top:8px;"><span class="ni">→</span>Cerrar sesión</div>
   </div>
   <div class="sidebar-bottom">
@@ -887,6 +912,18 @@ tr:hover td{background:#F8FAFC;}
       </div>
     </div>
 
+    <!-- INVITACIONES (solo admin) -->
+    <div class="page" id="page-invitaciones">
+      <div class="table-card">
+        <div class="table-head">
+          <div><div class="th-title">Solicitudes de acceso</div><div class="th-sub">Usuarios que esperan aprobación</div></div>
+          <button class="tb-btn tb-btn-sec" onclick="renderInvitaciones()">↻ Actualizar</button>
+        </div>
+        <table><thead><tr><th>Nombre</th><th>Email</th><th>Empresa</th><th>Mensaje</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="invit-tbody"><tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">Cargando solicitudes...</td></tr></tbody></table>
+      </div>
+    </div>
+
     <!-- ESTADÍSTICAS -->
     <div class="page" id="page-estadisticas">
       <div class="stats-row" style="margin-bottom:24px;">
@@ -980,14 +1017,14 @@ async function supaFetch(path, method='GET', body=null){
       'Content-Type': 'application/json',
       'apikey': SUPA_KEY,
       'Authorization': 'Bearer ' + SUPA_KEY,
-      'Prefer': method==='POST'?'resolution=merge-duplicates':''
+      'Prefer': method==='POST'?'resolution=merge-duplicates':method==='PATCH'?'return=representation':''
     }
   };
   if(body) opts.body = JSON.stringify(body);
   const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
   if(!res.ok){ const e=await res.text(); console.error('Supabase error:',e); return null; }
   const txt = await res.text();
-  return txt ? JSON.parse(txt) : null;
+  return txt ? JSON.parse(txt) : [];
 }
 
 // ── USUARIOS ──────────────────────────────────
@@ -1065,45 +1102,104 @@ function showScreen(name){
 }
 
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pass  = document.getElementById('login-pass').value;
+  // Clean input thoroughly
+  const emailRaw = document.getElementById('login-email').value;
+  const email = emailRaw.trim().toLowerCase().replace(/\s+/g,'');
+  const pass  = document.getElementById('login-pass').value.trim();
   const err   = document.getElementById('login-error');
   err.style.display='none';
-  // Check local cache first (fast)
-  let users = getUsers();
-  let user  = users.find(u=>u.email===email && u.pass===pass);
-  if(!user){
-    // Try Supabase
-    try{
-      const supaUsers = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&pass=eq.${encodeURIComponent(pass)}&select=*`);
-      if(supaUsers&&supaUsers.length){ user=supaUsers[0]; users.push(user); saveUsersCache(users); }
-    }catch(e){}
+  err.style.background=''; err.style.color='';
+
+  if(!email||!pass){ 
+    err.textContent='Completá email y contraseña'; 
+    err.style.display='block'; return; 
   }
-  if(!user){ err.style.display='block'; return; }
-  setSession(user);
-  loadApp(user);
+
+  // Show loading state
+  const btn = document.querySelector('.auth-btn');
+  if(btn){ btn.textContent='Verificando...'; btn.disabled=true; }
+
+  try{
+    // Admin siempre funciona (hardcoded)
+    if(email===ADMIN_EMAIL.toLowerCase() && pass===ADMIN_PASS){
+      setSession(ADMIN_ACCOUNT); loadApp(ADMIN_ACCOUNT); return;
+    }
+
+    // Check Supabase first (source of truth)
+    let user = null;
+    try{
+      const supaUsers = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*');
+      if(supaUsers&&supaUsers.length){
+        const found = supaUsers.find(u=>u.pass===pass);
+        if(found) user = found;
+        else{ 
+          // Wrong password
+          err.textContent='Contraseña incorrecta'; 
+          err.style.display='block'; return; 
+        }
+      }
+    }catch(e){ 
+      console.log('Supabase error, checking cache:',e); 
+      // Fallback to cache
+      const users = getUsersCache();
+      user = users.find(u=>u.email.toLowerCase()===email && u.pass===pass);
+    }
+
+    if(!user){ 
+      err.textContent='No existe una cuenta con ese email'; 
+      err.style.display='block'; return; 
+    }
+    if(user.role==='pendiente'){ 
+      err.textContent='Tu cuenta está pendiente de aprobación del administrador'; 
+      err.style.display='block'; return; 
+    }
+
+    // Update cache
+    const users = getUsersCache();
+    const idx = users.findIndex(u=>u.email.toLowerCase()===email);
+    if(idx>=0) users[idx]=user; else users.push(user);
+    saveUsersCache(users);
+
+    setSession(user);
+    loadApp(user);
+  } finally {
+    if(btn){ btn.textContent='Ingresar →'; btn.disabled=false; }
+  }
 }
 
-function doRegister(){
+async function doRegister(){
   const nombre  = document.getElementById('reg-nombre').value.trim();
   const empresa = document.getElementById('reg-empresa').value.trim();
   const email   = document.getElementById('reg-email').value.trim().toLowerCase();
   const pass    = document.getElementById('reg-pass').value;
+  const mensaje = document.getElementById('reg-mensaje')?.value.trim()||'';
   const err     = document.getElementById('reg-error');
-  err.style.display='none';
+  const ok      = document.getElementById('reg-success');
+  err.style.display='none'; if(ok) ok.style.display='none';
+
   if(!nombre||!empresa||!email||!pass){ err.textContent='Completá todos los campos'; err.style.display='block'; return; }
   if(pass.length<6){ err.textContent='La contraseña debe tener al menos 6 caracteres'; err.style.display='block'; return; }
-  const users = getUsers();
+
+  const users = getUsersCache();
   if(users.find(u=>u.email===email)){ err.textContent='Ya existe una cuenta con ese email'; err.style.display='block'; return; }
-  const isAdmin = email===ADMIN_EMAIL;
+  try{
+    const existing = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
+    if(existing&&existing.length){ err.textContent='Ya existe una cuenta con ese email'; err.style.display='block'; return; }
+  }catch(e){}
+
   const isAdminEmail = email===ADMIN_EMAIL;
-  const user = {id:'u'+Date.now(),nombre,empresa,email,pass,role:isAdminEmail?'admin':'user'};
-  users.push(user);
-  saveUsers(users);
-  // Save to Supabase
-  upsertUsuarioSupa(user).catch(e=>console.log('Supabase register error:',e));
-  setSession(user);
-  loadApp(user);
+  const role = isAdminEmail ? 'admin' : 'pendiente';
+  const user = {id:'u'+Date.now(),nombre,empresa,email,pass,role,mensaje,created_at:new Date().toISOString()};
+
+  try{ await upsertUsuarioSupa(user); }catch(e){ console.log('Register error:',e); }
+
+  if(isAdminEmail){
+    users.push(user); saveUsersCache(users);
+    setSession(user); loadApp(user);
+  } else {
+    if(ok) ok.style.display='block';
+    ['reg-nombre','reg-empresa','reg-email','reg-pass','reg-mensaje'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  }
 }
 
 function doLogout(){
@@ -1170,8 +1266,8 @@ function loadApp(user){
   document.getElementById('user-name-sidebar').textContent = user.nombre;
   document.getElementById('user-role-sidebar').textContent = user.role==='admin'?'Admin':'Usuario';
   document.getElementById('user-av').textContent = user.nombre[0].toUpperCase();
-  // Empleados solo visible para admin
   document.getElementById('nav-empleados').style.display = user.role==='admin'?'flex':'none';
+  document.getElementById('nav-invitaciones').style.display = user.role==='admin'?'flex':'none';
   showScreen('app');
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
@@ -1565,13 +1661,14 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',invitaciones:'Solicitudes de acceso'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
   if(page==='estadisticas') renderEstadisticas();
   if(page==='vencimientos') renderVencimientos();
   if(page==='estadocuenta') initEstadoCuenta();
   if(page==='rentabilidad') renderRentabilidad();
   if(page==='proyeccion') renderProyeccion();
+  if(page==='invitaciones') renderInvitaciones();
 }
 function clearFilter(p){
   const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat']};
@@ -3127,9 +3224,123 @@ function enviarResumenMail(id){
 // Ensure admin exists in Supabase
 upsertUsuarioSupa(ADMIN_ACCOUNT).catch(()=>{});
 
+// ══════════════════════════════════════════════
+// AUTH UTILITIES
+// ══════════════════════════════════════════════
+function togglePass(inputId, btn){
+  const input = document.getElementById(inputId);
+  if(input.type==='password'){ input.type='text'; btn.textContent='🙈'; }
+  else { input.type='password'; btn.textContent='👁'; }
+}
+
+function loginConGoogle(){
+  // Supabase Google OAuth
+  const redirectUrl = window.location.href.split('?')[0];
+  window.location.href = `${SUPA_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
+}
+
+// Check if returning from Google OAuth
+async function checkGoogleCallback(){
+  const hash = window.location.hash;
+  if(hash && hash.includes('access_token')){
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get('access_token');
+    if(accessToken){
+      try{
+        const res = await fetch(`${SUPA_URL}/auth/v1/user`, {
+          headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPA_KEY}
+        });
+        const userData = await res.json();
+        if(userData.email){
+          const email = userData.email.toLowerCase();
+          let users = getUsersCache();
+          let user = users.find(u=>u.email===email);
+          if(!user){
+            // New Google user - create as pendiente
+            user = {id:'g'+Date.now(),nombre:userData.user_metadata?.full_name||email.split('@')[0],empresa:'',email,pass:'google_oauth',role:'pendiente',created_at:new Date().toISOString()};
+            await upsertUsuarioSupa(user);
+            // Show pending message
+            showScreen('login');
+            const err = document.getElementById('login-error');
+            err.textContent='Tu cuenta Google fue registrada. Esperá la aprobación del administrador.';
+            err.style.background='#EEF2FF'; err.style.color='#6C5CE7'; err.style.display='block';
+            window.location.hash='';
+            return;
+          }
+          if(user.role==='pendiente'){
+            showScreen('login');
+            const err=document.getElementById('login-error');
+            err.textContent='Tu cuenta está pendiente de aprobación.'; err.style.display='block';
+            window.location.hash=''; return;
+          }
+          setSession(user); loadApp(user);
+          window.location.hash='';
+        }
+      }catch(e){ console.log('Google OAuth error:',e); }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// INVITACIONES (panel admin)
+// ══════════════════════════════════════════════
+async function renderInvitaciones(){
+  const tb = document.getElementById('invit-tbody');
+  if(!tb) return;
+  tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:20px;">Cargando...</td></tr>';
+  try{
+    const data = await supaFetch('usuarios?role=eq.pendiente&select=*&order=created_at.desc');
+    if(!data||!data.length){
+      tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">No hay solicitudes pendientes ✓</td></tr>';
+      return;
+    }
+    tb.innerHTML = data.map(u=>`
+      <tr>
+        <td><div class="td-main">${u.nombre}</div></td>
+        <td style="font-size:13px;color:#64748B;">${u.email}</td>
+        <td style="font-size:13px;color:#64748B;">${u.empresa||'—'}</td>
+        <td style="font-size:13px;color:#94A3B8;font-style:italic;">${u.mensaje||'—'}</td>
+        <td><span class="badge badge-yellow">⏳ Pendiente</span></td>
+        <td>
+          <div class="action-btns">
+            <button class="action-btn" style="color:#2D9B6F;border-color:#2D9B6F;" onclick="aprobarUsuario('${u.id}','${u.email}')">✓ Aprobar</button>
+            <button class="action-btn" style="color:#D64545;" onclick="rechazarUsuario('${u.id}')">✕ Rechazar</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }catch(e){
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#D64545;padding:20px;">Error al cargar. Verificá la conexión.</td></tr>';
+  }
+}
+
+async function aprobarUsuario(uid, email){
+  if(!confirm('¿Aprobar acceso a '+email+'?')) return;
+  try{
+    await supaFetch(`usuarios?id=eq.${uid}`, 'PATCH', {role:'user'});
+    toast('✅ Usuario aprobado — ya puede ingresar');
+    renderInvitaciones();
+  }catch(e){ toast('⚠️ Error al aprobar'); }
+}
+
+async function rechazarUsuario(uid){
+  if(!confirm('¿Rechazar y eliminar esta solicitud?')) return;
+  try{
+    await supaFetch(`usuarios?id=eq.${uid}`, 'DELETE');
+    toast('🗑 Solicitud rechazada');
+    renderInvitaciones();
+  }catch(e){ toast('⚠️ Error al rechazar'); }
+}
+
 const session=getSession();
 if(session){loadApp(session);}
-else{showScreen('login');}
+else{
+  checkGoogleCallback().then(loaded=>{
+    if(!loaded){
+      const s=getSession();
+      if(s) loadApp(s); else showScreen('login');
+    }
+  });
+}
 </script>
 </body>
 </html>
