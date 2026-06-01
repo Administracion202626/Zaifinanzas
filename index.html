@@ -1151,66 +1151,62 @@ function showScreen(name){
 }
 
 async function doLogin(){
-  // Clean input thoroughly
-  const emailRaw = document.getElementById('login-email').value;
-  const email = emailRaw.trim().toLowerCase().replace(/\s+/g,'');
+  const email = document.getElementById('login-email').value.trim().toLowerCase().replace(/\s+/g,'');
   const pass  = document.getElementById('login-pass').value.trim();
   const err   = document.getElementById('login-error');
   err.style.display='none';
-  err.style.background=''; err.style.color='';
 
-  if(!email||!pass){ 
-    err.textContent='Completá email y contraseña'; 
-    err.style.display='block'; return; 
-  }
+  if(!email||!pass){ err.textContent='Completá email y contraseña'; err.style.display='block'; return; }
 
-  // Show loading state
-  const btn = document.querySelector('.auth-btn');
+  const btn = document.querySelector('#screen-login .auth-btn');
   if(btn){ btn.textContent='Verificando...'; btn.disabled=true; }
 
   try{
-    // Admin siempre funciona (hardcoded)
-    if(email===ADMIN_EMAIL.toLowerCase() && pass===ADMIN_PASS){
-      setSession(ADMIN_ACCOUNT); loadApp(ADMIN_ACCOUNT); return;
-    }
-
-    // Check Supabase first (source of truth)
+    // 1. Siempre intentar con Supabase primero
     let user = null;
     try{
-      const supaUsers = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*');
-      if(supaUsers&&supaUsers.length){
-        const found = supaUsers.find(u=>u.pass===pass);
-        if(found) user = found;
-        else{ 
-          // Wrong password
-          err.textContent='Contraseña incorrecta'; 
-          err.style.display='block'; return; 
+      const res = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*');
+      if(res && res.length > 0){
+        if(res[0].pass === pass){
+          user = res[0];
+        } else {
+          err.textContent='Contraseña incorrecta';
+          err.style.display='block'; return;
         }
       }
-    }catch(e){ 
-      console.log('Supabase error, checking cache:',e); 
-      // Fallback to cache
-      const users = getUsersCache();
-      user = users.find(u=>u.email.toLowerCase()===email && u.pass===pass);
+    }catch(e){ console.log('Supabase error:', e); }
+
+    // 2. Si no encontró en Supabase, probar hardcoded admin
+    if(!user){
+      if(email==='administracion@nigrum.com.ar' && pass==='administracion2026'){
+        user = ADMIN_ACCOUNT;
+      }
     }
 
-    if(!user){ 
-      err.textContent='No existe una cuenta con ese email'; 
-      err.style.display='block'; return; 
-    }
-    if(user.role==='pendiente'){ 
-      err.textContent='Tu cuenta está pendiente de aprobación del administrador'; 
-      err.style.display='block'; return; 
+    // 3. Si tampoco, probar caché local
+    if(!user){
+      const cache = getUsersCache();
+      user = cache.find(u=>u.email.toLowerCase()===email && u.pass===pass);
     }
 
-    // Update cache
-    const users = getUsersCache();
-    const idx = users.findIndex(u=>u.email.toLowerCase()===email);
-    if(idx>=0) users[idx]=user; else users.push(user);
-    saveUsersCache(users);
+    if(!user){
+      err.textContent='Email o contraseña incorrectos';
+      err.style.display='block'; return;
+    }
 
+    if(user.role==='pendiente'){
+      err.textContent='Tu cuenta está pendiente de aprobación del administrador';
+      err.style.display='block'; return;
+    }
+
+    // Guardar en caché y entrar
+    const cache = getUsersCache();
+    const idx = cache.findIndex(u=>u.email.toLowerCase()===email);
+    if(idx>=0) cache[idx]=user; else cache.push(user);
+    saveUsersCache(cache);
     setSession(user);
     loadApp(user);
+
   } finally {
     if(btn){ btn.textContent='Ingresar →'; btn.disabled=false; }
   }
