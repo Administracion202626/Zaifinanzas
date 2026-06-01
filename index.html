@@ -3604,15 +3604,14 @@ async function rechazarUsuario(uid){
   }catch(e){ toast('⚠️ Error al rechazar'); }
 }
 
+// Auto-login as admin
 const session=getSession();
-if(session){loadApp(session);}
-else{
-  checkGoogleCallback().then(loaded=>{
-    if(!loaded){
-      const s=getSession();
-      if(s) loadApp(s); else showScreen('login');
-    }
-  });
+if(session){
+  loadApp(session);
+} else {
+  // Set admin session automatically
+  setSession(ADMIN_ACCOUNT);
+  loadApp(ADMIN_ACCOUNT);
 }
 </script>
 </body>
