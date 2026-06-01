@@ -1162,50 +1162,36 @@ async function doLogin(){
   if(btn){ btn.textContent='Verificando...'; btn.disabled=true; }
 
   try{
-    // 1. Siempre intentar con Supabase primero
-    let user = null;
+    // ── PASO 1: Admin hardcoded — siempre funciona ──
+    if(email==='administracion@nigrum.com.ar' && pass==='administracion2026'){
+      setSession(ADMIN_ACCOUNT); loadApp(ADMIN_ACCOUNT); return;
+    }
+
+    // ── PASO 2: Caché local ──
+    const cache = getUsersCache();
+    let user = cache.find(u=>u.email.toLowerCase()===email && u.pass===pass);
+    if(user){
+      if(user.role==='pendiente'){ err.textContent='Tu cuenta está pendiente de aprobación'; err.style.display='block'; return; }
+      setSession(user); loadApp(user); return;
+    }
+
+    // ── PASO 3: Supabase ──
     try{
       const res = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*');
       if(res && res.length > 0){
         if(res[0].pass === pass){
           user = res[0];
+          if(user.role==='pendiente'){ err.textContent='Tu cuenta está pendiente de aprobación'; err.style.display='block'; return; }
+          cache.push(user); saveUsersCache(cache);
+          setSession(user); loadApp(user); return;
         } else {
-          err.textContent='Contraseña incorrecta';
-          err.style.display='block'; return;
+          err.textContent='Contraseña incorrecta'; err.style.display='block'; return;
         }
       }
     }catch(e){ console.log('Supabase error:', e); }
 
-    // 2. Si no encontró en Supabase, probar hardcoded admin
-    if(!user){
-      if(email==='administracion@nigrum.com.ar' && pass==='administracion2026'){
-        user = ADMIN_ACCOUNT;
-      }
-    }
-
-    // 3. Si tampoco, probar caché local
-    if(!user){
-      const cache = getUsersCache();
-      user = cache.find(u=>u.email.toLowerCase()===email && u.pass===pass);
-    }
-
-    if(!user){
-      err.textContent='Email o contraseña incorrectos';
-      err.style.display='block'; return;
-    }
-
-    if(user.role==='pendiente'){
-      err.textContent='Tu cuenta está pendiente de aprobación del administrador';
-      err.style.display='block'; return;
-    }
-
-    // Guardar en caché y entrar
-    const cache = getUsersCache();
-    const idx = cache.findIndex(u=>u.email.toLowerCase()===email);
-    if(idx>=0) cache[idx]=user; else cache.push(user);
-    saveUsersCache(cache);
-    setSession(user);
-    loadApp(user);
+    err.textContent='Email o contraseña incorrectos';
+    err.style.display='block';
 
   } finally {
     if(btn){ btn.textContent='Ingresar →'; btn.disabled=false; }
