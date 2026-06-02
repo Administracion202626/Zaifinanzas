@@ -1544,41 +1544,29 @@ function exportarAAbesa(){
       gastos_count: gastos.length
     };
     
-    // Save to localStorage (works if same domain)
-    try{ localStorage.setItem('nigrum_abesa_export', JSON.stringify(resumen)); }catch(e){}
-    
-    // Show modal with code to copy
     const codigo = JSON.stringify(resumen);
+    
+    // Send data to ABESA via fetch (cross-origin won't work, use localStorage broadcast)
+    // Try opening ABESA with data encoded in URL hash
+    const encoded = encodeURIComponent(codigo);
+    const abesaUrl = 'https://statuesque-vacherin-7ce13f.netlify.app/#nigrum=' + encoded;
+    
     let modal = document.getElementById('modal-abesa-export');
     if(!modal){
       modal = document.createElement('div');
       modal.id = 'modal-abesa-export';
       modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center';
-      modal.innerHTML=`
-        <div style="background:#fff;border-radius:14px;padding:28px 32px;width:500px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-          <div style="font-size:17px;font-weight:700;margin-bottom:4px">↑ Exportar a ABESA</div>
-          <div style="font-size:12px;color:#888;margin-bottom:16px">Copiá este código y pegalo en ABESA → Panel ABESA → Nigrum → "Importar código"</div>
-          <textarea id="abesa-export-code" readonly style="width:100%;height:80px;font-size:10px;font-family:monospace;border:1px solid #ddd;border-radius:7px;padding:8px;resize:none;background:#f5f5f5"></textarea>
-          <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
-            <button onclick="document.getElementById('modal-abesa-export').remove()" style="padding:8px 16px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;font-family:inherit">Cerrar</button>
-            <button id="btn-copy-code" style="padding:8px 20px;background:#4A90E2;color:#fff;border:none;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:600">📋 Copiar código</button>
-          </div>
-        </div>`;
       document.body.appendChild(modal);
     }
-    document.getElementById('abesa-export-code').value = codigo;
-    document.getElementById('btn-copy-code').onclick = function(){
-      navigator.clipboard.writeText(codigo).then(()=>{
-        this.textContent='✓ Copiado!';
-        this.style.background='#2D9B6F';
-        setTimeout(()=>{this.textContent='📋 Copiar código';this.style.background='#4A90E2';},2000);
-      }).catch(()=>{
-        document.getElementById('abesa-export-code').select();
-        document.execCommand('copy');
-        this.textContent='✓ Copiado!';
-        setTimeout(()=>{this.textContent='📋 Copiar código';},2000);
-      });
-    };
+    modal.innerHTML=`
+      <div style="background:#fff;border-radius:14px;padding:28px 32px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <div style="font-size:17px;font-weight:700;margin-bottom:4px">✓ Datos listos para exportar</div>
+        <div style="font-size:12px;color:#888;margin-bottom:20px">Hacé clic en el botón para abrir ABESA con los datos cargados automáticamente</div>
+        <a href="${abesaUrl}" target="_blank" onclick="setTimeout(()=>modal.remove(),500)" style="display:block;text-align:center;background:linear-gradient(135deg,#C9A84C,#B8943E);color:#fff;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px">
+          → Abrir ABESA con datos de Nigrum
+        </a>
+        <button onclick="document.getElementById('modal-abesa-export').remove()" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;font-family:inherit;font-size:13px">Cerrar</button>
+      </div>`;
     modal.style.display='flex';
     
   }catch(e){
