@@ -382,7 +382,7 @@ tr:hover td{background:#F8FAFC;}
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Zaifi IA</div>
-    <div class="nav-item" onclick="goTo('recordatorios',this)"><span class="ni">◷</span>Recordatorios</div>
+    <div class="nav-item" onclick="goTo('agenda',this)"><span class="ni">◷</span>Agenda mensual</div>
     <div class="nav-item" onclick="goTo('vencimientos',this)"><span class="ni">◷</span>Vencimientos</div>
     <div class="nav-item" onclick="goTo('estadocuenta',this)"><span class="ni">◈</span>Estado de cuenta</div>
     <div class="nav-item" onclick="goTo('rentabilidad',this)"><span class="ni">◎</span>Rentabilidad</div>
@@ -416,7 +416,6 @@ tr:hover td{background:#F8FAFC;}
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div id="dash-alerts" style="display:none;"></div>
-      <div id="dash-checklist" style="margin-bottom:20px;"></div>
       <div class="stats-row">
         <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" id="dash-facturacion">$0</div><div class="stat-label">Facturación total</div></div>
         <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-val" id="dash-clientes">0</div><div class="stat-label">Clientes activos</div></div>
@@ -978,6 +977,11 @@ tr:hover td{background:#F8FAFC;}
         <table><thead><tr><th>Nombre</th><th>Email</th><th>Empresa</th><th>Mensaje</th><th>Estado</th><th>Acciones</th></tr></thead>
         <tbody id="invit-tbody"><tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">Cargando solicitudes...</td></tr></tbody></table>
       </div>
+    </div>
+
+    <!-- AGENDA MENSUAL -->
+    <div class="page" id="page-agenda">
+      <div id="agenda-content"></div>
     </div>
 
     <!-- RECORDATORIOS -->
@@ -1659,7 +1663,6 @@ function pagarCxPItem(id, gastoId, empleadoId){
 }
 
 function updateDashboard(){
-  renderDashboardChecklist();
   renderDashboardAlerts();
   const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
   const tg=gastos.reduce((a,x)=>a+(+x.monto||0),0);
@@ -1900,11 +1903,12 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',invitaciones:'Solicitudes de acceso'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',invitaciones:'Solicitudes de acceso'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
   if(page==='estadisticas') renderEstadisticas();
   if(page==='vencimientos') renderVencimientos();
   if(page==='recordatorios') renderRecordatorios();
+  if(page==='agenda') renderAgenda();
   if(page==='estadocuenta') initEstadoCuenta();
   if(page==='rentabilidad') renderRentabilidad();
   if(page==='proyeccion') renderProyeccion();
@@ -3570,6 +3574,186 @@ function irATarea(idx){
   else if(t.tipo==='cobro') goTo('facturacion',nav);
   else if(t.tipo==='pago') goTo('cxp',nav);
   else if(t.tipo==='sueldo'){ marcarPagoEmp(t.empleadoId); renderDashboardChecklist(); }
+}
+
+// ══════════════════════════════════════════════
+// AGENDA MENSUAL
+// ══════════════════════════════════════════════
+function getAgendaItems(){ try{return JSON.parse(localStorage.getItem(dbKey('agenda')))||[];}catch(e){return[];} }
+function saveAgendaItems(d){ localStorage.setItem(dbKey('agenda'),JSON.stringify(d)); }
+
+function renderAgenda(){
+  const el = document.getElementById('agenda-content');
+  if(!el) return;
+
+  const hoy = today();
+  const ahora = new Date();
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const mesActual = ahora.getMonth();
+  const anioActual = ahora.getFullYear();
+
+  // Mes selector (default: next month if past day 20)
+  const mesDefault = ahora.getDate() > 20
+    ? (mesActual === 11 ? 0 : mesActual + 1)
+    : mesActual;
+  const anioDefault = mesActual === 11 && ahora.getDate() > 20
+    ? anioActual + 1
+    : anioActual;
+
+  const items = getAgendaItems();
+  const mesKey = `${anioDefault}-${String(mesDefault+1).padStart(2,'0')}`;
+  const itemsMes = items.filter(x=>x.mes===mesKey);
+
+  // Group by tipo
+  const grupos = {
+    'resumen': { label:'Resúmenes a enviar', icon:'◫', color:'#6C5CE7', items:[] },
+    'cobro':   { label:'Cobros', icon:'◈', color:'#2D9B6F', items:[] },
+    'pago':    { label:'Pagos', icon:'◉', color:'#D4A017', items:[] },
+    'sueldo':  { label:'Sueldos', icon:'◎', color:'#D64545', items:[] },
+    'otro':    { label:'Otros', icon:'◷', color:'#64748B', items:[] },
+  };
+  itemsMes.forEach(x=>{ if(grupos[x.tipo]) grupos[x.tipo].items.push(x); else grupos['otro'].items.push(x); });
+
+  const totalItems = itemsMes.length;
+  const hechos = itemsMes.filter(x=>x.hecho).length;
+  const pct = totalItems ? Math.round((hechos/totalItems)*100) : 0;
+
+  el.innerHTML = `
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;">${meses[mesDefault]} ${anioDefault}</div>
+        <div style="font-size:13px;color:#94A3B8;margin-top:3px;">${hechos} de ${totalItems} tareas completadas</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select onchange="cambiarMesAgenda(this.value)" style="border:1.5px solid #E2E8F0;border-radius:10px;padding:8px 12px;font-size:13px;font-family:'Inter',sans-serif;color:#1E293B;outline:none;background:white;cursor:pointer;">
+          ${meses.map((m,i)=>{
+            const y = i < mesActual-1 ? anioActual+1 : anioActual;
+            const k = `${y}-${String(i+1).padStart(2,'0')}`;
+            return `<option value="${k}" ${k===mesKey?'selected':''}>${m} ${y}</option>`;
+          }).join('')}
+        </select>
+        <button onclick="openAddAgenda('${mesKey}')" style="padding:9px 16px;background:#6C5CE7;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">+ Agregar</button>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    ${totalItems>0?`
+    <div style="background:white;border-radius:12px;border:1px solid #E2E8F0;padding:16px 20px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#94A3B8;font-weight:600;margin-bottom:8px;">
+        <span>Progreso del mes</span><span>${pct}%</span>
+      </div>
+      <div style="height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#6C5CE7,#2D9B6F);border-radius:3px;transition:width 0.4s;"></div>
+      </div>
+    </div>`:''}
+
+    <!-- Sugerencias automáticas -->
+    <div style="background:#F8FAFC;border-radius:12px;border:1px dashed #E2E8F0;padding:16px 20px;margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Sugerencias para ${meses[mesDefault]}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${clientes.filter(c=>c.estado==='Activo').map(cli=>`
+          <button onclick="addSugerencia('resumen','${cli.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #E2E8F0;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#6C5CE7';this.style.color='#6C5CE7'" onmouseout="this.style.borderColor='#E2E8F0';this.style.color='#475569'">
+            + Resumen ${cli.nombre}
+          </button>`).join('')}
+        ${proveedores.filter(p=>p.estado==='activo').map(prov=>`
+          <button onclick="addSugerencia('pago','${prov.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #E2E8F0;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#D4A017';this.style.color='#D4A017'" onmouseout="this.style.borderColor='#E2E8F0';this.style.color='#475569'">
+            + Pago ${prov.nombre}
+          </button>`).join('')}
+        ${empleados.filter(e=>e.estado!=='pagado').map(emp=>`
+          <button onclick="addSugerencia('sueldo','${emp.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #E2E8F0;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='#D64545';this.style.color='#D64545'" onmouseout="this.style.borderColor='#E2E8F0';this.style.color='#475569'">
+            + Sueldo ${emp.nombre}
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <!-- Grupos de tareas -->
+    ${Object.entries(grupos).filter(([,g])=>g.items.length>0).map(([tipo,g])=>`
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-left:4px;">${g.icon} ${g.label}</div>
+        <div style="background:white;border-radius:12px;border:1px solid #E2E8F0;overflow:hidden;">
+          ${g.items.map((item,i)=>`
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:${i<g.items.length-1?'1px solid #F8FAFC':'none'};${item.hecho?'opacity:0.5;':''}">
+              <button onclick="toggleAgendaItem('${item.id}')" style="width:20px;height:20px;border-radius:6px;border:2px solid ${item.hecho?g.color:'#E2E8F0'};background:${item.hecho?g.color:'white'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+                ${item.hecho?'<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+              </button>
+              <div style="flex:1;">
+                <div style="font-size:14px;font-weight:600;color:#1E293B;${item.hecho?'text-decoration:line-through;color:#94A3B8;':''}">${item.titulo}</div>
+                ${item.fecha||item.monto?`<div style="font-size:12px;color:#94A3B8;margin-top:2px;">${item.fecha?'Fecha: '+item.fecha:''}${item.fecha&&item.monto?' · ':''}${item.monto?fmt(item.monto):''}</div>`:''}
+              </div>
+              ${item.fecha&&item.fecha<hoy&&!item.hecho?`<span style="font-size:11px;font-weight:700;color:#D64545;background:#FEF2F2;padding:2px 8px;border-radius:4px;">Vencida</span>`:''}
+              <button onclick="eliminarAgendaItem('${item.id}')" style="background:none;border:none;cursor:pointer;color:#CBD5E1;font-size:16px;padding:4px;" onmouseover="this.style.color='#D64545'" onmouseout="this.style.color='#CBD5E1'">×</button>
+            </div>`).join('')}
+        </div>
+      </div>`).join('')}
+
+    ${totalItems===0?`
+    <div style="text-align:center;padding:48px 20px;">
+      <div style="font-size:32px;margin-bottom:12px;">📅</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#1E293B;margin-bottom:6px;">Agenda vacía para ${meses[mesDefault]}</div>
+      <div style="font-size:13px;color:#94A3B8;">Usá las sugerencias de arriba o agregá tareas manualmente</div>
+    </div>`:''}
+  `;
+
+  window._agendaMesKey = mesKey;
+}
+
+function cambiarMesAgenda(mesKey){
+  window._agendaMesKey = mesKey;
+  renderAgenda();
+}
+
+function addSugerencia(tipo, contacto, mesKey){
+  const items = getAgendaItems();
+  const existe = items.find(x=>x.mes===mesKey&&x.tipo===tipo&&x.titulo.includes(contacto));
+  if(existe){ toast('Ya existe esa tarea para este mes'); return; }
+  const titulos = {resumen:'Enviar resumen a',cobro:'Cobrar a',pago:'Pagar a',sueldo:'Sueldo de'};
+  items.push({id:uid(),mes:mesKey,tipo,titulo:(titulos[tipo]||'')+' '+contacto,contacto,fecha:'',monto:'',hecho:false,creado:today()});
+  saveAgendaItems(items); renderAgenda(); toast('✅ Tarea agregada');
+}
+
+function toggleAgendaItem(id){
+  const items = getAgendaItems();
+  const item = items.find(x=>x.id===id);
+  if(item){ item.hecho=!item.hecho; saveAgendaItems(items); renderAgenda(); }
+}
+
+function eliminarAgendaItem(id){
+  const items = getAgendaItems().filter(x=>x.id!==id);
+  saveAgendaItems(items); renderAgenda();
+}
+
+function openAddAgenda(mesKey){
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-title">Nueva tarea</div>
+    <div class="modal-sub">Agregar a la agenda de ${mesKey}</div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="ag-tipo">
+        <option value="resumen">Resumen a enviar</option>
+        <option value="cobro">Cobro</option>
+        <option value="pago">Pago</option>
+        <option value="sueldo">Sueldo</option>
+        <option value="otro">Otro</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Descripción</label>
+      <input class="form-input" id="ag-titulo" placeholder="Ej: Enviar resumen a Griflor Deco"/></div>
+    <div class="form-group"><label class="form-label">Fecha límite</label>
+      <input class="form-input" id="ag-fecha" type="date"/></div>
+    <div class="form-group"><label class="form-label">Monto (opcional)</label>
+      <input class="form-input" id="ag-monto" type="number" placeholder="0"/></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="saveAddAgenda('${mesKey}')">Guardar →</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+
+function saveAddAgenda(mesKey){
+  const titulo = document.getElementById('ag-titulo')?.value.trim();
+  if(!titulo){ toast('⚠️ Ingresá una descripción'); return; }
+  const items = getAgendaItems();
+  items.push({id:uid(),mes:mesKey,tipo:document.getElementById('ag-tipo')?.value||'otro',titulo,fecha:document.getElementById('ag-fecha')?.value||'',monto:document.getElementById('ag-monto')?.value||'',hecho:false,creado:today()});
+  saveAgendaItems(items); closeModal(); renderAgenda(); toast('✅ Tarea agregada');
 }
 
 // ESTADÍSTICAS / GRÁFICOS
