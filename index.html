@@ -1504,7 +1504,7 @@ async function doLogin(){
 
   // 1. Admin siempre funciona
   if(email==='administracion@nigrum.com.ar' && pass==='administracion2026'){
-    setSession(ADMIN_ACCOUNT); loadApp(ADMIN_ACCOUNT); return;
+    setSession(ADMIN_ACCOUNT); await loadApp(ADMIN_ACCOUNT); return;
   }
 
   // 2. Buscar en todos los stores de usuarios
@@ -1529,7 +1529,7 @@ async function doLogin(){
   const shared = getSharedUsers();
   if(!shared.find(u=>u.email===email)){ shared.push(user); saveSharedUsers(shared); }
 
-  setSession(user); loadApp(user);
+  setSession(user); await loadApp(user);
 }
 
 async function doRegister(){
@@ -1563,7 +1563,7 @@ async function doRegister(){
 
   if(isAdminEmail){
     users.push(user); saveUsersCache(users);
-    setSession(user); loadApp(user);
+    setSession(user); await loadApp(user);
   } else {
     if(ok) ok.style.display='block';
     ['reg-nombre','reg-empresa','reg-email','reg-pass','reg-mensaje'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -1599,7 +1599,7 @@ async function loadDataFromSupa(){
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
-      // Always write to localStorage, even empty arrays — so local cache stays in sync
+      // Always overwrite localStorage so all users see shared data
       localStorage.setItem(dbKey(t), JSON.stringify(data||[]));
     }catch(e){ console.log('Error loading',t,e); }
   });
@@ -1630,17 +1630,13 @@ function nowTime(){ return new Date().toLocaleTimeString('es-AR',{hour:'2-digit'
 async function loadApp(user){
   currentUser = user;
 
-  // Show loading overlay while fetching from Supabase
-  showLoadingOverlay('Cargando datos...');
+  // Show spinner while loading from Supabase
+  const overlay = document.getElementById('loading-overlay');
+  if(overlay) overlay.style.display='flex';
 
-  // Always load from Supabase first — ensures all users see the same data
-  try{
-    await loadDataFromSupa();
-  }catch(e){
-    console.log('Supabase load error:',e);
-  }
+  // Wait for Supabase data before showing the app
+  try{ await loadDataFromSupa(); }catch(e){ console.log('Supabase error:',e); }
 
-  // Now load into memory from localStorage (populated by loadDataFromSupa)
   loadData();
 
   // Setup sidebar
@@ -1651,7 +1647,7 @@ async function loadApp(user){
   document.getElementById('nav-empleados').style.display = user.role==='admin'?'flex':'none';
   document.getElementById('nav-invitaciones').style.display = user.role==='admin'?'flex':'none';
 
-  hideLoadingOverlay();
+  if(overlay) overlay.style.display='none';
   showScreen('app');
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
@@ -2993,7 +2989,8 @@ function generarFactura(tipo, id){
     +'</div>'
     +'<style>@media print{.no-print{display:none!important;}}</style>'
     +'<div class="no-print" style="height:80px;"></div>'
-    +'<script>window.onload=function(){window.print();}<\/script></body></html>';
+    +'<script>window.onload=function(){window.print();}<\/script>'
+    +'</body></html>';
 
   var win = window.open('','_blank');
   win.document.write(html);
@@ -3165,8 +3162,7 @@ ${bp.alias?`<div class="br"><span class="bk">Alias</span><span class="bv" onclic
 ${bp.cuit?`<div class="br"><span class="bk">CUIT</span><span class="bv">${bp.cuit}</span></div>`:''}
 <div class="hint">Tocá el CBU o Alias para copiar</div></div>
 <div class="footer">${_prf.razon||_prf.nombre||"Mi empresa"} · CUIT: ${_prf.cuit||"—"} · ${fechaHoy}</div>
-</div></div>
-</body></html>`);
+</div></div></body></html>`);
 }
 
 // ══════════════════════════════════════════════
@@ -3640,8 +3636,7 @@ ${f.envios_data&&f.envios_data.length?`<div class="sec-title">Logística — ${f
   <div class="tot-final"><span>TOTAL${esFacA?' (con IVA)':''}</span><span class="amt">${fmtN(f.monto)}</span></div>
 </div>
 <div class="footer"><span>ODSA SRL · CUIT: 30-71887849-3 · ${fechaHoy}${esFacA?' · Documento con validez fiscal':' · Sin validez fiscal'}</span><span class="fiscal-badge">${tipoLabel}</span></div>
-</div><script>setTimeout(function(){window.print();},400);<\/script>
-</body></html>`);
+</div><script>setTimeout(function(){window.print();},400);<\/script></body></html>`);
 }
 
 // Override editarItem for facturas
@@ -4146,7 +4141,6 @@ ${r.envios_data&&r.envios_data.length?`<div class="sec sep">Logística — ${r.e
 <div class="totales"><div class="tot-row"><span>Subtotal</span><span style="font-weight:700;">${fmtN(r.subtotal)}</span></div><div class="tot-row"><span>IVA (${r.iva}%)</span><span style="font-weight:700;">${fmtN(r.ivaMonto)}</span></div><div class="tot-final"><span>TOTAL</span><span class="amt">${fmtN(r.totalFinal)}</span></div></div>
 ${bp.cbu?`<div class="banco"><div class="banco-title">Datos para transferir</div><div class="banco-row"><span class="bk">Banco</span><span class="bv">${bp.banco}</span></div><div class="banco-row"><span class="bk">CBU</span><span class="bv">${bp.cbu}</span></div>${bp.alias?`<div class="banco-row"><span class="bk">Alias</span><span class="bv">${bp.alias}</span></div>`:''}${bp.cuit?`<div class="banco-row"><span class="bk">CUIT</span><span class="bv">${bp.cuit}</span></div>`:''}</div>`:''}
 <div class="footer">${_prf.razon||_prf.nombre||"Mi empresa"} · CUIT: ${_prf.cuit||"—"} · ${fechaHoy}</div>
-
 </body></html>`;
 }
 
@@ -4353,7 +4347,7 @@ async function checkGoogleCallback(){
             err.textContent='Tu cuenta está pendiente de aprobación.'; err.style.display='block';
             window.location.hash=''; return;
           }
-          setSession(user); loadApp(user);
+          setSession(user); await loadApp(user);
           window.location.hash='';
         }
       }catch(e){ console.log('Google OAuth error:',e); }
@@ -4412,7 +4406,7 @@ async function rechazarUsuario(uid){
 }
 
 const session=getSession();
-if(session){loadApp(session);}
+if(session){ loadApp(session); }
 else{
   checkGoogleCallback().then(loaded=>{
     if(!loaded){
@@ -4614,14 +4608,12 @@ function guardarPerfil(){
 }
 
 </script>
-
 <!-- LOADING OVERLAY -->
-<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:#09090B;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
-  <div style="width:44px;height:44px;border:3px solid #27272A;border-top-color:#FAFAFA;border-radius:50%;animation:spin-loader 0.8s linear infinite;"></div>
-  <div id="loading-msg" style="font-family:'Instrument Sans',sans-serif;font-size:14px;color:#71717A;letter-spacing:0.3px;">Cargando datos...</div>
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:#09090B;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <div style="width:40px;height:40px;border:3px solid #27272A;border-top-color:#FAFAFA;border-radius:50%;animation:spin-loader 0.8s linear infinite;"></div>
+  <div style="font-size:13px;color:#71717A;">Cargando datos...</div>
 </div>
 <style>@keyframes spin-loader{to{transform:rotate(360deg);}}</style>
-
 
 </body>
 </html>
