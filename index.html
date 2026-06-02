@@ -1201,19 +1201,33 @@ async function upsertUsuarioSupa(u){
 function isAdmin(){ return currentUser && currentUser.role==='admin'; }
 
 async function loadSupa(tabla){
-  // Todos leen de zaifi_global (datos compartidos de la empresa)
-  const data = await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&select=data`);
-  return (data||[]).map(r=>r.data);
+  if(isAdmin()){
+    const data = await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&select=data`);
+    return (data||[]).map(r=>r.data);
+  } else {
+    const uid = currentUser.id;
+    const data = await supaFetch(`zaifi_data?user_id=eq.${uid}&tabla=eq.${encodeURIComponent(tabla)}&select=data`);
+    return (data||[]).map(r=>r.data);
+  }
 }
 
 async function saveSupa(tabla, arr){
-  // Todos guardan en zaifi_global (datos compartidos de la empresa)
-  await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
-  if(arr.length){
-    const rows = arr.map(item=>({tabla, record_id: item.id||String(Math.random()), data: item}));
-    await supaFetch('zaifi_global', 'POST', rows);
+  // Delete all records for this table first, then reinsert
+  if(isAdmin()){
+    await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
+    if(arr.length){
+      const rows = arr.map(item=>({tabla, record_id: item.id||String(Math.random()), data: item}));
+      await supaFetch('zaifi_global', 'POST', rows);
+    }
+  } else {
+    const uid = currentUser.id;
+    await supaFetch(`zaifi_data?user_id=eq.${uid}&tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
+    if(arr.length){
+      const rows = arr.map(item=>({user_id:uid, tabla, record_id: item.id||String(Math.random()), data: item}));
+      await supaFetch('zaifi_data', 'POST', rows);
+    }
   }
-  // Cache local
+  // Also keep localStorage as cache
   localStorage.setItem(dbKey(tabla), JSON.stringify(arr));
 }
 
@@ -1334,8 +1348,9 @@ function doLogout(){
 let currentUser = null;
 
 function dbKey(table){
-  // Todos los usuarios comparten los mismos datos (zaifi_global)
-  return 'zaifi_global_'+table;
+  // Admin ve todos los datos globales; usuarios ven solo los suyos
+  if(currentUser.role==='admin') return 'zaifi_global_'+table;
+  return 'zaifi_user_'+currentUser.id+'_'+table;
 }
 
 function load(table){ try{return JSON.parse(localStorage.getItem(dbKey(table)))||[];}catch(e){return[];} }
@@ -1347,7 +1362,7 @@ function save(table,data){
 
 // Load all data from Supabase on login
 async function loadDataFromSupa(){
-  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa'];
+  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','resumenes','bancosPropios','bancosTerc'];
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
@@ -1391,14 +1406,12 @@ function loadApp(user){
   showScreen('app');
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
-  // Sync from Supabase
-  toast('Sincronizando datos...');
+  // Sync from Supabase in background
   loadDataFromSupa().then(()=>{
     loadData();
     renderAll();
-    renderDashboardChecklist && renderDashboardChecklist();
-    toast('✅ Datos al día');
-  }).catch(e=>{ console.log('Sync error:',e); toast('⚠️ Sin conexión — usando datos locales'); });
+    toast('✅ Datos sincronizados');
+  }).catch(e=>console.log('Sync error:',e));
 }
 
 function renderAll(){
@@ -3107,8 +3120,6 @@ function enviarWhatsApp(clienteNombre, tipo){
   window.open(url,'_blank');
 }
 
-// Agregar botón WhatsApp en estado de cuenta
-const _origVerEstadoCuenta = verEstadoCuenta;
 
 // ══════════════════════════════════════════════
 // FACTURACIÓN AVANZADA — FLUJO COMPLETO
@@ -3500,7 +3511,7 @@ function irATarea(idx){
   if(t.tipo==='resumen') goTo('resumenes',nav);
   else if(t.tipo==='cobro') goTo('facturacion',nav);
   else if(t.tipo==='pago') goTo('cxp',nav);
-  else if(t.tipo==='sueldo'){ marcarPagoEmp(t.empleadoId); renderDashboardChecklist(); }
+  else if(t.tipo==='sueldo'){ marcarPagoEmp(t.empleadoId); }
 }
 
 // ══════════════════════════════════════════════
@@ -4274,17 +4285,9 @@ function renderCuentaCorriente(){
 // ══════════════════════════════════════════════
 
 function getPerfil(){
-  try{ 
-    const arr = JSON.parse(localStorage.getItem(dbKey('perfil_empresa')));
-    if(Array.isArray(arr)) return arr[0]||{};
-    return arr||{};
-  }catch(e){ return {}; }
+  try{ return JSON.parse(localStorage.getItem(dbKey('perfil_empresa')))||{}; }catch(e){ return {}; }
 }
-function savePerfil(d){ 
-  localStorage.setItem(dbKey('perfil_empresa'), JSON.stringify(d));
-  // Sync to Supabase as a single-record table
-  saveSupa('perfil_empresa', [d]).catch(e=>console.log('Perfil sync error:',e));
-}
+function savePerfil(d){ localStorage.setItem(dbKey('perfil_empresa'), JSON.stringify(d)); }
 
 function cargarPerfil(){
   const p = getPerfil();
