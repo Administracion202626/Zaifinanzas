@@ -1159,7 +1159,7 @@ tr:hover td{background:#F5F2EC;}
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════
 const SUPA_URL = 'https://idvzrkadkqhxuboyctsa.supabase.co';
-const SUPA_KEY = 'sb_publishable_NvTG8MMuxyotB5pWuD7PQg_GVWi7S75';
+const SUPA_KEY = 'sb_publishable_lL8DFHYjcLpyrsngup4i5g_TQhROJWL';
 // Users are stored in a shared localStorage key for cross-device support
 // Admin is always available hardcoded
 const SHARED_USERS_KEY = 'zaifi_shared_users_v2';
@@ -1201,33 +1201,19 @@ async function upsertUsuarioSupa(u){
 function isAdmin(){ return currentUser && currentUser.role==='admin'; }
 
 async function loadSupa(tabla){
-  if(isAdmin()){
-    const data = await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&select=data`);
-    return (data||[]).map(r=>r.data);
-  } else {
-    const uid = currentUser.id;
-    const data = await supaFetch(`zaifi_data?user_id=eq.${uid}&tabla=eq.${encodeURIComponent(tabla)}&select=data`);
-    return (data||[]).map(r=>r.data);
-  }
+  // Todos leen de zaifi_global (datos compartidos de la empresa)
+  const data = await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&select=data`);
+  return (data||[]).map(r=>r.data);
 }
 
 async function saveSupa(tabla, arr){
-  // Delete all records for this table first, then reinsert
-  if(isAdmin()){
-    await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
-    if(arr.length){
-      const rows = arr.map(item=>({tabla, record_id: item.id||String(Math.random()), data: item}));
-      await supaFetch('zaifi_global', 'POST', rows);
-    }
-  } else {
-    const uid = currentUser.id;
-    await supaFetch(`zaifi_data?user_id=eq.${uid}&tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
-    if(arr.length){
-      const rows = arr.map(item=>({user_id:uid, tabla, record_id: item.id||String(Math.random()), data: item}));
-      await supaFetch('zaifi_data', 'POST', rows);
-    }
+  // Todos guardan en zaifi_global (datos compartidos de la empresa)
+  await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
+  if(arr.length){
+    const rows = arr.map(item=>({tabla, record_id: item.id||String(Math.random()), data: item}));
+    await supaFetch('zaifi_global', 'POST', rows);
   }
-  // Also keep localStorage as cache
+  // Cache local
   localStorage.setItem(dbKey(tabla), JSON.stringify(arr));
 }
 
@@ -1348,9 +1334,8 @@ function doLogout(){
 let currentUser = null;
 
 function dbKey(table){
-  // Admin ve todos los datos globales; usuarios ven solo los suyos
-  if(currentUser.role==='admin') return 'zaifi_global_'+table;
-  return 'zaifi_user_'+currentUser.id+'_'+table;
+  // Todos los usuarios comparten los mismos datos (zaifi_global)
+  return 'zaifi_global_'+table;
 }
 
 function load(table){ try{return JSON.parse(localStorage.getItem(dbKey(table)))||[];}catch(e){return[];} }
@@ -1362,7 +1347,7 @@ function save(table,data){
 
 // Load all data from Supabase on login
 async function loadDataFromSupa(){
-  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','resumenes','bancosPropios','bancosTerc'];
+  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa'];
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
@@ -1406,12 +1391,14 @@ function loadApp(user){
   showScreen('app');
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
-  // Sync from Supabase in background
+  // Sync from Supabase
+  toast('Sincronizando datos...');
   loadDataFromSupa().then(()=>{
     loadData();
     renderAll();
-    toast('✅ Datos sincronizados');
-  }).catch(e=>console.log('Sync error:',e));
+    renderDashboardChecklist && renderDashboardChecklist();
+    toast('✅ Datos al día');
+  }).catch(e=>{ console.log('Sync error:',e); toast('⚠️ Sin conexión — usando datos locales'); });
 }
 
 function renderAll(){
@@ -4287,9 +4274,17 @@ function renderCuentaCorriente(){
 // ══════════════════════════════════════════════
 
 function getPerfil(){
-  try{ return JSON.parse(localStorage.getItem(dbKey('perfil_empresa')))||{}; }catch(e){ return {}; }
+  try{ 
+    const arr = JSON.parse(localStorage.getItem(dbKey('perfil_empresa')));
+    if(Array.isArray(arr)) return arr[0]||{};
+    return arr||{};
+  }catch(e){ return {}; }
 }
-function savePerfil(d){ localStorage.setItem(dbKey('perfil_empresa'), JSON.stringify(d)); }
+function savePerfil(d){ 
+  localStorage.setItem(dbKey('perfil_empresa'), JSON.stringify(d));
+  // Sync to Supabase as a single-record table
+  saveSupa('perfil_empresa', [d]).catch(e=>console.log('Perfil sync error:',e));
+}
 
 function cargarPerfil(){
   const p = getPerfil();
