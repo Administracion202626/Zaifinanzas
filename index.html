@@ -4,127 +4,127 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zaifi — Gestión Empresarial</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#F8F7F4;--white:#FFFFFF;
-  --z1:#1E293B;--z2:#334155;
-  --accent:#6C5CE7;--accent2:#A89AF7;--accent-dark:#4834D4;
-  --green:#2D9B6F;--green-light:#E8F7F0;
-  --red:#D64545;--red-light:#FDF0F0;
-  --blue:#3B82F6;--blue-light:#EFF6FF;
-  --yellow:#D4A017;--yellow-light:#FEF9E7;
-  --text:#0D0D0D;--text2:#4A4A5A;--text3:#9898A8;
-  --border:#E8E6E0;--shadow:0 2px 20px rgba(13,13,13,0.06);
-  --shadow-lg:0 8px 40px rgba(13,13,13,0.12);
-  --radius:16px;--radius-lg:24px;
+  --bg:#F5F2EC;--white:#FDFCF9;
+  --z1:#0D0D0D;--z2:#2A2A2A;
+  --accent:#0D0D0D;--accent2:#444444;--accent-dark:#000000;
+  --green:#1A7A52;--green-light:#EAF4EE;
+  --red:#B83232;--red-light:#FBF0F0;
+  --blue:#1A4A7A;--blue-light:#EEF3FA;
+  --yellow:#8A6A00;--yellow-light:#FBF6E6;
+  --text:#0D0D0D;--text2:#3A3A3A;--text3:#888880;
+  --border:#DDD9D0;--shadow:0 1px 12px rgba(13,13,13,0.06);
+  --shadow-lg:0 6px 32px rgba(13,13,13,0.10);
+  --radius:12px;--radius-lg:16px;
 }
-body{font-family:'Inter',sans-serif;font-size:16px;background:#F8FAFC;color:#334155;min-height:100vh;}
+body{font-family:'Inter',sans-serif;font-size:16px;background:#F5F2EC;color:#0D0D0D;min-height:100vh;}
 
 /* ── AUTH SCREENS ── */
-.auth-screen{display:none;min-height:100vh;background:linear-gradient(135deg,#1A1A2E 0%,#2E1A5E 100%);align-items:center;justify-content:center;padding:20px;}
+.auth-screen{display:none;min-height:100vh;background:#0D0D0D;align-items:center;justify-content:center;padding:20px;}
 .auth-screen.active{display:flex;}
-.auth-card{background:white;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.auth-card{background:#FDFCF9;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
 .auth-logo{text-align:center;margin-bottom:28px;}
 .auth-logo svg{width:200px;}
 .auth-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:900;color:var(--z1);margin-bottom:6px;text-align:center;}
 .auth-sub{font-size:14px;color:var(--text3);text-align:center;margin-bottom:28px;}
 .auth-input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-family:'Inter',sans-serif;color:var(--text);outline:none;margin-bottom:14px;transition:border-color 0.2s;}
-.auth-input:focus{border-color:var(--accent);}
+.auth-input:focus{border-color:#0D0D0D;}
 .auth-btn{width:100%;padding:14px;background:var(--z1);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px;transition:background 0.2s;}
 .auth-btn:hover{background:#333;}
 .auth-switch{text-align:center;margin-top:20px;font-size:14px;color:var(--text3);}
-.auth-switch a{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none;}
+.auth-switch a{color:#0D0D0D;font-weight:700;cursor:pointer;text-decoration:none;}
 .auth-error{background:var(--red-light);color:var(--red);padding:10px 14px;border-radius:10px;font-size:14px;margin-bottom:14px;display:none;}
 .auth-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;}
 
 /* ── APP ── */
 .app-screen{display:none;min-height:100vh;}
 .app-screen.active{display:flex;}
-.sidebar{width:270px;min-height:100vh;background:#F1F5F9;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#CBD5E1 transparent;}
+.sidebar{width:260px;min-height:100vh;background:#FDFCF9;border-right:1px solid #DDD9D0;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#C8C4BA transparent;}
 .sidebar::-webkit-scrollbar{width:4px;}
-.sidebar::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px;}
-.main{margin-left:270px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
-.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid #E2E8F0;}
-.empresa-badge{margin:14px 18px;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
-.empresa-dot{width:8px;height:8px;background:#6C5CE7;border-radius:50%;flex-shrink:0;}
-.empresa-name{font-size:15px;font-weight:600;color:#3730A3;}
+.sidebar::-webkit-scrollbar-thumb{background:#C8C4BA;border-radius:4px;}
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.sidebar-brand{padding:28px 22px 22px;border-bottom:1px solid #DDD9D0;}
+.empresa-badge{margin:14px 18px;background:#F0EDE6;border:1px solid #DDD9D0;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.empresa-dot{width:6px;height:6px;background:#0D0D0D;border-radius:50%;flex-shrink:0;}
+.empresa-name{font-size:14px;font-weight:700;color:#0D0D0D;letter-spacing:0.2px;}
 .nav-section{padding:6px 10px;}
-.nav-section-label{font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1.5px;padding:10px 12px 5px;font-family:'Inter',sans-serif;}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all 0.2s;color:#475569;font-size:15px;font-weight:500;margin-bottom:2px;}
-.nav-item:hover{background:#E2E8F0;color:#1E293B;}
-.nav-item.active{background:#EEF2FF;color:#6C5CE7;font-weight:600;}
+.nav-section-label{font-size:9px;font-weight:700;color:#B0AA9E;text-transform:uppercase;letter-spacing:2px;padding:14px 14px 4px;font-family:'Inter',sans-serif;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;cursor:pointer;transition:all 0.15s;color:#5A5650;font-size:14px;font-weight:500;margin-bottom:1px;}
+.nav-item:hover{background:#EDE9E1;color:#0D0D0D;}
+.nav-item.active{background:#0D0D0D;color:#FDFCF9;font-weight:600;}
 .nav-item .ni{font-size:17px;width:22px;text-align:center;flex-shrink:0;line-height:1;}
-.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid #E2E8F0;}
+.sidebar-bottom{margin-top:auto;padding:18px 20px;border-top:1px solid #DDD9D0;}
 .user-row{display:flex;align-items:center;gap:10px;}
-.user-av{width:36px;height:36px;background:linear-gradient(135deg,#6C5CE7,#5A4BD1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0;}
-.user-name{font-size:15px;font-weight:600;color:#1E293B;}
-.user-role{font-size:11px;color:#94A3B8;}
-.topbar{background:#F8FAFC;border-bottom:1px solid #E2E8F0;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.topbar-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;letter-spacing:-0.5px;}
+.user-av{width:34px;height:34px;background:#0D0D0D;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#FDFCF9;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:#0D0D0D;}
+.user-role{font-size:11px;color:#888880;}
+.topbar{background:#F5F2EC;border-bottom:1px solid #DDD9D0;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;color:#0D0D0D;letter-spacing:-0.2px;}
 .topbar-right{display:flex;align-items:center;gap:12px;}
 .tb-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all 0.2s;}
-.tb-btn-primary{background:#6C5CE7;color:white;border-radius:10px;}
-.tb-btn-primary:hover{background:#5A4BD1;}
-.tb-btn-sec{background:#F1F5F9;color:#475569;border:1.5px solid #E2E8F0;}
-.tb-btn-sec:hover{border-color:#6C5CE7;color:#6C5CE7;}
-.content{padding:28px 32px;flex:1;background:#F8FAFC;}
+.tb-btn-primary{background:#0D0D0D;color:#FDFCF9;border-radius:7px;}
+.tb-btn-primary:hover{background:#2A2A2A;}
+.tb-btn-sec{background:#FDFCF9;color:#3A3A3A;border:1px solid #DDD9D0;border-radius:7px;}
+.tb-btn-sec:hover{border-color:#0D0D0D;color:#0D0D0D;}
+.content{padding:28px 32px;flex:1;background:#F5F2EC;}
 .page{display:none;}
 .page.active{display:block;}
 
 /* ── FILTER BAR ── */
-.filter-bar{display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(15,23,42,0.04);}
-.filter-bar label{font-size:12px;font-weight:600;color:#94A3B8;font-family:'Inter',sans-serif;}
-.filter-bar input[type=date],.filter-bar select{border:1.5px solid #E2E8F0;border-radius:8px;padding:6px 10px;font-size:13px;font-family:'Inter',sans-serif;color:#334155;outline:none;background:#F8FAFC;}
-.filter-bar input[type=date]:focus,.filter-bar select:focus{border-color:#6C5CE7;}
-.filter-clear{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #E2E8F0;font-family:'Inter',sans-serif;background:#F1F5F9;color:#475569;}
+.filter-bar{display:flex;align-items:center;gap:10px;background:#FDFCF9;border:1px solid #DDD9D0;border-radius:8px;padding:10px 16px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar label{font-size:12px;font-weight:600;color:#888880;font-family:'Inter',sans-serif;}
+.filter-bar input[type=date],.filter-bar select{border:1.5px solid #DDD9D0;border-radius:8px;padding:6px 10px;font-size:13px;font-family:'Inter',sans-serif;color:#2A2A2A;outline:none;background:#F5F2EC;}
+.filter-bar input[type=date]:focus,.filter-bar select:focus{border-color:#0D0D0D;}
+.filter-clear{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #DDD9D0;font-family:'Inter',sans-serif;background:#F0EDE6;color:#5A5650;}
 
 /* ── STATS ── */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
-.stat-card{background:#FFFFFF;border-radius:16px;padding:20px;border:1px solid #E2E8F0;box-shadow:0 1px 8px rgba(15,23,42,0.06);}
+.stat-card{background:#FDFCF9;border-radius:10px;padding:20px;border:1px solid #DDD9D0;}
 .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;}
-.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;color:#1E293B;margin-bottom:4px;letter-spacing:-0.5px;}
-.stat-label{font-size:13px;color:#64748B;font-weight:500;font-family:'Inter',sans-serif;}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;color:#0D0D0D;margin-bottom:4px;letter-spacing:-0.5px;}
+.stat-label{font-size:12px;color:#888880;font-weight:500;font-family:'Inter',sans-serif;letter-spacing:0.1px;}
 .up{color:var(--green);}.down{color:var(--red);}
 
 /* ── TABLE ── */
-.table-card{background:#FFFFFF;border-radius:16px;border:1px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(15,23,42,0.06);}
-.table-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
-.th-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:#1E293B;}
-.th-sub{font-size:13px;color:#94A3B8;margin-top:2px;font-family:'Inter',sans-serif;}
-.search-box{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid #E2E8F0;border-radius:10px;background:#F8FAFC;}
-.search-box input{border:none;outline:none;background:none;font-size:13px;font-family:'Inter',sans-serif;color:#334155;width:170px;}
+.table-card{background:#FDFCF9;border-radius:10px;border:1px solid #DDD9D0;overflow:hidden;}
+.table-head{padding:16px 22px;border-bottom:1px solid #DDD9D0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+.th-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:#0D0D0D;letter-spacing:-0.1px;}
+.th-sub{font-size:12px;color:#888880;margin-top:1px;font-family:'Inter',sans-serif;}
+.search-box{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid #DDD9D0;border-radius:10px;background:#F5F2EC;}
+.search-box input{border:none;outline:none;background:none;font-size:13px;font-family:'Inter',sans-serif;color:#2A2A2A;width:170px;}
 table{width:100%;border-collapse:collapse;}
-th{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;padding:12px 20px;text-align:left;border-bottom:1px solid #E2E8F0;background:#F8FAFC;font-family:'Inter',sans-serif;}
-td{padding:13px 20px;font-size:14px;border-bottom:1px solid #F1F5F9;vertical-align:middle;font-family:'Inter',sans-serif;color:#334155;}
+th{font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;padding:11px 20px;text-align:left;border-bottom:1px solid #DDD9D0;background:#F5F2EC;font-family:'Inter',sans-serif;}
+td{padding:13px 20px;font-size:14px;border-bottom:1px solid #F1F5F9;vertical-align:middle;font-family:'Inter',sans-serif;color:#2A2A2A;}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:#F8FAFC;}
-.td-main{font-weight:600;color:#1E293B;font-size:14px;}
-.td-sub{font-size:12px;color:#94A3B8;margin-top:2px;}
+tr:hover td{background:#F5F2EC;}
+.td-main{font-weight:600;color:#0D0D0D;font-size:14px;}
+.td-sub{font-size:12px;color:#888880;margin-top:2px;}
 .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;gap:4px;font-family:'Inter',sans-serif;letter-spacing:0.2px;}
 .badge-green{background:var(--green-light);color:var(--green);}
 .badge-red{background:var(--red-light);color:var(--red);}
 .badge-yellow{background:var(--yellow-light);color:var(--yellow);}
 .badge-blue{background:var(--blue-light);color:var(--blue);}
 .badge-gray{background:#F0F0F0;color:var(--text3);}
-.action-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;font-family:'Inter',sans-serif;background:#F8FAFC;color:#475569;transition:all 0.2s;}
-.action-btn:hover{background:#6C5CE7;color:white;border-color:#6C5CE7;}
+.action-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #DDD9D0;font-family:'Inter',sans-serif;background:#F5F2EC;color:#5A5650;transition:all 0.2s;}
+.action-btn:hover{background:#0D0D0D;color:white;border-color:#0D0D0D;}
 .action-btns{display:flex;gap:6px;}
 .client-av{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white;flex-shrink:0;}
 
 /* ── CATALOG ── */
 .catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .catalog-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow);transition:all 0.2s;}
-.catalog-card:hover{border-color:#6C5CE7;transform:translateY(-2px);}
+.catalog-card:hover{border-color:#0D0D0D;transform:translateY(-2px);}
 .catalog-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
 .catalog-desc{font-size:14px;color:var(--text3);margin-bottom:12px;}
 .catalog-price{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:900;color:var(--text);}
 
 /* ── FACTURAS ── */
 .factura-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px 22px;display:flex;align-items:center;gap:18px;margin-bottom:8px;box-shadow:var(--shadow);transition:all 0.2s;}
-.factura-card:hover{border-color:#6C5CE7;}
+.factura-card:hover{border-color:#0D0D0D;}
 
 /* ── SUMMARY ── */
 .summary-banner{display:flex;gap:16px;margin-bottom:16px;}
@@ -141,24 +141,24 @@ tr:hover td{background:#F8FAFC;}
 .modal-overlay.open{display:flex;}
 .modal{background:#FFFFFF;border-radius:20px;padding:32px;max-width:520px;width:92%;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;box-shadow:0 20px 60px rgba(15,23,42,0.15);}
 @keyframes popIn{from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);}}
-.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#1E293B;margin-bottom:4px;}
-.modal-sub{font-size:13px;color:#94A3B8;margin-bottom:20px;font-family:'Inter',sans-serif;}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#0D0D0D;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:#888880;margin-bottom:20px;font-family:'Inter',sans-serif;}
 .form-group{margin-bottom:14px;}
-.form-label{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;display:block;font-family:'Inter',sans-serif;}
-.form-input{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:#1E293B;outline:none;transition:border-color 0.2s;background:#FFFFFF;}
-.form-input:focus{border-color:#6C5CE7;box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
-.form-select{width:100%;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:#1E293B;outline:none;background:#FFFFFF;cursor:pointer;}
+.form-label{font-size:11px;font-weight:700;color:#5A5650;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;display:block;font-family:'Inter',sans-serif;}
+.form-input{width:100%;padding:10px 14px;border:1.5px solid #DDD9D0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:#0D0D0D;outline:none;transition:border-color 0.2s;background:#FFFFFF;}
+.form-input:focus{border-color:#0D0D0D;box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
+.form-select{width:100%;padding:10px 14px;border:1.5px solid #DDD9D0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;color:#0D0D0D;outline:none;background:#FFFFFF;cursor:pointer;}
 .modal-btns{display:flex;gap:10px;margin-top:22px;}
 .modal-btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
-.modal-btn-primary{background:#6C5CE7;color:white;}
-.modal-btn-cancel{background:#F1F5F9;color:#475569;}
-.toast{position:fixed;bottom:24px;right:80px;background:#1E293B;color:white;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:400;transform:translateY(80px);opacity:0;transition:all 0.3s;}
+.modal-btn-primary{background:#0D0D0D;color:#FDFCF9;}
+.modal-btn-cancel{background:#F0EDE6;color:#5A5650;}
+.toast{position:fixed;bottom:24px;right:80px;background:#0D0D0D;color:white;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:400;transform:translateY(80px);opacity:0;transition:all 0.3s;}
 .toast.show{transform:translateY(0);opacity:1;}
 
 /* ── BOT ── */
 .bot-container{display:flex;flex-direction:column;height:calc(100vh - 73px);}
 .bot-header{background:var(--z1);padding:16px 24px;display:flex;align-items:center;gap:14px;border-radius:16px 16px 0 0;}
-.bot-av{width:46px;height:46px;background:linear-gradient(135deg,#6C5CE7,#4834D4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.bot-av{width:46px;height:46px;background:linear-gradient(135deg,#6C5CE7,#000000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
 .bot-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;color:white;}
 .bot-status{font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:6px;margin-top:2px;}
 .online-dot{width:7px;height:7px;background:#25D366;border-radius:50%;animation:blink 2s infinite;}
@@ -170,7 +170,7 @@ tr:hover td{background:#F8FAFC;}
 .msg-row.out{justify-content:flex-end;}
 .bubble{max-width:75%;padding:10px 14px;border-radius:14px;font-size:15px;line-height:1.6;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 .bubble.in{background:white;border-top-left-radius:4px;color:var(--text);}
-.bubble.out{background:#6C5CE7;border-top-right-radius:4px;color:white;}
+.bubble.out{background:#0D0D0D;border-top-right-radius:4px;color:white;}
 .bubble-time{font-size:11px;color:var(--text3);margin-top:4px;text-align:right;}
 .bubble.out .bubble-time{color:rgba(255,255,255,0.6);}
 .typing{display:flex;gap:5px;padding:12px 16px;background:white;border-radius:14px;border-top-left-radius:4px;width:60px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
@@ -195,9 +195,9 @@ tr:hover td{background:#F8FAFC;}
 .dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-bottom:24px;}
 
 /* ── SCROLL TO TOP ── */
-.scroll-top{position:fixed;bottom:28px;right:28px;width:40px;height:40px;background:#6C5CE7;color:white;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transform:translateY(10px);transition:all 0.3s;z-index:300;font-family:'Inter',sans-serif;}
+.scroll-top{position:fixed;bottom:28px;right:28px;width:40px;height:40px;background:#0D0D0D;color:white;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transform:translateY(10px);transition:all 0.3s;z-index:300;font-family:'Inter',sans-serif;}
 .scroll-top.visible{opacity:1;transform:translateY(0);}
-.scroll-top:hover{background:#6C5CE7;}
+.scroll-top:hover{background:#0D0D0D;}
 </style>
 </head>
 <body>
@@ -209,7 +209,7 @@ tr:hover td{background:#F8FAFC;}
   <div class="auth-card">
     <div class="auth-logo">
       <svg viewBox="0 0 360 90" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="5" width="78" height="78" rx="18" fill="#6C5CE7"/>
+        <rect x="0" y="5" width="78" height="78" rx="18" fill="#1A1A1A"/>
         <ellipse cx="38" cy="52" rx="17" ry="13" fill="white"/>
         <rect x="43" y="36" width="7" height="14" rx="3.5" fill="white"/>
         <circle cx="48" cy="30" r="10" fill="white"/>
@@ -218,9 +218,9 @@ tr:hover td{background:#F8FAFC;}
         <ellipse cx="53" cy="38" rx="2.5" ry="3.5" fill="#E63946"/>
         <polygon points="56,29 63,27 56,33" fill="#FFD93D"/>
         <circle cx="52" cy="27" r="2.2" fill="#1A1A2E"/>
-        <text x="43" y="57" text-anchor="middle" font-size="15" font-weight="900" fill="#6C5CE7" font-family="system-ui">$</text>
+        <text x="43" y="57" text-anchor="middle" font-size="15" font-weight="900" fill="#1A1A1A" font-family="system-ui">$</text>
         <text x="92" y="60" font-size="52" font-weight="900" fill="#1A1A2E" font-family="system-ui" letter-spacing="-2">Zai</text>
-        <text x="182" y="60" font-size="52" font-weight="900" fill="#6C5CE7" font-family="system-ui" letter-spacing="-2">fi</text>
+        <text x="182" y="60" font-size="52" font-weight="900" fill="#1A1A1A" font-family="system-ui" letter-spacing="-2">fi</text>
       </svg>
     </div>
     <div class="auth-title">Bienvenido a Zaifi</div>
@@ -229,15 +229,15 @@ tr:hover td{background:#F8FAFC;}
     <div class="auth-error" id="login-error"></div>
 
     <!-- Google Login -->
-    <button onclick="loginConGoogle()" style="width:100%;padding:12px;background:white;border:1.5px solid #E2E8F0;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;color:#1E293B;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#6C5CE7'" onmouseout="this.style.borderColor='#E2E8F0'">
+    <button onclick="loginConGoogle()" style="width:100%;padding:12px;background:white;border:1.5px solid #DDD9D0;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;color:#0D0D0D;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#0D0D0D'" onmouseout="this.style.borderColor='#DDD9D0'">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Continuar con Google
     </button>
 
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <div style="flex:1;height:1px;background:#E2E8F0;"></div>
-      <span style="font-size:11px;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:1px;">o con email</span>
-      <div style="flex:1;height:1px;background:#E2E8F0;"></div>
+      <div style="flex:1;height:1px;background:#DDD9D0;"></div>
+      <span style="font-size:11px;color:#888880;font-weight:600;text-transform:uppercase;letter-spacing:1px;">o con email</span>
+      <div style="flex:1;height:1px;background:#DDD9D0;"></div>
     </div>
 
     <label class="auth-label">Email</label>
@@ -246,12 +246,12 @@ tr:hover td{background:#F8FAFC;}
     <label class="auth-label">Contraseña</label>
     <div style="position:relative;margin-bottom:0;">
       <input class="auth-input" id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:48px;margin-bottom:0;" autocomplete="current-password"/>
-      <button type="button" onclick="togglePass('login-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94A3B8;font-size:18px;line-height:1;">👁</button>
+      <button type="button" onclick="togglePass('login-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888880;font-size:18px;line-height:1;">👁</button>
     </div>
 
     <button class="auth-btn" style="margin-top:16px;" onclick="doLogin()">Ingresar →</button>
-    <div style="text-align:right;margin-top:10px;"><a onclick="showScreen('forgot')" style="font-size:13px;color:#6C5CE7;cursor:pointer;font-weight:600;">¿Olvidaste tu contraseña?</a></div>
-    <div class="auth-switch" style="margin-top:10px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:#6C5CE7;font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
+    <div style="text-align:right;margin-top:10px;"><a onclick="showScreen('forgot')" style="font-size:13px;color:#0D0D0D;cursor:pointer;font-weight:600;">¿Olvidaste tu contraseña?</a></div>
+    <div class="auth-switch" style="margin-top:10px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:#0D0D0D;font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
   </div>
 </div>
 
@@ -262,19 +262,19 @@ tr:hover td{background:#F8FAFC;}
   <div class="auth-card">
     <div class="auth-logo">
       <svg viewBox="0 0 360 90" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="5" width="78" height="78" rx="18" fill="#6C5CE7"/>
+        <rect x="0" y="5" width="78" height="78" rx="18" fill="#1A1A1A"/>
         <ellipse cx="38" cy="52" rx="17" ry="13" fill="white"/>
         <rect x="43" y="36" width="7" height="14" rx="3.5" fill="white"/>
         <circle cx="48" cy="30" r="10" fill="white"/>
-        <text x="43" y="57" text-anchor="middle" font-size="15" font-weight="900" fill="#6C5CE7" font-family="system-ui">$</text>
+        <text x="43" y="57" text-anchor="middle" font-size="15" font-weight="900" fill="#1A1A1A" font-family="system-ui">$</text>
         <text x="92" y="60" font-size="52" font-weight="900" fill="#1A1A2E" font-family="system-ui" letter-spacing="-2">Zai</text>
-        <text x="182" y="60" font-size="52" font-weight="900" fill="#6C5CE7" font-family="system-ui" letter-spacing="-2">fi</text>
+        <text x="182" y="60" font-size="52" font-weight="900" fill="#1A1A1A" font-family="system-ui" letter-spacing="-2">fi</text>
       </svg>
     </div>
     <div class="auth-title">Solicitar acceso</div>
     <div class="auth-sub">Tu cuenta será revisada por el administrador antes de activarse</div>
     <div class="auth-error" id="reg-error"></div>
-    <div id="reg-success" style="background:#ECFDF5;border-radius:10px;padding:14px;font-size:14px;color:#2D9B6F;margin-bottom:14px;display:none;text-align:center;">
+    <div id="reg-success" style="background:#EAF4EE;border-radius:10px;padding:14px;font-size:14px;color:#1A7A52;margin-bottom:14px;display:none;text-align:center;">
       ✅ <b>Solicitud enviada.</b><br>El administrador recibirá tu pedido y te activará la cuenta.
     </div>
     <label class="auth-label">Nombre completo</label>
@@ -286,9 +286,9 @@ tr:hover td{background:#F8FAFC;}
     <label class="auth-label">Contraseña</label>
     <div style="position:relative;">
       <input class="auth-input" id="reg-pass" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:44px;" onkeydown="if(event.key==='Enter')doRegister()"/>
-      <button type="button" onclick="togglePass('reg-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94A3B8;font-size:18px;padding:4px;">👁</button>
+      <button type="button" onclick="togglePass('reg-pass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888880;font-size:18px;padding:4px;">👁</button>
     </div>
-    <label class="auth-label" style="margin-top:4px;">Mensaje para el administrador <span style="color:#94A3B8;font-weight:400;">(opcional)</span></label>
+    <label class="auth-label" style="margin-top:4px;">Mensaje para el administrador <span style="color:#888880;font-weight:400;">(opcional)</span></label>
     <input class="auth-input" id="reg-mensaje" type="text" placeholder="Ej: Soy asistente administrativa de Nigrum"/>
     <button class="auth-btn" style="margin-top:14px;" onclick="doRegister()">Enviar solicitud →</button>
     <div class="auth-switch">¿Ya tenés cuenta? <a onclick="showScreen('login')">Iniciá sesión</a></div>
@@ -302,23 +302,23 @@ tr:hover td{background:#F8FAFC;}
   <div class="auth-card">
     <div class="auth-logo">
       <svg viewBox="0 0 360 90" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="5" width="78" height="78" rx="18" fill="#6C5CE7"/>
+        <rect x="0" y="5" width="78" height="78" rx="18" fill="#1A1A1A"/>
         <ellipse cx="38" cy="52" rx="17" ry="13" fill="white"/>
         <rect x="43" y="36" width="7" height="14" rx="3.5" fill="white"/>
         <circle cx="48" cy="30" r="10" fill="white"/>
-        <text x="43" y="57" text-anchor="middle" font-size="15" font-weight="900" fill="#6C5CE7" font-family="system-ui">$</text>
+        <text x="43" y="57" text-anchor="middle" font-size="15" font-weight="900" fill="#1A1A1A" font-family="system-ui">$</text>
         <text x="92" y="60" font-size="52" font-weight="900" fill="#1A1A2E" font-family="system-ui" letter-spacing="-2">Zai</text>
-        <text x="182" y="60" font-size="52" font-weight="900" fill="#6C5CE7" font-family="system-ui" letter-spacing="-2">fi</text>
+        <text x="182" y="60" font-size="52" font-weight="900" fill="#1A1A1A" font-family="system-ui" letter-spacing="-2">fi</text>
       </svg>
     </div>
     <div class="auth-title">Recuperar acceso</div>
     <div class="auth-sub">Ingresá tu email y te mostramos tu contraseña</div>
     <div class="auth-error" id="forgot-error"></div>
-    <div id="forgot-success" style="background:#ECFDF5;border-radius:10px;padding:14px;font-size:14px;color:#2D9B6F;margin-bottom:14px;display:none;text-align:center;"></div>
+    <div id="forgot-success" style="background:#EAF4EE;border-radius:10px;padding:14px;font-size:14px;color:#1A7A52;margin-bottom:14px;display:none;text-align:center;"></div>
     <label class="auth-label">Email</label>
     <input class="auth-input" id="forgot-email" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doForgot()"/>
     <button class="auth-btn" style="margin-top:14px;" onclick="doForgot()">Recuperar acceso →</button>
-    <div class="auth-switch" style="margin-top:14px;"><a onclick="showScreen('login')" style="color:#6C5CE7;font-weight:700;cursor:pointer;">← Volver al login</a></div>
+    <div class="auth-switch" style="margin-top:14px;"><a onclick="showScreen('login')" style="color:#0D0D0D;font-weight:700;cursor:pointer;">← Volver al login</a></div>
   </div>
 </div>
 
@@ -333,7 +333,7 @@ tr:hover td{background:#F8FAFC;}
     <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <!-- Gallinita grande -->
-        <div style="width:58px;height:58px;background:#6C5CE7;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(108,92,231,0.3);">
+        <div style="width:58px;height:58px;background:#0D0D0D;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(108,92,231,0.3);">
           <svg width="38" height="38" viewBox="0 0 88 104" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="43" cy="72" rx="19" ry="15" fill="white"/>
             <rect x="49" y="50" width="8" height="16" rx="4" fill="white"/>
@@ -344,14 +344,14 @@ tr:hover td{background:#F8FAFC;}
             <polygon points="63,41 72,38 63,46" fill="#FFD93D"/>
             <circle cx="59" cy="39" r="2.5" fill="#1A1A2E"/>
             <circle cx="60" cy="37.5" r="0.9" fill="white"/>
-            <text x="43" y="77" text-anchor="middle" font-size="14" font-weight="900" fill="#6C5CE7" font-family="system-ui">$</text>
+            <text x="43" y="77" text-anchor="middle" font-size="14" font-weight="900" fill="#1A1A1A" font-family="system-ui">$</text>
           </svg>
         </div>
         <div style="display:flex;flex-direction:column;gap:3px;">
           <div style="display:flex;align-items:baseline;gap:0;line-height:1;">
-            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:900;color:#1E293B;letter-spacing:-2px;">Zai</span><span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:900;color:#6C5CE7;letter-spacing:-2px;">fi</span>
+            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
-          <span style="font-size:9px;font-weight:700;color:#94A3B8;letter-spacing:2.5px;text-transform:uppercase;font-family:'Inter',sans-serif;">GESTIÓN EMPRESARIAL</span>
+          <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Inter',sans-serif;">GESTIÓN EMPRESARIAL</span>
         </div>
       </div>
     </div>
@@ -371,8 +371,8 @@ tr:hover td{background:#F8FAFC;}
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Finanzas</div>
-    <div class="nav-item" onclick="goTo('cxc',this)"><span class="ni" style="color:#2D9B6F;font-size:9px;font-weight:900;background:#E8F7F0;border-radius:4px;padding:2px 4px;width:auto;">CxC</span>Cuentas por Cobrar</div>
-    <div class="nav-item" onclick="goTo('cxp',this)"><span class="ni" style="color:#D64545;font-size:9px;font-weight:900;background:#FDF0F0;border-radius:4px;padding:2px 4px;width:auto;">CxP</span>Cuentas por Pagar</div>
+    <div class="nav-item" onclick="goTo('cxc',this)"><span class="ni" style="color:#1A7A52;font-size:9px;font-weight:900;background:#E8F7F0;border-radius:4px;padding:2px 4px;width:auto;">CxC</span>Cuentas por Cobrar</div>
+    <div class="nav-item" onclick="goTo('cxp',this)"><span class="ni" style="color:#B83232;font-size:9px;font-weight:900;background:#FBF0F0;border-radius:4px;padding:2px 4px;width:auto;">CxP</span>Cuentas por Pagar</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Operaciones</div>
@@ -417,23 +417,71 @@ tr:hover td{background:#F8FAFC;}
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" id="dash-facturacion">$0</div><div class="stat-label">Facturación total</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-val" id="dash-clientes">0</div><div class="stat-label">Clientes activos</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#FEFCE8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="stat-val" id="dash-pendientes">$0</div><div class="stat-label">Por cobrar</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D64545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-val" id="dash-gastos">$0</div><div class="stat-label">Gastos totales</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#EDEDEA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" id="dash-facturacion">$0</div><div class="stat-label">Facturación total</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#EAF4EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-val" id="dash-clientes">0</div><div class="stat-label">Clientes activos</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FBF6E6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A6A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="stat-val" id="dash-pendientes">$0</div><div class="stat-label">Por cobrar</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FBF0F0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-val" id="dash-gastos">$0</div><div class="stat-label">Gastos totales</div></div>
       </div>
-      <div class="dash-grid">
+      <!-- Estado del mes + últimos movimientos -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;">
+
+        <!-- Estado del mes -->
         <div class="table-card">
-          <div class="table-head"><div><div class="th-title">Actividad reciente</div></div></div>
-          <div style="padding:16px 24px;" id="dash-activity"><div style="color:var(--text3);font-size:14px;text-align:center;padding:20px;">Empezá agregando datos →</div></div>
-        </div>
-        <div class="table-card">
-          <div class="table-head"><div><div class="th-title">Resumen financiero</div></div></div>
-          <div style="padding:16px 24px;">
-            <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);"><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Total facturado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:var(--green);" id="r-total-fact">$0</div></div>
-            <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);"><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Total gastos</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:800;color:var(--red);" id="r-total-gast">$0</div></div>
-            <div><div style="font-size:13px;color:var(--text3);margin-bottom:4px;">Ganancia neta</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:900;" id="r-ganancia">$0</div></div>
+          <div class="table-head">
+            <div><div class="th-title" id="dash-mes-titulo">Estado de junio</div><div class="th-sub">Resumen del mes en curso</div></div>
           </div>
+          <div style="padding:20px 22px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+              <div style="padding:14px;background:#F5F2EC;border-radius:8px;border:1px solid #DDD9D0;">
+                <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Facturado</div>
+                <div style="font-size:22px;font-weight:800;color:#0D0D0D;letter-spacing:-0.5px;" id="dash-mes-facturado">$0</div>
+              </div>
+              <div style="padding:14px;background:#F5F2EC;border-radius:8px;border:1px solid #DDD9D0;">
+                <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Cobrado</div>
+                <div style="font-size:22px;font-weight:800;color:#1A7A52;letter-spacing:-0.5px;" id="dash-mes-cobrado">$0</div>
+              </div>
+              <div style="padding:14px;background:#FBF0F0;border-radius:8px;border:1px solid #EDD9D9;">
+                <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Por cobrar</div>
+                <div style="font-size:22px;font-weight:800;color:#B83232;letter-spacing:-0.5px;" id="dash-mes-pendiente">$0</div>
+              </div>
+              <div style="padding:14px;background:#F5F2EC;border-radius:8px;border:1px solid #DDD9D0;">
+                <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Gastos</div>
+                <div style="font-size:22px;font-weight:800;color:#0D0D0D;letter-spacing:-0.5px;" id="dash-mes-gastos">$0</div>
+              </div>
+            </div>
+            <!-- Clientes al día -->
+            <div style="border-top:1px solid #DDD9D0;padding-top:14px;">
+              <div style="font-size:11px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Clientes — estado de cobro</div>
+              <div id="dash-clientes-estado" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Últimos movimientos -->
+        <div class="table-card">
+          <div class="table-head">
+            <div><div class="th-title">Últimos movimientos</div><div class="th-sub">Facturas y cobros recientes</div></div>
+          </div>
+          <div id="dash-activity" style="padding:0;">
+            <div style="color:#888880;font-size:13px;text-align:center;padding:32px;">Sin movimientos aún</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Resumen financiero total -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;">
+        <div class="table-card" style="padding:20px 22px;">
+          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Total facturado</div>
+          <div style="font-size:28px;font-weight:800;color:#0D0D0D;letter-spacing:-1px;" id="r-total-fact">$0</div>
+        </div>
+        <div class="table-card" style="padding:20px 22px;">
+          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Total gastos</div>
+          <div style="font-size:28px;font-weight:800;color:#B83232;letter-spacing:-1px;" id="r-total-gast">$0</div>
+        </div>
+        <div class="table-card" style="padding:20px 22px;">
+          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Ganancia neta</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-1px;" id="r-ganancia">$0</div>
         </div>
       </div>
     </div>
@@ -468,9 +516,9 @@ tr:hover td{background:#F8FAFC;}
       <!-- LISTA DE FACTURAS -->
       <div id="fac-lista-view">
         <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
-          <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:#2D9B6F" id="fact-cobrado">$0</div><div class="stat-label">Cobrado</div></div>
-          <div class="stat-card"><div class="stat-icon" style="background:#FEFCE8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:#D4A017" id="fact-pendiente">$0</div><div class="stat-label">Pendiente</div></div>
-          <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-val" id="fact-total">0</div><div class="stat-label">Emitidas</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#EAF4EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:#1A7A52" id="fact-cobrado">$0</div><div class="stat-label">Cobrado</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FBF6E6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A6A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:#8A6A00" id="fact-pendiente">$0</div><div class="stat-label">Pendiente</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#EDEDEA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="stat-val" id="fact-total">0</div><div class="stat-label">Emitidas</div></div>
         </div>
         <div class="filter-bar">
           <label>Desde</label><input type="date" id="fact-desde" onchange="renderFacturas()">
@@ -490,7 +538,7 @@ tr:hover td{background:#F8FAFC;}
       <div id="fac-form-view" style="display:none;">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
           <button class="action-btn" onclick="volverListaFac()">← Volver</button>
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;" id="fac-form-title">Nueva factura</div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;" id="fac-form-title">Nueva factura</div>
         </div>
 
         <!-- Datos principales -->
@@ -509,7 +557,7 @@ tr:hover td{background:#F8FAFC;}
             </div>
             <div class="form-group">
               <label class="form-label">Número (automático)</label>
-              <input class="form-input" id="fac-numero" readonly style="background:#F8FAFC;color:#94A3B8;cursor:not-allowed;"/>
+              <input class="form-input" id="fac-numero" readonly style="background:#F5F2EC;color:#888880;cursor:not-allowed;"/>
             </div>
             <div class="form-group">
               <label class="form-label">Fecha de emisión</label>
@@ -536,11 +584,11 @@ tr:hover td{background:#F8FAFC;}
               </select>
             </div>
           </div>
-          <div id="fac-cliente-info" style="margin:0 24px 20px;background:#F8FAFC;border-radius:10px;padding:12px 14px;font-size:13px;color:#64748B;display:none;">
+          <div id="fac-cliente-info" style="margin:0 24px 20px;background:#F5F2EC;border-radius:10px;padding:12px 14px;font-size:13px;color:#666660;display:none;">
             <div style="display:flex;gap:24px;flex-wrap:wrap;">
-              <div><span style="color:#94A3B8;font-weight:600;">CUIT:</span> <span id="fac-info-cuit">—</span></div>
-              <div><span style="color:#94A3B8;font-weight:600;">Condición IVA:</span> <span id="fac-info-condicion">—</span></div>
-              <div><span style="color:#94A3B8;font-weight:600;">Domicilio:</span> <span id="fac-info-dom">—</span></div>
+              <div><span style="color:#888880;font-weight:600;">CUIT:</span> <span id="fac-info-cuit">—</span></div>
+              <div><span style="color:#888880;font-weight:600;">Condición IVA:</span> <span id="fac-info-condicion">—</span></div>
+              <div><span style="color:#888880;font-weight:600;">Domicilio:</span> <span id="fac-info-dom">—</span></div>
             </div>
           </div>
         </div>
@@ -553,10 +601,10 @@ tr:hover td{background:#F8FAFC;}
           </div>
           <table>
             <thead><tr><th>Descripción</th><th>Monto ($)</th><th></th></tr></thead>
-            <tbody id="fac-servicios-tbody"><tr><td colspan="3" style="text-align:center;color:#94A3B8;padding:20px;">Agregá un servicio →</td></tr></tbody>
+            <tbody id="fac-servicios-tbody"><tr><td colspan="3" style="text-align:center;color:#888880;padding:20px;">Agregá un servicio →</td></tr></tbody>
           </table>
-          <div style="padding:12px 24px;background:#F8FAFC;border-top:1px solid #E2E8F0;display:flex;justify-content:flex-end;gap:20px;">
-            <span style="font-size:14px;color:#94A3B8;">Subtotal servicios:</span>
+          <div style="padding:12px 24px;background:#F5F2EC;border-top:1px solid #DDD9D0;display:flex;justify-content:flex-end;gap:20px;">
+            <span style="font-size:14px;color:#888880;">Subtotal servicios:</span>
             <span style="font-weight:800;" id="fac-subtotal-srv">$0</span>
           </div>
         </div>
@@ -567,10 +615,10 @@ tr:hover td{background:#F8FAFC;}
             <div><div class="th-title">Logística</div><div class="th-sub">Pegá los envíos desde tu hoja de ruta</div></div>
           </div>
           <div style="padding:16px 24px;">
-            <div style="background:#EFF6FF;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#3B82F6;">
+            <div style="background:#EEF3FA;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#1A4A7A;">
               💡 Copiá las filas de tu hoja de ruta en Excel → <b>Ctrl+C</b> → hacé clic abajo → <b>Ctrl+V</b> → <b>Procesar</b>
             </div>
-            <textarea id="fac-logistica-paste" rows="4" style="width:100%;padding:12px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;resize:vertical;" placeholder="Pegá acá los envíos..."></textarea>
+            <textarea id="fac-logistica-paste" rows="4" style="width:100%;padding:12px;border:1.5px solid #DDD9D0;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;resize:vertical;" placeholder="Pegá acá los envíos..."></textarea>
             <button class="tb-btn tb-btn-primary" style="margin-top:10px;" onclick="procesarLogisticaFac()">Procesar envíos →</button>
           </div>
           <div id="fac-logistica-tabla" style="display:none;">
@@ -578,8 +626,8 @@ tr:hover td{background:#F8FAFC;}
               <thead><tr><th>Fecha</th><th>Tracking</th><th>Cliente envío</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th>Tarifa</th><th></th></tr></thead>
               <tbody id="fac-log-tbody"></tbody>
             </table>
-            <div style="padding:12px 24px;background:#F8FAFC;border-top:1px solid #E2E8F0;display:flex;justify-content:flex-end;gap:20px;">
-              <span style="font-size:14px;color:#94A3B8;">Total logística (<span id="fac-log-count">0</span> envíos):</span>
+            <div style="padding:12px 24px;background:#F5F2EC;border-top:1px solid #DDD9D0;display:flex;justify-content:flex-end;gap:20px;">
+              <span style="font-size:14px;color:#888880;">Total logística (<span id="fac-log-count">0</span> envíos):</span>
               <span style="font-weight:800;" id="fac-subtotal-log">$0</span>
             </div>
           </div>
@@ -589,33 +637,33 @@ tr:hover td{background:#F8FAFC;}
         <div class="table-card" style="margin-bottom:16px;">
           <div class="table-head"><div class="th-title">Totales</div></div>
           <div style="padding:20px 28px;">
-            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">Servicios</span><span style="font-weight:700;" id="fac-tot-srv">$0</span></div>
-            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">Logística</span><span style="font-weight:700;" id="fac-tot-log">$0</span></div>
-            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">Subtotal</span><span style="font-weight:700;" id="fac-subtotal">$0</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Servicios</span><span style="font-weight:700;" id="fac-tot-srv">$0</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Logística</span><span style="font-weight:700;" id="fac-tot-log">$0</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Subtotal</span><span style="font-weight:700;" id="fac-subtotal">$0</span></div>
             <div id="fac-iva-block">
               <div style="padding:10px 0;border-bottom:1px solid #F1F5F9;">
-                <div style="font-size:12px;color:#94A3B8;font-weight:600;margin-bottom:8px;">¿Aplicar IVA?</div>
+                <div style="font-size:12px;color:#888880;font-weight:600;margin-bottom:8px;">¿Aplicar IVA?</div>
                 <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#475569;">
-                    <input type="radio" name="fac-iva-modo" value="sin-iva" id="iva-sin" checked onchange="recalcTotalesFac()" style="accent-color:#6C5CE7;"/>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#5A5650;">
+                    <input type="radio" name="fac-iva-modo" value="sin-iva" id="iva-sin" checked onchange="recalcTotalesFac()" style="accent-color:#0D0D0D;"/>
                     Sin IVA
                   </label>
-                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#475569;">
-                    <input type="radio" name="fac-iva-modo" value="incluido" id="iva-incluido" onchange="recalcTotalesFac()" style="accent-color:#6C5CE7;"/>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#5A5650;">
+                    <input type="radio" name="fac-iva-modo" value="incluido" id="iva-incluido" onchange="recalcTotalesFac()" style="accent-color:#0D0D0D;"/>
                     IVA incluido en el monto
                   </label>
-                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#475569;">
-                    <input type="radio" name="fac-iva-modo" value="agregar" id="iva-agregar" onchange="recalcTotalesFac()" style="accent-color:#6C5CE7;"/>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#5A5650;">
+                    <input type="radio" name="fac-iva-modo" value="agregar" id="iva-agregar" onchange="recalcTotalesFac()" style="accent-color:#0D0D0D;"/>
                     Sumar IVA 21% al monto
                   </label>
                 </div>
               </div>
-              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">Neto gravado</span><span style="font-weight:700;" id="fac-neto">$0</span></div>
-              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#64748B;">IVA (21%)</span><span style="font-weight:700;" id="fac-iva">$0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Neto gravado</span><span style="font-weight:700;" id="fac-neto">$0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">IVA (21%)</span><span style="font-weight:700;" id="fac-iva">$0</span></div>
             </div>
             <div style="display:flex;justify-content:space-between;padding:16px 0 0;font-size:24px;">
               <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:900;">TOTAL</span>
-              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:900;color:#2D9B6F;" id="fac-total-final">$0</span>
+              <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:900;color:#1A7A52;" id="fac-total-final">$0</span>
             </div>
           </div>
         </div>
@@ -877,7 +925,7 @@ tr:hover td{background:#F8FAFC;}
             <div class="th-sub">Para transferencias y pagos</div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <div class="search-box"><span style="color:#94A3B8;font-size:14px;">⌕</span><input placeholder="Buscar..." oninput="searchTable(this,'bancos-tbody')"/></div>
+            <div class="search-box"><span style="color:#888880;font-size:14px;">⌕</span><input placeholder="Buscar..." oninput="searchTable(this,'bancos-tbody')"/></div>
             <button class="tb-btn tb-btn-primary" onclick="openModal('add-banco-tercero')">+ Agregar</button>
           </div>
         </div>
@@ -891,9 +939,9 @@ tr:hover td{background:#F8FAFC;}
     <!-- VENCIMIENTOS -->
     <div class="page" id="page-vencimientos">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;">
-        <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D64545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-val" style="color:#D64545" id="venc-vencidos">0</div><div class="stat-label">Vencidos sin resolver</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#FEFCE8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:#D4A017" id="venc-semana">0</div><div class="stat-label">Vencen esta semana</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:#2D9B6F" id="venc-ok">0</div><div class="stat-label">Al día</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FBF0F0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-val" style="color:#B83232" id="venc-vencidos">0</div><div class="stat-label">Vencidos sin resolver</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FBF6E6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A6A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:#8A6A00" id="venc-semana">0</div><div class="stat-label">Vencen esta semana</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#EAF4EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:#1A7A52" id="venc-ok">0</div><div class="stat-label">Al día</div></div>
       </div>
       <div class="table-card">
         <div class="table-head"><div><div class="th-title">Próximos vencimientos</div><div class="th-sub">Facturas, CxC, CxP y proveedores ordenados por fecha</div></div></div>
@@ -905,30 +953,30 @@ tr:hover td{background:#F8FAFC;}
     <!-- ESTADO DE CUENTA -->
     <div class="page" id="page-estadocuenta">
       <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
-        <div class="search-box" style="flex:1;max-width:300px;"><span style="color:#94A3B8;">⌕</span><input id="ec-search" placeholder="Buscar cliente..." oninput="filtrarEstadoCuenta()" style="width:100%;"/></div>
+        <div class="search-box" style="flex:1;max-width:300px;"><span style="color:#888880;">⌕</span><input id="ec-search" placeholder="Buscar cliente..." oninput="filtrarEstadoCuenta()" style="width:100%;"/></div>
         <select class="form-select" id="ec-cliente-sel" onchange="verEstadoCuenta()" style="max-width:260px;">
           <option value="">Seleccioná un cliente</option>
         </select>
       </div>
       <div id="ec-content">
-        <div style="text-align:center;color:#94A3B8;padding:60px;font-size:15px;">Seleccioná un cliente para ver su estado de cuenta</div>
+        <div style="text-align:center;color:#888880;padding:60px;font-size:15px;">Seleccioná un cliente para ver su estado de cuenta</div>
       </div>
     </div>
 
     <!-- RENTABILIDAD -->
     <div class="page" id="page-rentabilidad">
-      <div style="background:linear-gradient(135deg,#1E293B,#2E1A5E);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+      <div style="background:linear-gradient(135deg,#0D0D0D,#2E1A5E);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
         <div style="font-size:32px;">📊</div>
         <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:white;">Análisis de rentabilidad por cliente</div><div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:3px;">Comparamos lo que facturás vs los costos asignados a cada cliente</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
-        <div class="stat-card"><div style="font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Cliente más rentable</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#2D9B6F;" id="rent-top">—</div></div>
-        <div class="stat-card"><div style="font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Margen promedio</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#6C5CE7;" id="rent-margen">0%</div></div>
-        <div class="stat-card"><div style="font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Clientes en rojo</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#D64545;" id="rent-rojo">0</div></div>
+        <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Cliente más rentable</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#1A7A52;" id="rent-top">—</div></div>
+        <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Margen promedio</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;" id="rent-margen">0%</div></div>
+        <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Clientes en rojo</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#B83232;" id="rent-rojo">0</div></div>
       </div>
       <div class="table-card" style="margin-bottom:20px;">
         <div class="table-head"><div><div class="th-title">Rentabilidad por cliente</div><div class="th-sub">Facturación vs costos asignados</div></div>
-        <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:#94A3B8;"><span style="width:12px;height:12px;background:#2D9B6F;border-radius:3px;display:inline-block;"></span>Rentable <span style="width:12px;height:12px;background:#D64545;border-radius:3px;display:inline-block;margin-left:8px;"></span>En rojo</div></div>
+        <div style="display:flex;gap:8px;align-items:center;font-size:13px;color:#888880;"><span style="width:12px;height:12px;background:#1A7A52;border-radius:3px;display:inline-block;"></span>Rentable <span style="width:12px;height:12px;background:#B83232;border-radius:3px;display:inline-block;margin-left:8px;"></span>En rojo</div></div>
         <table><thead><tr><th>Cliente</th><th>Facturado</th><th>Costo asignado</th><th>Ganancia</th><th>Margen</th><th>Estado</th></tr></thead>
         <tbody id="rent-tbody"></tbody></table>
       </div>
@@ -940,15 +988,15 @@ tr:hover td{background:#F8FAFC;}
 
     <!-- PROYECCIÓN -->
     <div class="page" id="page-proyeccion">
-      <div style="background:linear-gradient(135deg,#1E293B,#2E1A5E);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+      <div style="background:linear-gradient(135deg,#0D0D0D,#2E1A5E);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
         <div style="font-size:32px;">🔮</div>
         <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:white;">Proyección financiera</div><div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:3px;">Estimamos cómo va a cerrar el mes y el trimestre en base a tus datos históricos</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;">
-        <div class="stat-card"><div style="font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Facturado este mes</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;" id="proy-actual">$0</div></div>
-        <div class="stat-card"><div style="font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Proyección mes</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#6C5CE7;" id="proy-mes">$0</div></div>
-        <div class="stat-card"><div style="font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Proyección trimestre</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#2D9B6F;" id="proy-trim">$0</div></div>
-        <div class="stat-card"><div style="font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">vs mes anterior</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;" id="proy-vs">—</div></div>
+        <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Facturado este mes</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;" id="proy-actual">$0</div></div>
+        <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Proyección mes</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;" id="proy-mes">$0</div></div>
+        <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Proyección trimestre</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1A7A52;" id="proy-trim">$0</div></div>
+        <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">vs mes anterior</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;" id="proy-vs">—</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-bottom:20px;">
         <div class="table-card" style="padding:20px;">
@@ -975,7 +1023,7 @@ tr:hover td{background:#F8FAFC;}
           <button class="tb-btn tb-btn-sec" onclick="renderInvitaciones()">↻ Actualizar</button>
         </div>
         <table><thead><tr><th>Nombre</th><th>Email</th><th>Empresa</th><th>Mensaje</th><th>Estado</th><th>Acciones</th></tr></thead>
-        <tbody id="invit-tbody"><tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">Cargando solicitudes...</td></tr></tbody></table>
+        <tbody id="invit-tbody"><tr><td colspan="6" style="text-align:center;color:#888880;padding:32px;">Cargando solicitudes...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -984,8 +1032,8 @@ tr:hover td{background:#F8FAFC;}
     <div class="page" id="page-cuentacorriente">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <div>
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;">📒 Cuenta Corriente por cliente</div>
-          <div style="font-size:13px;color:#94A3B8;margin-top:3px;">Seguimiento mensual de facturación, resúmenes y cobros por cliente</div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;">📒 Cuenta Corriente por cliente</div>
+          <div style="font-size:13px;color:#888880;margin-top:3px;">Seguimiento mensual de facturación, resúmenes y cobros por cliente</div>
         </div>
       </div>
 
@@ -1014,8 +1062,8 @@ tr:hover td{background:#F8FAFC;}
     <!-- ESTADÍSTICAS -->
     <div class="page" id="page-estadisticas">
       <div class="stats-row" style="margin-bottom:24px;">
-        <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" style="color:var(--green)" id="est-facturacion">$0</div><div class="stat-label">Total facturado</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#FEF2F2;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D64545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-val" style="color:var(--red)" id="est-gastos">$0</div><div class="stat-label">Total gastos</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#EDEDEA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" style="color:var(--green)" id="est-facturacion">$0</div><div class="stat-label">Total facturado</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#FBF0F0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-val" style="color:var(--red)" id="est-gastos">$0</div><div class="stat-label">Total gastos</div></div>
         <div class="stat-card"><div class="stat-icon" style="background:var(--green-light);">📈</div><div class="stat-val" id="est-ganancia">$0</div><div class="stat-label">Ganancia neta</div></div>
         <div class="stat-card"><div class="stat-icon" style="background:var(--yellow-light);">🎯</div><div class="stat-val" id="est-margen">0%</div><div class="stat-label">Margen neto</div></div>
       </div>
@@ -1365,7 +1413,7 @@ function empty(msg){ return `<tr><td colspan="9" style="text-align:center;color:
 function renderClientes(){
   const tb=document.getElementById('clients-tbody');
   tb.innerHTML=clientes.length?clientes.map(c=>`
-    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#6C5CE7;">${c.nombre[0].toUpperCase()}</div><div><div class="td-main">${c.nombre}</div><div class="td-sub">${c.email||''}</div></div></div></td>
+    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#0D0D0D;">${c.nombre[0].toUpperCase()}</div><div><div class="td-main">${c.nombre}</div><div class="td-sub">${c.email||''}</div></div></div></td>
     <td>${c.sector||'—'}</td><td><span class="badge badge-blue">${c.servicio||'—'}</span></td>
     <td><span class="badge ${c.estado==='Activo'?'badge-green':'badge-yellow'}">${c.estado==='Activo'?'✓ Activo':'⚠️ '+c.estado}</span></td>
     <td><div class="action-btns"><button class="action-btn" onclick="editarItem('clientes','${c.id}')">Editar</button><button class="action-btn" onclick="eliminar('clientes','${c.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay clientes. Agregá el primero →');
@@ -1399,11 +1447,11 @@ function renderFacturas(){
   document.getElementById('fact-pendiente').textContent=fmt(f.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+(+x.monto||0),0));
   document.getElementById('fact-total').textContent=f.length;
   const el=document.getElementById('facturas-list');
-  const tipoColors={'A':'#003087','B':'#2D9B6F','C':'#D4A017','presupuesto':'#6C5CE7','interna':'#64748B'};
+  const tipoColors={'A':'#003087','B':'#1A7A52','C':'#8A6A00','presupuesto':'#0D0D0D','interna':'#666660'};
   const tipoLabels={'A':'Fact. A','B':'Fact. B','C':'Fact. C','presupuesto':'Presup.','interna':'Interno'};
   const hoyF = today();
   el.innerHTML=f.length?f.map(x=>{
-    const tc=tipoColors[x.tipo]||'#64748B';
+    const tc=tipoColors[x.tipo]||'#666660';
     const tl=tipoLabels[x.tipo]||x.tipo||'Factura';
     const cobrado = x.montoCobrado||0;
     const pendiente = Math.max(0, (+x.monto||0) - cobrado);
@@ -1412,15 +1460,15 @@ function renderFacturas(){
     const diasVence = x.vencimiento ? Math.round((new Date(x.vencimiento)-new Date(hoyF))/(1000*60*60*24)) : null;
     const venceLabel = diasVence===null?'':diasVence<0?`Venció hace ${Math.abs(diasVence)}d`:diasVence===0?'Vence hoy':`Vence en ${diasVence}d`;
     return `
-    <div class="factura-card" style="flex-direction:column;align-items:stretch;gap:12px;border-color:${vencida?'#FCA5A5':'#E2E8F0'};">
+    <div class="factura-card" style="flex-direction:column;align-items:stretch;gap:12px;border-color:${vencida?'#EDD9D9':'#DDD9D0'};">
       <div style="display:flex;align-items:center;gap:14px;">
-        <div style="width:44px;height:44px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div style="width:44px;height:44px;background:#F0EDE6;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
             <span style="background:${tc}18;color:${tc};font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;">${tl}</span>
             <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;">${x.numero||'—'}</span>
           </div>
-          <div style="font-size:12px;color:#64748B;">${x.cliente} · Emitida: ${x.fecha||'—'}${x.vencimiento?' · <span style="color:'+(vencida?'#D64545':'#D4A017')+';font-weight:600;">'+venceLabel+'</span>':''}</div>
+          <div style="font-size:12px;color:#666660;">${x.cliente} · Emitida: ${x.fecha||'—'}${x.vencimiento?' · <span style="color:'+(vencida?'#B83232':'#8A6A00')+';font-weight:600;">'+venceLabel+'</span>':''}</div>
         </div>
         <div style="text-align:right;">
           <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:900;">${fmt(x.monto)}</div>
@@ -1429,75 +1477,39 @@ function renderFacturas(){
       </div>
       ${x.estado!=='cobrada'?`
       <div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748B;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#666660;margin-bottom:4px;">
           <span>Cobrado: ${fmt(cobrado)}</span><span>Pendiente: ${fmt(pendiente)}</span>
         </div>
-        <div style="height:5px;background:#F1F5F9;border-radius:3px;overflow:hidden;">
-          <div style="height:100%;width:${pct}%;background:#2D9B6F;border-radius:3px;"></div>
+        <div style="height:5px;background:#F0EDE6;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:#1A7A52;border-radius:3px;"></div>
         </div>
       </div>`:''}
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#2D9B6F;border-color:#2D9B6F;" onclick="marcarCobrada('${x.id}')">$ Registrar cobro</button>`:''}
-        ${x.estado==='cobrada'?`<button class="action-btn" style="color:#D64545;" onclick="revertirCobroFactura('${x.id}')">↩ Quitar cobro</button>`:cobrado>0?`<button class="action-btn" onclick="revertirCobroFactura('${x.id}')">↩ Revertir</button>`:''}
-        <button class="action-btn" style="color:#6C5CE7;" onclick="verDocFactura('${x.id}')">📄 Ver</button>
+        ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#1A7A52;border-color:#1A7A52;" onclick="marcarCobrada('${x.id}')">$ Registrar cobro</button>`:''}
+        ${x.estado==='cobrada'?`<button class="action-btn" style="color:#B83232;" onclick="revertirCobroFactura('${x.id}')">↩ Quitar cobro</button>`:cobrado>0?`<button class="action-btn" onclick="revertirCobroFactura('${x.id}')">↩ Revertir</button>`:''}
+        <button class="action-btn" style="color:#0D0D0D;" onclick="verDocFactura('${x.id}')">📄 Ver</button>
         <button class="action-btn" onclick="editarItem('facturas','${x.id}')">Editar</button>
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
       </div>
-    </div>`;}).join(''):'<div style="text-align:center;color:#94A3B8;padding:40px;">No hay facturas con esos filtros.</div>';
+    </div>`;}).join(''):'<div style="text-align:center;color:#888880;padding:40px;">No hay facturas con esos filtros.</div>';
   updateDashboard();
 }
 
 function marcarCobrada(id, monto){
   const f=facturas.find(x=>x.id===id);
   if(!f) return;
-
-  // Modal para registrar cobro con fecha y medio de pago
-  const modalHtml = `
-    <div class="modal-title">Registrar cobro</div>
-    <div class="modal-sub">${f.cliente} — ${f.numero||'Factura'} · Total: ${fmt(f.monto)}</div>
-    <div class="form-group"><label class="form-label">Monto cobrado</label>
-      <input class="form-input" id="cobro-monto" type="number" value="${f.monto-(f.montoCobrado||0)}" min="0"/></div>
-    <div class="form-group"><label class="form-label">Fecha de cobro</label>
-      <input class="form-input" id="cobro-fecha" type="date" value="${today()}"/></div>
-    <div class="form-group"><label class="form-label">Medio de pago</label>
-      <select class="form-select" id="cobro-medio">
-        <option value="Transferencia">Transferencia</option>
-        <option value="Efectivo">Efectivo</option>
-        <option value="Cheque">Cheque</option>
-        <option value="Mercado Pago">Mercado Pago</option>
-        <option value="Otro">Otro</option>
-      </select></div>
-    <div class="form-group"><label class="form-label">Nota (opcional)</label>
-      <input class="form-input" id="cobro-nota" type="text" placeholder="Ej: depósito cuenta Santander"/></div>
-    <div class="modal-btns">
-      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="modal-btn modal-btn-primary" onclick="confirmarCobro('${id}')">✓ Registrar cobro →</button>
-    </div>`;
-  document.getElementById('modal-content').innerHTML = modalHtml;
-  document.getElementById('modal').classList.add('open');
-}
-
-function confirmarCobro(id){
-  const f=facturas.find(x=>x.id===id);
-  if(!f) return;
-  const monto = parseFloat(document.getElementById('cobro-monto').value)||0;
-  const fecha = document.getElementById('cobro-fecha').value||today();
-  const medio = document.getElementById('cobro-medio').value||'Transferencia';
-  const nota  = document.getElementById('cobro-nota').value||'';
-  if(!monto||monto<=0){ alert('Ingresá un monto válido'); return; }
-
-  // Store payment record
-  if(!f.pagos) f.pagos = [];
-  f.pagos.push({id:uid(), fecha, monto, medio, nota});
+  if(monto===undefined){
+    // Ask for amount
+    const input = parseFloat(prompt('Monto a registrar (Total: '+fmt(f.monto)+'):'));
+    monto = isNaN(input) ? f.monto : input;
+  }
   f.montoCobrado = (f.montoCobrado||0) + monto;
   f.estado = f.montoCobrado >= f.monto ? 'cobrada' : 'pendiente';
   if(f.montoCobrado >= f.monto) f.montoCobrado = f.monto;
-
   // Update linked CxC
   const cxcItem = cxc.find(x=>x.facturaId===id);
   if(cxcItem){ cxcItem.monto=Math.max(0,f.monto-f.montoCobrado); if(f.estado==='cobrada') cxcItem.estado='cobrado'; save('cxc',cxc); }
   save('facturas',facturas);
-  closeModal();
   renderFacturas();
   toast('✅ Cobro de '+fmt(monto)+' registrado');
 }
@@ -1612,12 +1624,12 @@ function renderCxC(){
     const tipoBadge=x.tipo==='factura'?'<span class="badge badge-blue" style="margin-right:4px;">Factura</span>':x.tipo==='resumen'?'<span class="badge badge-gray" style="margin-right:4px;">Resumen</span>':'';
     return`<tr>
     <td><div class="td-main">${tipoBadge}${x.cliente}</div><div class="td-sub">${x.concepto||''}</div></td>
-    <td style="font-size:13px;color:#64748B;">${x.fecha||'—'}</td>
-    <td style="font-size:13px;color:${vencido?'#D64545':'#64748B'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
-    <td style="font-weight:800;color:#2D9B6F;">${fmt(x.monto)}</td>
+    <td style="font-size:13px;color:#666660;">${x.fecha||'—'}</td>
+    <td style="font-size:13px;color:${vencido?'#B83232':'#666660'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
+    <td style="font-weight:800;color:#1A7A52;">${fmt(x.monto)}</td>
     <td><span class="badge ${badge}">${label}</span></td>
     <td><div class="action-btns">
-      ${x.estado!=='cobrado'?`<button class="action-btn" style="color:#2D9B6F" onclick="cobrarCxC('${x.id}','${x.facturaId||''}','${x.resumenId||''}')">Cobrar</button>`:''}
+      ${x.estado!=='cobrado'?`<button class="action-btn" style="color:#1A7A52" onclick="cobrarCxC('${x.id}','${x.facturaId||''}','${x.resumenId||''}')">Cobrar</button>`:''}
       ${!x._readonly?`<button class="action-btn" onclick="editarCxCxP('cxc','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('cxc','${x.id}')">Eliminar</button>`:`<button class="action-btn" onclick="goTo('${x.tipo==='factura'?'facturacion':'resumenes'}',document.querySelector('.nav-item'))">Ver ${x.tipo}</button>`}
     </div></td></tr>`;
   }).join(''):empty('No hay cuentas por cobrar.');
@@ -1674,12 +1686,12 @@ function renderCxP(){
     const tipoBadge=x.gastoId?'<span class="badge badge-gray" style="margin-right:4px;">Gasto</span>':x.empleadoId?'<span class="badge badge-blue" style="margin-right:4px;">Sueldo</span>':'';
     return`<tr>
     <td><div class="td-main">${tipoBadge}${x.proveedor}</div><div class="td-sub">${x.concepto||''}</div></td>
-    <td style="font-size:13px;color:#64748B;">${x.fecha||'—'}</td>
-    <td style="font-size:13px;color:${vencido?'#D64545':'#64748B'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
-    <td style="font-weight:800;color:#D64545;">${fmt(x.monto)}</td>
+    <td style="font-size:13px;color:#666660;">${x.fecha||'—'}</td>
+    <td style="font-size:13px;color:${vencido?'#B83232':'#666660'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
+    <td style="font-weight:800;color:#B83232;">${fmt(x.monto)}</td>
     <td><span class="badge ${badge}">${label}</span></td>
     <td><div class="action-btns">
-      ${x.estado!=='pagado'?`<button class="action-btn" style="color:#2D9B6F" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">Pagar</button>`:''}
+      ${x.estado!=='pagado'?`<button class="action-btn" style="color:#1A7A52" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">Pagar</button>`:''}
       <button class="action-btn" onclick="editarCxCxP('cxp','${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">Editar</button>
       ${!x._readonly?`<button class="action-btn" onclick="eliminar('cxp','${x.id}')">Eliminar</button>`:''}
     </div></td></tr>`;
@@ -1713,7 +1725,95 @@ function updateDashboard(){
   const gan=tf-tg;
   const rg=document.getElementById('r-ganancia');
   rg.textContent=fmt(gan);
-  rg.style.color=gan>=0?'var(--green)':'var(--red)';
+  rg.style.color=gan>=0?'#1A7A52':'#B83232';
+
+  // ── Estado del mes ──
+  const hoy=today();
+  const mesCurrent=hoy.substring(0,7);
+  const MESES_NOMBRES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const mesIdx=parseInt(mesCurrent.split('-')[1])-1;
+  const mesNombre=MESES_NOMBRES[mesIdx];
+  const anioN=mesCurrent.split('-')[0];
+  const mesEl=document.getElementById('dash-mes-titulo');
+  if(mesEl) mesEl.textContent='Estado de '+mesNombre.toLowerCase()+' '+anioN;
+
+  const factsMes=facturas.filter(f=>f.fecha&&f.fecha.startsWith(mesCurrent));
+  const mesFact=factsMes.reduce((a,f)=>a+(+f.monto||0),0);
+  const mesCob=factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0);
+  const mesPend=factsMes.filter(f=>f.estado!=='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
+  const gastosMes=gastos.filter(g=>g.fecha&&g.fecha.startsWith(mesCurrent)).reduce((a,g)=>a+(+g.monto||0),0);
+
+  const setEl=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val;};
+  setEl('dash-mes-facturado',fmt(mesFact));
+  setEl('dash-mes-cobrado',fmt(mesCob));
+  setEl('dash-mes-pendiente',fmt(mesPend));
+  setEl('dash-mes-gastos',fmt(gastosMes));
+
+  // ── Clientes estado de cobro ──
+  const clientesEl=document.getElementById('dash-clientes-estado');
+  if(clientesEl){
+    const activos=clientes.filter(c=>c.estado==='Activo'||c.estado==='activo');
+    if(!activos.length){
+      clientesEl.innerHTML='<div style="font-size:12px;color:#888880;">Sin clientes activos</div>';
+    } else {
+      clientesEl.innerHTML=activos.map(cl=>{
+        const fCl=factsMes.filter(f=>f.cliente===cl.nombre);
+        const tieneFactura=fCl.length>0;
+        const cobrada=fCl.every(f=>f.estado==='cobrada')&&fCl.length>0;
+        const pendCl=fCl.filter(f=>f.estado!=='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
+        let dot,label,color;
+        if(!tieneFactura){dot='○';label='Sin factura';color='#B0AA9E';}
+        else if(cobrada){dot='●';label='Al día';color='#1A7A52';}
+        else{dot='◉';label=fmt(pendCl)+' pendiente';color='#B83232';}
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EDE9E1;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:10px;color:${color};">${dot}</span>
+            <span style="font-size:13px;font-weight:500;color:#0D0D0D;">${cl.nombre}</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:${color};">${label}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Últimos movimientos ──
+  const actEl=document.getElementById('dash-activity');
+  if(actEl){
+    // Últimas 8 facturas + cobros (pagos) ordenados por fecha desc
+    const movs=[];
+    [...facturas].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,5).forEach(f=>{
+      movs.push({fecha:f.fecha||'',tipo:'factura',label:(f.numero||'Factura')+' — '+f.cliente,monto:f.monto,estado:f.estado,cobrado:f.montoCobrado||0});
+    });
+    // Recent pagos from facturas
+    const pagosRecientes=[];
+    facturas.forEach(f=>{(f.pagos||[]).forEach(p=>{pagosRecientes.push({fecha:p.fecha,tipo:'cobro',label:'Cobro '+( f.numero||'Factura')+' — '+f.cliente,monto:p.monto,medio:p.medio});});});
+    pagosRecientes.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,4).forEach(p=>movs.push(p));
+    movs.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).splice(8);
+
+    if(!movs.length){
+      actEl.innerHTML='<div style="color:#888880;font-size:13px;text-align:center;padding:32px;">Sin movimientos aún</div>';
+    } else {
+      actEl.innerHTML=movs.map(m=>{
+        const esCobro=m.tipo==='cobro';
+        const dotColor=esCobro?'#1A7A52':m.estado==='cobrada'?'#1A7A52':'#B83232';
+        const dotChar=esCobro?'↓':m.estado==='cobrada'?'●':'○';
+        const montoColor=esCobro?'#1A7A52':'#0D0D0D';
+        const montoSign=esCobro?'+':'';
+        const tipoLabel=esCobro?`<span style="font-size:10px;font-weight:700;background:#EAF4EE;color:#1A7A52;padding:1px 6px;border-radius:4px;">COBRO</span>`
+          :m.estado==='cobrada'?`<span style="font-size:10px;font-weight:700;background:#EDEDEA;color:#444;padding:1px 6px;border-radius:4px;">FACTURA</span>`
+          :`<span style="font-size:10px;font-weight:700;background:#FBF0F0;color:#B83232;padding:1px 6px;border-radius:4px;">PENDIENTE</span>`;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:11px 22px;border-bottom:1px solid #EDE9E1;">
+          <span style="font-size:14px;color:${dotColor};width:14px;text-align:center;">${dotChar}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#0D0D0D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.label}</div>
+            <div style="font-size:11px;color:#888880;margin-top:1px;">${m.fecha||'—'}${m.medio?' · '+m.medio:''}</div>
+          </div>
+          ${tipoLabel}
+          <div style="font-size:14px;font-weight:700;color:${montoColor};white-space:nowrap;">${montoSign}${fmt(m.monto)}</div>
+        </div>`;
+      }).join('');
+    }
+  }
 }
 
 function eliminar(tipo,id){
@@ -2213,42 +2313,42 @@ function renderResumenes(){
   const hoy = today();
   cards.innerHTML = resumenes.map(r=>{
     const vencido = r.vencimiento && r.vencimiento < hoy && r.estado !== 'pagado';
-    const estadoColor = r.estado==='pagado'?'#2D9B6F':r.estado==='parcial'?'#D4A017':vencido?'#D64545':'#64748B';
+    const estadoColor = r.estado==='pagado'?'#1A7A52':r.estado==='parcial'?'#8A6A00':vencido?'#B83232':'#666660';
     const estadoLabel = r.estado==='pagado'?'✓ Pagado':r.estado==='parcial'?`Parcial $${(r.pagadoParcial||0).toLocaleString('es-AR')}`:vencido?'⚠️ Vencido':'⏳ Pendiente';
     const pendiente = r.totalFinal - (r.pagadoParcial||0);
     return `
-    <div style="background:white;border-radius:16px;border:1.5px solid ${vencido?'#FCA5A5':'#E2E8F0'};padding:20px 24px;margin-bottom:12px;box-shadow:0 1px 8px rgba(15,23,42,0.06);">
+    <div style="background:white;border-radius:16px;border:1.5px solid ${vencido?'#EDD9D9':'#DDD9D0'};padding:20px 24px;margin-bottom:12px;box-shadow:0 1px 8px rgba(15,23,42,0.06);">
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:${r.estado!=='pagado'?'14':'0'}px;">
-        <div style="width:46px;height:46px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div style="width:46px;height:46px;background:#F0EDE6;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
         <div style="flex:1;">
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#1E293B;">${r.cliente}</div>
-          <div style="font-size:12px;color:#94A3B8;margin-top:2px;">${r.periodo} · ${r.envios||0} envíos · ${r.serviciosCount||0} servicios${r.vencimiento?' · Vence: '+r.vencimiento:''}</div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#0D0D0D;">${r.cliente}</div>
+          <div style="font-size:12px;color:#888880;margin-top:2px;">${r.periodo} · ${r.envios||0} envíos · ${r.serviciosCount||0} servicios${r.vencimiento?' · Vence: '+r.vencimiento:''}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:900;color:#1E293B;">${fmt(r.totalFinal)}</div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:900;color:#0D0D0D;">${fmt(r.totalFinal)}</div>
           <span style="font-size:11px;font-weight:700;color:${estadoColor};">${estadoLabel}</span>
         </div>
       </div>
       ${r.estado!=='pagado'?`
       <!-- Barra de progreso pago -->
       <div style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748B;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#666660;margin-bottom:4px;">
           <span>Pagado: ${fmt(r.pagadoParcial||0)}</span>
           <span>Pendiente: ${fmt(pendiente)}</span>
         </div>
-        <div style="height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden;">
-          <div style="height:100%;width:${r.totalFinal?Math.min(((r.pagadoParcial||0)/r.totalFinal)*100,100):0}%;background:#2D9B6F;border-radius:3px;transition:width 0.3s;"></div>
+        <div style="height:6px;background:#F0EDE6;border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${r.totalFinal?Math.min(((r.pagadoParcial||0)/r.totalFinal)*100,100):0}%;background:#1A7A52;border-radius:3px;transition:width 0.3s;"></div>
         </div>
       </div>`:''}
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         ${r.estado!=='pagado'?`
-        <button onclick="marcarPagoResumen('${r.id}','total')" style="padding:7px 12px;background:#2D9B6F;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✓ Pagó todo</button>
-        <button onclick="marcarPagoResumen('${r.id}','parcial')" style="padding:7px 12px;background:#D4A017;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">$ Pago parcial</button>
-        <button onclick="marcarPagoResumen('${r.id}','nopago')" style="padding:7px 12px;background:#FEF2F2;color:#D64545;border:1px solid #FCA5A5;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✗ No pagó</button>
-        `:'<button onclick="marcarPagoResumen(\\"'+r.id+'\\",\\"revertir\\")" style="padding:7px 12px;background:#F1F5F9;color:#64748B;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">&#x21A9; Revertir pago</button>'}
+        <button onclick="marcarPagoResumen('${r.id}','total')" style="padding:7px 12px;background:#1A7A52;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✓ Pagó todo</button>
+        <button onclick="marcarPagoResumen('${r.id}','parcial')" style="padding:7px 12px;background:#8A6A00;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">$ Pago parcial</button>
+        <button onclick="marcarPagoResumen('${r.id}','nopago')" style="padding:7px 12px;background:#FBF0F0;color:#B83232;border:1px solid #EDD9D9;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✗ No pagó</button>
+        `:'<button onclick="marcarPagoResumen(\\"'+r.id+'\\",\\"revertir\\")" style="padding:7px 12px;background:#F0EDE6;color:#666660;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">&#x21A9; Revertir pago</button>'}
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button onclick="enviarResumenWA('${r.id}')" style="padding:7px 10px;background:#25D366;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">WA</button>
-          <button onclick="enviarResumenMail('${r.id}')" style="padding:7px 10px;background:#6C5CE7;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Mail</button>
+          <button onclick="enviarResumenMail('${r.id}')" style="padding:7px 10px;background:#0D0D0D;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Mail</button>
           <button class="action-btn" onclick="editarResumen('${r.id}')">Editar</button>
           <button class="action-btn" onclick="verResumen('${r.id}')">Ver</button>
           <button class="action-btn" onclick="eliminarResumen('${r.id}')">Eliminar</button>
@@ -2513,7 +2613,7 @@ function generarFactura(tipo, id){
   var nroFac = 'FAC-'+(esFacA?'A':'INT')+'-'+String(resumenes.indexOf(r)+1).padStart(4,'0');
   var fechaHoy = new Date().toLocaleDateString('es-AR');
   var fmtN = function(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); };
-  var colorPrimary = esFacA ? '#003087' : '#6C5CE7';
+  var colorPrimary = esFacA ? '#003087' : '#0D0D0D';
   var colorLight   = esFacA ? '#e8f0ff' : '#f0eeff';
 
   var srvRows = '';
@@ -2607,8 +2707,8 @@ function generarFactura(tipo, id){
     +'<span class="fiscal-badge">'+tipoLabel+'</span></div>'
     +'</div>'
     +'<div style="position:fixed;bottom:20px;right:20px;display:flex;gap:10px;z-index:999;">'
-    +'<button onclick="window.print()" style="padding:12px 20px;background:#6C5CE7;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(108,92,231,0.4);">🖨 Imprimir / Guardar PDF</button>'
-    +'<button onclick="window.close()" style="padding:12px 20px;background:#F1F5F9;color:#475569;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">✕ Cerrar</button>'
+    +'<button onclick="window.print()" style="padding:12px 20px;background:#0D0D0D;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(108,92,231,0.4);">🖨 Imprimir / Guardar PDF</button>'
+    +'<button onclick="window.close()" style="padding:12px 20px;background:#F0EDE6;color:#5A5650;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">✕ Cerrar</button>'
     +'</div>'
     +'<style>@media print{.no-print{display:none!important;}}</style>'
     +'<div class="no-print" style="height:80px;"></div>'
@@ -2636,17 +2736,17 @@ function renderBancos(){
   const propioEl = document.getElementById('bancos-propios-list');
   if(propioEl){
     if(!bancosPropios.length){
-      propioEl.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:24px;font-size:14px;">No hay cuentas propias. Agregá las de ODSA SRL →</div>';
+      propioEl.innerHTML = '<div style="text-align:center;color:#888880;padding:24px;font-size:14px;">No hay cuentas propias. Agregá las de ODSA SRL →</div>';
     } else {
       propioEl.innerHTML = bancosPropios.map(b=>`
         <div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #F1F5F9;">
-          <div style="width:44px;height:44px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="13" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+          <div style="width:44px;height:44px;background:#F0EDE6;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="13" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
           </div>
           <div style="flex:1;">
-            <div style="font-weight:600;color:#1E293B;font-size:14px;">${b.banco} <span style="background:#EEF2FF;color:#6C5CE7;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:6px;">${b.tipo}</span></div>
-            <div style="font-size:13px;color:#64748B;margin-top:3px;">CBU: <b>${b.cbu}</b> · Alias: <b>${b.alias}</b></div>
-            ${b.cuit?`<div style="font-size:12px;color:#94A3B8;margin-top:2px;">CUIT: ${b.cuit}</div>`:''}
+            <div style="font-weight:600;color:#0D0D0D;font-size:14px;">${b.banco} <span style="background:#EDEDEA;color:#0D0D0D;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:6px;">${b.tipo}</span></div>
+            <div style="font-size:13px;color:#666660;margin-top:3px;">CBU: <b>${b.cbu}</b> · Alias: <b>${b.alias}</b></div>
+            ${b.cuit?`<div style="font-size:12px;color:#888880;margin-top:2px;">CUIT: ${b.cuit}</div>`:''}
           </div>
           <button class="action-btn" onclick="copiarTexto('${b.cbu}')">Copiar CBU</button>
           <button class="action-btn" onclick="copiarTexto('${b.alias}')">Copiar Alias</button>
@@ -2659,19 +2759,19 @@ function renderBancos(){
   const tb = document.getElementById('bancos-tbody');
   if(!tb) return;
   if(!bancosTerc.length){
-    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">No hay datos bancarios de terceros →</td></tr>';
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888880;padding:32px;">No hay datos bancarios de terceros →</td></tr>';
     return;
   }
   tb.innerHTML = bancosTerc.map(b=>`
     <tr>
       <td><div class="td-main">${b.nombre}</div></td>
       <td><span class="badge ${b.tipo==='Proveedor'?'badge-blue':'badge-gray'}">${b.tipo}</span></td>
-      <td style="color:#475569;">${b.banco}</td>
+      <td style="color:#5A5650;">${b.banco}</td>
       <td>
-        <div style="font-size:13px;font-weight:600;color:#1E293B;">${b.cbu}</div>
-        ${b.alias?`<div style="font-size:12px;color:#94A3B8;">Alias: ${b.alias}</div>`:''}
+        <div style="font-size:13px;font-weight:600;color:#0D0D0D;">${b.cbu}</div>
+        ${b.alias?`<div style="font-size:12px;color:#888880;">Alias: ${b.alias}</div>`:''}
       </td>
-      <td style="color:#64748B;font-size:13px;">${b.cuit||'—'}</td>
+      <td style="color:#666660;font-size:13px;">${b.cuit||'—'}</td>
       <td>
         <div class="action-btns">
           <button class="action-btn" onclick="copiarTexto('${b.cbu}')">Copiar CBU</button>
@@ -2766,10 +2866,10 @@ function renderVencimientos(){
   document.getElementById('venc-semana').textContent=items.filter(x=>x.venc>=hoy&&x.venc<=en7).length;
   document.getElementById('venc-ok').textContent=items.filter(x=>x.venc>en7).length;
   const tb=document.getElementById('venc-tbody');
-  if(!items.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">¡Todo al día! No hay vencimientos pendientes ✓</td></tr>';return;}
+  if(!items.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888880;padding:32px;">¡Todo al día! No hay vencimientos pendientes ✓</td></tr>';return;}
   tb.innerHTML=items.map(x=>{
     const vencido=x.venc<hoy; const pronto=x.venc>=hoy&&x.venc<=en7;
-    const color=vencido?'#D64545':pronto?'#D4A017':'#2D9B6F';
+    const color=vencido?'#B83232':pronto?'#8A6A00':'#1A7A52';
     const dias=Math.round((new Date(x.venc)-new Date(hoy))/(1000*60*60*24));
     const label=vencido?`Venció hace ${Math.abs(dias)}d`:dias===0?'Hoy':dias===1?'Mañana':`En ${dias}d`;
     return `<tr><td><span class="badge ${x.tipoClass}">${x.tipo}</span></td><td><div class="td-main">${x.desc}</div></td>
@@ -2802,27 +2902,27 @@ function verEstadoCuenta(){
     <td style="font-size:13px;">${f.fecha||'—'}</td><td><div class="td-main">${f.numero||'—'}</div></td>
     <td style="font-weight:700;">${fmt(f.monto)}</td>
     <td><span class="badge ${f.estado==='cobrada'?'badge-green':f.estado==='vencida'?'badge-red':'badge-yellow'}">${f.estado==='cobrada'?'Cobrada':f.estado==='vencida'?'Vencida':'Pendiente'}</span></td>
-    <td>${f.estado!=='cobrada'?`<button class="action-btn" style="color:#2D9B6F" onclick="marcarCobrada('${f.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
+    <td>${f.estado!=='cobrada'?`<button class="action-btn" style="color:#1A7A52" onclick="marcarCobrada('${f.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
   const cxcRows=cxcCli.map(x=>`<tr>
     <td style="font-size:13px;">${x.vencimiento||'—'}</td><td><div class="td-main">${x.concepto||'—'}</div></td>
     <td style="font-weight:700;">${fmt(x.monto)}</td>
     <td><span class="badge ${x.estado==='cobrado'?'badge-green':'badge-yellow'}">${x.estado==='cobrado'?'Cobrado':'Pendiente'}</span></td>
-    <td>${x.estado!=='cobrado'?`<button class="action-btn" style="color:#2D9B6F" onclick="cobrarCxC('${x.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
+    <td>${x.estado!=='cobrado'?`<button class="action-btn" style="color:#1A7A52" onclick="cobrarCxC('${x.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
   document.getElementById('ec-content').innerHTML=`
-    <div style="background:white;border-radius:16px;border:1px solid #E2E8F0;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 8px rgba(15,23,42,0.06);">
-      <div style="width:56px;height:56px;background:#EEF2FF;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#6C5CE7;flex-shrink:0;">${cliente[0].toUpperCase()}</div>
-      <div style="flex:1;"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#1E293B;">${cliente}</div><div style="font-size:13px;color:#64748B;margin-top:3px;">${cli.email||''} ${cli.sector?'· '+cli.sector:''}</div></div>
+    <div style="background:white;border-radius:16px;border:1px solid #DDD9D0;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 8px rgba(15,23,42,0.06);">
+      <div style="width:56px;height:56px;background:#F0EDE6;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#0D0D0D;flex-shrink:0;">${cliente[0].toUpperCase()}</div>
+      <div style="flex:1;"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#0D0D0D;">${cliente}</div><div style="font-size:13px;color:#666660;margin-top:3px;">${cli.email||''} ${cli.sector?'· '+cli.sector:''}</div></div>
       <button class="tb-btn tb-btn-primary" onclick="generarLinkPago('${cliente}')">🔗 Link de pago</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
-      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Total facturado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;">${fmt(totalFact)}</div></div>
-      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Cobrado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#2D9B6F;">${fmt(cobrado)}</div></div>
-      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#D4A017;">${fmt(pendiente)}</div></div>
-      <div class="stat-card"><div style="font-size:11px;color:#94A3B8;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">CxC pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#D64545;">${fmt(cxcPend)}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Total facturado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;">${fmt(totalFact)}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Cobrado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1A7A52;">${fmt(cobrado)}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#8A6A00;">${fmt(pendiente)}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">CxC pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#B83232;">${fmt(cxcPend)}</div></div>
     </div>
     ${facsCli.length?`<div class="table-card" style="margin-bottom:16px;"><div class="table-head"><div><div class="th-title">Facturas</div><div class="th-sub">${facsCli.length} factura${facsCli.length!==1?'s':''}</div></div></div><table><thead><tr><th>Fecha</th><th>Número</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>${facRows}</tbody></table></div>`:''}
     ${cxcCli.length?`<div class="table-card"><div class="table-head"><div><div class="th-title">Cuentas por cobrar</div></div></div><table><thead><tr><th>Vencimiento</th><th>Concepto</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>${cxcRows}</tbody></table></div>`:''}
-    ${!facsCli.length&&!cxcCli.length?'<div style="text-align:center;color:#94A3B8;padding:40px;">Este cliente no tiene registros aún.</div>':''}`;
+    ${!facsCli.length&&!cxcCli.length?'<div style="text-align:center;color:#888880;padding:40px;">Este cliente no tiene registros aún.</div>':''}`;
 }
 
 // ══════════════════════════════════════════════
@@ -2838,7 +2938,7 @@ function generarLinkPago(clienteNombre){
   const itemsHtml=[...facsPend.map(f=>`<div class="item"><span class="item-desc">${f.numero||'Factura'} · ${f.fecha||''}</span><span class="item-monto">$${(+f.monto||0).toLocaleString('es-AR')}</span></div>`),...cxcP.map(x=>`<div class="item"><span class="item-desc">${x.concepto||'Cuenta por cobrar'} · ${x.vencimiento||''}</span><span class="item-monto">$${(+x.monto||0).toLocaleString('es-AR')}</span></div>`)].join('');
   const win=window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pago — ${clienteNombre}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1E293B,#2E1A5E);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}.card{background:white;border-radius:24px;max-width:460px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);}.top{background:#6C5CE7;padding:28px;text-align:center;}.brand{font-size:28px;font-weight:900;color:white;letter-spacing:-1px;margin-bottom:8px;}.title{font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}.cname{font-size:20px;font-weight:800;color:white;}.body{padding:24px;}.monto-box{background:#F8FAFC;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px;}.ml{font-size:11px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.monto{font-size:40px;font-weight:900;color:#1E293B;}.items{margin-bottom:20px;}.item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:13px;}.item-desc{color:#475569;}.item-monto{font-weight:700;color:#1E293B;}.banco{background:#EEF2FF;border-radius:14px;padding:18px;margin-bottom:16px;}.bt{font-size:11px;font-weight:700;color:#6C5CE7;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}.br{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;}.bk{color:#64748B;}.bv{font-weight:700;color:#1E293B;cursor:pointer;}.bv:active{color:#6C5CE7;}.hint{font-size:11px;color:#6C5CE7;text-align:right;margin-top:6px;}.footer{font-size:11px;color:#94A3B8;text-align:center;}</style></head>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#0D0D0D,#2E1A5E);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}.card{background:white;border-radius:24px;max-width:460px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);}.top{background:#0D0D0D;padding:28px;text-align:center;}.brand{font-size:28px;font-weight:900;color:white;letter-spacing:-1px;margin-bottom:8px;}.title{font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}.cname{font-size:20px;font-weight:800;color:white;}.body{padding:24px;}.monto-box{background:#F5F2EC;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px;}.ml{font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.monto{font-size:40px;font-weight:900;color:#0D0D0D;}.items{margin-bottom:20px;}.item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:13px;}.item-desc{color:#5A5650;}.item-monto{font-weight:700;color:#0D0D0D;}.banco{background:#F0EDE6;border-radius:14px;padding:18px;margin-bottom:16px;}.bt{font-size:11px;font-weight:700;color:#0D0D0D;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}.br{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;}.bk{color:#666660;}.bv{font-weight:700;color:#0D0D0D;cursor:pointer;}.bv:active{color:#0D0D0D;}.hint{font-size:11px;color:#0D0D0D;text-align:right;margin-top:6px;}.footer{font-size:11px;color:#888880;text-align:center;}</style></head>
 <body><div class="card">
 <div class="top"><div class="brand">Zaifi</div><div class="title">Solicitud de pago</div><div class="cname">${clienteNombre}</div></div>
 <div class="body">
@@ -2890,17 +2990,17 @@ function renderRentabilidad(){
   // Tabla
   const tb = document.getElementById('rent-tbody');
   if(!analisis.length){
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">Agregá facturas para ver el análisis →</td></tr>';
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888880;padding:32px;">Agregá facturas para ver el análisis →</td></tr>';
   } else {
     tb.innerHTML = analisis.map(x=>`
-      <tr style="border-left:3px solid ${x.ganancia>=0?'#2D9B6F':'#D64545'};">
+      <tr style="border-left:3px solid ${x.ganancia>=0?'#1A7A52':'#B83232'};">
         <td><div class="td-main">${x.cli}</div></td>
-        <td style="font-weight:700;color:#1E293B;">${fmt(x.facturado)}</td>
-        <td style="color:#64748B;">${fmt(x.costoAsignado)} <span style="font-size:11px;color:#94A3B8;">(${x.pct}% gastos)</span></td>
-        <td style="font-weight:800;color:${x.ganancia>=0?'#2D9B6F':'#D64545'};">${fmt(x.ganancia)}</td>
+        <td style="font-weight:700;color:#0D0D0D;">${fmt(x.facturado)}</td>
+        <td style="color:#666660;">${fmt(x.costoAsignado)} <span style="font-size:11px;color:#888880;">(${x.pct}% gastos)</span></td>
+        <td style="font-weight:800;color:${x.ganancia>=0?'#1A7A52':'#B83232'};">${fmt(x.ganancia)}</td>
         <td><div style="display:flex;align-items:center;gap:8px;">
-          <div style="flex:1;height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden;"><div style="height:100%;width:${Math.min(Math.abs(x.margen),100)}%;background:${x.margen>=0?'#2D9B6F':'#D64545'};border-radius:3px;"></div></div>
-          <span style="font-weight:700;font-size:13px;color:${x.margen>=0?'#2D9B6F':'#D64545'};">${x.margen}%</span>
+          <div style="flex:1;height:6px;background:#F0EDE6;border-radius:3px;overflow:hidden;"><div style="height:100%;width:${Math.min(Math.abs(x.margen),100)}%;background:${x.margen>=0?'#1A7A52':'#B83232'};border-radius:3px;"></div></div>
+          <span style="font-weight:700;font-size:13px;color:${x.margen>=0?'#1A7A52':'#B83232'};">${x.margen}%</span>
         </div></td>
         <td><span class="badge ${x.ganancia>=0?'badge-green':'badge-red'}">${x.ganancia>=0?'Rentable':'En rojo'}</span></td>
       </tr>`).join('');
@@ -2909,18 +3009,18 @@ function renderRentabilidad(){
   // Asignar costos
   const asignar = document.getElementById('rent-asignar');
   if(!Object.keys(facPorCliente).length){
-    asignar.innerHTML='<div style="color:#94A3B8;font-size:14px;text-align:center;padding:20px;">No hay clientes con facturas aún.</div>';
+    asignar.innerHTML='<div style="color:#888880;font-size:14px;text-align:center;padding:20px;">No hay clientes con facturas aún.</div>';
     return;
   }
   asignar.innerHTML = `
-    <div style="font-size:13px;color:#64748B;margin-bottom:16px;">Asigná qué porcentaje de los gastos totales (<b>${fmt(totalGastos)}</b>) corresponde a cada cliente. La suma debería ser 100%.</div>
+    <div style="font-size:13px;color:#666660;margin-bottom:16px;">Asigná qué porcentaje de los gastos totales (<b>${fmt(totalGastos)}</b>) corresponde a cada cliente. La suma debería ser 100%.</div>
     ${Object.keys(facPorCliente).map(cli=>`
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <div style="width:160px;font-weight:600;color:#1E293B;font-size:14px;">${cli}</div>
+        <div style="width:160px;font-weight:600;color:#0D0D0D;font-size:14px;">${cli}</div>
         <input type="range" min="0" max="100" value="${costos[cli]||0}" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%';actualizarCostoCliente('${cli}',+this.value)"/>
-        <span style="width:40px;font-weight:700;color:#6C5CE7;font-size:14px;">${costos[cli]||0}%</span>
+        <span style="width:40px;font-weight:700;color:#0D0D0D;font-size:14px;">${costos[cli]||0}%</span>
       </div>`).join('')}
-    <div style="margin-top:8px;font-size:12px;color:#94A3B8;">Los cambios se guardan automáticamente.</div>`;
+    <div style="margin-top:8px;font-size:12px;color:#888880;">Los cambios se guardan automáticamente.</div>`;
 }
 
 function actualizarCostoCliente(cli, pct){
@@ -2968,22 +3068,22 @@ function renderProyeccion(){
   document.getElementById('proy-trim').textContent = fmt(proyTrim);
   const vsEl = document.getElementById('proy-vs');
   vsEl.textContent = (varPct>=0?'+':'')+varPct+'%';
-  vsEl.style.color = varPct>=0?'#2D9B6F':'#D64545';
+  vsEl.style.color = varPct>=0?'#1A7A52':'#B83232';
 
   // Resumen proyectado
   const gastActual = gastMes[mesActual]||0;
   const ganActual = facActual - gastActual;
   document.getElementById('proy-resumen').innerHTML=`
-    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#94A3B8;margin-bottom:3px;">Facturado hasta hoy</div><div style="font-size:20px;font-weight:800;color:#1E293B;">${fmt(facActual)}</div></div>
-    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#94A3B8;margin-bottom:3px;">Ritmo diario</div><div style="font-size:16px;font-weight:700;color:#6C5CE7;">${fmt(Math.round(ritmoDiario))}/día</div></div>
-    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#94A3B8;margin-bottom:3px;">Días restantes</div><div style="font-size:16px;font-weight:700;color:#1E293B;">${diasEnMes-diaActual} días</div></div>
-    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#94A3B8;margin-bottom:3px;">Gastos este mes</div><div style="font-size:16px;font-weight:700;color:#D64545;">${fmt(gastActual)}</div></div>
-    <div><div style="font-size:12px;color:#94A3B8;margin-bottom:3px;">Ganancia actual</div><div style="font-size:20px;font-weight:900;color:${ganActual>=0?'#2D9B6F':'#D64545'};">${fmt(ganActual)}</div></div>`;
+    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#888880;margin-bottom:3px;">Facturado hasta hoy</div><div style="font-size:20px;font-weight:800;color:#0D0D0D;">${fmt(facActual)}</div></div>
+    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#888880;margin-bottom:3px;">Ritmo diario</div><div style="font-size:16px;font-weight:700;color:#0D0D0D;">${fmt(Math.round(ritmoDiario))}/día</div></div>
+    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#888880;margin-bottom:3px;">Días restantes</div><div style="font-size:16px;font-weight:700;color:#0D0D0D;">${diasEnMes-diaActual} días</div></div>
+    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;"><div style="font-size:12px;color:#888880;margin-bottom:3px;">Gastos este mes</div><div style="font-size:16px;font-weight:700;color:#B83232;">${fmt(gastActual)}</div></div>
+    <div><div style="font-size:12px;color:#888880;margin-bottom:3px;">Ganancia actual</div><div style="font-size:20px;font-weight:900;color:${ganActual>=0?'#1A7A52':'#B83232'};">${fmt(ganActual)}</div></div>`;
 
   // Tabla historial
   const tb = document.getElementById('proy-tbody');
   if(!meses.length){
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">Sin datos históricos aún.</td></tr>';
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888880;padding:32px;">Sin datos históricos aún.</td></tr>';
   } else {
     tb.innerHTML = meses.map((m,i)=>{
       const f=facMes[m]||0, g=gastMes[m]||0, gan=f-g;
@@ -2994,12 +3094,12 @@ function renderProyeccion(){
       const label=nombresMes[parseInt(mo)-1]+' '+y;
       const esMesActual=m===mesActual;
       return`<tr style="${esMesActual?'background:#F8F7FF;font-weight:600;':''}">
-        <td><div class="td-main">${label}${esMesActual?' <span style="background:#EEF2FF;color:#6C5CE7;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;">HOY</span>':''}</div></td>
-        <td style="font-weight:700;color:#1E293B;">${fmt(f)}</td>
-        <td style="color:#D64545;">${fmt(g)}</td>
-        <td style="font-weight:700;color:${gan>=0?'#2D9B6F':'#D64545'};">${fmt(gan)}</td>
-        <td><span style="font-weight:700;color:${margen>=0?'#2D9B6F':'#D64545'};">${margen}%</span></td>
-        <td>${vs!==null?`<span style="font-weight:700;color:${vs>=0?'#2D9B6F':'#D64545'};">${vs>=0?'+':''}${vs}%</span>`:'—'}</td>
+        <td><div class="td-main">${label}${esMesActual?' <span style="background:#EDEDEA;color:#0D0D0D;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;">HOY</span>':''}</div></td>
+        <td style="font-weight:700;color:#0D0D0D;">${fmt(f)}</td>
+        <td style="color:#B83232;">${fmt(g)}</td>
+        <td style="font-weight:700;color:${gan>=0?'#1A7A52':'#B83232'};">${fmt(gan)}</td>
+        <td><span style="font-weight:700;color:${margen>=0?'#1A7A52':'#B83232'};">${margen}%</span></td>
+        <td>${vs!==null?`<span style="font-weight:700;color:${vs>=0?'#1A7A52':'#B83232'};">${vs>=0?'+':''}${vs}%</span>`:'—'}</td>
       </tr>`;
     }).join('');
   }
@@ -3020,8 +3120,8 @@ function renderProyeccion(){
     data:{
       labels:labelsGraf,
       datasets:[
-        {label:'Facturación',data:dataFac,borderColor:'#6C5CE7',backgroundColor:'rgba(108,92,231,0.08)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#6C5CE7'},
-        {label:'Gastos',data:dataGast,borderColor:'#D64545',backgroundColor:'rgba(214,69,69,0.06)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#D64545'},
+        {label:'Facturación',data:dataFac,borderColor:'#0D0D0D',backgroundColor:'rgba(108,92,231,0.08)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#0D0D0D'},
+        {label:'Gastos',data:dataGast,borderColor:'#B83232',backgroundColor:'rgba(214,69,69,0.06)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#B83232'},
       ]
     },
     options:{
@@ -3089,13 +3189,13 @@ function verEstadoCuenta(){
         const menu = document.createElement('div');
         menu.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:flex;align-items:center;justify-content:center;';
         menu.innerHTML=`<div style="background:white;border-radius:16px;padding:24px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#1E293B;margin-bottom:6px;">📱 Enviar por WhatsApp</div>
-          <div style="font-size:13px;color:#64748B;margin-bottom:20px;">¿Qué querés enviarle a ${cliente}?</div>
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#0D0D0D;margin-bottom:6px;">📱 Enviar por WhatsApp</div>
+          <div style="font-size:13px;color:#666660;margin-bottom:20px;">¿Qué querés enviarle a ${cliente}?</div>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <button onclick="enviarWhatsApp('${cliente}','linkpago');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#EEF2FF;color:#6C5CE7;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">💳 Link de pago con saldo pendiente</button>
-            <button onclick="enviarWhatsApp('${cliente}','factura');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#ECFDF5;color:#2D9B6F;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">🧾 Aviso de factura emitida</button>
-            <button onclick="enviarWhatsApp('${cliente}','saludo');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#F8FAFC;color:#475569;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">👋 Mensaje de contacto</button>
-            <button onclick="this.closest('.wa-menu').remove()" style="padding:10px;background:#F1F5F9;color:#94A3B8;border:none;border-radius:10px;font-size:13px;cursor:pointer;">Cancelar</button>
+            <button onclick="enviarWhatsApp('${cliente}','linkpago');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#EDEDEA;color:#0D0D0D;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">💳 Link de pago con saldo pendiente</button>
+            <button onclick="enviarWhatsApp('${cliente}','factura');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#EAF4EE;color:#1A7A52;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">🧾 Aviso de factura emitida</button>
+            <button onclick="enviarWhatsApp('${cliente}','saludo');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#F5F2EC;color:#5A5650;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">👋 Mensaje de contacto</button>
+            <button onclick="this.closest('.wa-menu').remove()" style="padding:10px;background:#F0EDE6;color:#888880;border:none;border-radius:10px;font-size:13px;cursor:pointer;">Cancelar</button>
           </div>
         </div>`;
         menu.className='wa-menu';
@@ -3193,13 +3293,13 @@ function addServicioFac(){
 function renderServiciosFac(){
   const tb = document.getElementById('fac-servicios-tbody');
   if(!facServicios.length){
-    tb.innerHTML='<tr><td colspan="3" style="text-align:center;color:#94A3B8;padding:20px;">Agregá un servicio →</td></tr>';
+    tb.innerHTML='<tr><td colspan="3" style="text-align:center;color:#888880;padding:20px;">Agregá un servicio →</td></tr>';
     return;
   }
   tb.innerHTML = facServicios.map((s,i)=>`
     <tr>
-      <td><input style="width:100%;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Inter',sans-serif;" value="${s.desc}" placeholder="Ej: Consultoría" oninput="facServicios[${i}].desc=this.value"/></td>
-      <td><input style="width:140px;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Inter',sans-serif;text-align:right;" type="number" value="${s.monto}" oninput="facServicios[${i}].monto=+this.value;recalcTotalesFac()"/></td>
+      <td><input style="width:100%;border:1px solid #DDD9D0;border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Inter',sans-serif;" value="${s.desc}" placeholder="Ej: Consultoría" oninput="facServicios[${i}].desc=this.value"/></td>
+      <td><input style="width:140px;border:1px solid #DDD9D0;border-radius:8px;padding:8px 10px;font-size:14px;font-family:'Inter',sans-serif;text-align:right;" type="number" value="${s.monto}" oninput="facServicios[${i}].monto=+this.value;recalcTotalesFac()"/></td>
       <td><button class="action-btn" onclick="facServicios.splice(${i},1);renderServiciosFac();recalcTotalesFac();">✕</button></td>
     </tr>`).join('');
   recalcTotalesFac();
@@ -3230,7 +3330,7 @@ function renderLogisticaFac(){
   tb.innerHTML = facEnvios.map((e,i)=>`
     <tr>
       <td style="font-size:12px;">${e.fecha}</td>
-      <td style="font-size:11px;color:#94A3B8;">${e.tracking}</td>
+      <td style="font-size:11px;color:#888880;">${e.tracking}</td>
       <td style="font-size:12px;">${e.cliente}</td>
       <td style="font-size:12px;">${e.calle}</td>
       <td style="font-size:12px;">${e.localidad}</td>
@@ -3333,7 +3433,7 @@ function generarDocFactura(f, tipoOverride){
   const cli = clientes.find(c=>c.nombre===f.cliente)||{};
   const esFacA = (tipoOverride||f.tipo)==='A';
   const tipoLabel = esFacA?'FACTURA A':f.tipo==='B'?'FACTURA B':f.tipo==='C'?'FACTURA C':f.tipo==='presupuesto'?'PRESUPUESTO':'RECIBO INTERNO';
-  const colorPrimary = esFacA?'#003087':f.tipo==='B'?'#2D9B6F':f.tipo==='C'?'#D4A017':f.tipo==='presupuesto'?'#6C5CE7':'#475569';
+  const colorPrimary = esFacA?'#003087':f.tipo==='B'?'#1A7A52':f.tipo==='C'?'#8A6A00':f.tipo==='presupuesto'?'#0D0D0D':'#5A5650';
   const fechaHoy = new Date().toLocaleDateString('es-AR');
   const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
 
@@ -3345,7 +3445,7 @@ function generarDocFactura(f, tipoOverride){
   const win = window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${tipoLabel} — ${f.cliente}</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#f0f0f0;padding:30px;color:#111;}.doc{background:white;max-width:870px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.12);}.header{padding:26px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid ${colorPrimary};}.logo{height:64px;object-fit:contain;}.fac-badge{text-align:right;}.fac-tipo{font-size:24px;font-weight:900;color:${colorPrimary};}.fac-nro{font-size:13px;color:#555;margin-top:4px;}.fac-fecha{font-size:12px;color:#999;margin-top:2px;}.fac-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:5px;background:${colorPrimary}18;color:${colorPrimary};}.info-row{display:flex;border-bottom:1px solid #eee;}.info-box{flex:1;padding:18px 28px;}.info-box:first-child{border-right:1px solid #eee;}.info-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:14px;font-weight:700;margin-bottom:3px;}.info-sub{font-size:12px;color:#555;margin-top:2px;}.sec-title{padding:10px 28px;background:#f8f8f8;font-size:11px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:1px;border-top:1px solid #eee;border-bottom:1px solid #eee;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#1A1A2E;color:white;font-size:11px;text-align:left;}.totales{padding:18px 28px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.tot-final .amt{color:${colorPrimary};}.footer{padding:16px 28px;background:#f8f8f8;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#999;}.fiscal-badge{background:${colorPrimary};color:white;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;}@media print{body{background:white;padding:0;}.doc{box-shadow:none;max-width:100%;}}</style></head><body><div class="doc">
-<div class="header"><img src="${typeof NIGRUM_LOGO!=='undefined'?NIGRUM_LOGO:''}" class="logo" alt="ODSA SRL" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div style="display:none;font-family:Arial;font-size:22px;font-weight:900;color:#1E293B;">Nigrum<span style="color:${colorPrimary}">.</span></div>
+<div class="header"><img src="${typeof NIGRUM_LOGO!=='undefined'?NIGRUM_LOGO:''}" class="logo" alt="ODSA SRL" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div style="display:none;font-family:Arial;font-size:22px;font-weight:900;color:#0D0D0D;">Nigrum<span style="color:${colorPrimary}">.</span></div>
 <div class="fac-badge"><div class="fac-tipo">${tipoLabel}</div><div class="fac-nro">N° ${f.numero||'—'}</div><div class="fac-fecha">Fecha: ${fechaHoy}</div><span class="fac-tag">${esFacA?'Responsable Inscripto':f.tipo==='presupuesto'?'Presupuesto':'Uso interno'}</span></div></div>
 <div class="info-row">
   <div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>${esFacA?'<div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">IVA Responsable Inscripto</div>':''}<div class="info-sub">administracion@nigrum.com.ar</div></div>
@@ -3393,30 +3493,30 @@ function renderRecordatorios(){
     clientes.filter(c=>c.estado==='Activo').forEach(cl=>{
       const mesActual = hoy.substring(0,7);
       const tieneFactura = facturas.find(f=>f.cliente===cl.nombre&&f.fecha&&f.fecha.startsWith(mesActual));
-      if(!tieneFactura) sugs.push({icon:'🧾',texto:'Emitir factura a '+cl.nombre,tipo:'Factura a emitir',color:'#6C5CE7'});
+      if(!tieneFactura) sugs.push({icon:'🧾',texto:'Emitir factura a '+cl.nombre,tipo:'Factura a emitir',color:'#0D0D0D'});
     });
     // Facturas vencidas sin cobrar
     facturas.filter(f=>f.estado!=='cobrada'&&f.vencimiento&&f.vencimiento<hoy).forEach(f=>{
-      sugs.push({icon:'💰',texto:'Cobrar factura '+f.numero+' a '+f.cliente+' — '+fmt(f.monto),tipo:'Cobro vencido',color:'#D64545'});
+      sugs.push({icon:'💰',texto:'Cobrar factura '+f.numero+' a '+f.cliente+' — '+fmt(f.monto),tipo:'Cobro vencido',color:'#B83232'});
     });
     // CxP vencidas
     cxp.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento<hoy).forEach(x=>{
-      sugs.push({icon:'💸',texto:'Pagar a '+x.proveedor+' — '+fmt(x.monto),tipo:'Pago vencido',color:'#D4A017'});
+      sugs.push({icon:'💸',texto:'Pagar a '+x.proveedor+' — '+fmt(x.monto),tipo:'Pago vencido',color:'#8A6A00'});
     });
     // Resumenes sin enviar este mes
     clientes.filter(c=>c.estado==='Activo').forEach(cl=>{
       const mesActual = hoy.substring(0,7);
       const tieneRes = resumenes.find(r=>r.cliente===cl.nombre&&r.fecha&&r.fecha.startsWith(mesActual));
-      if(!tieneRes) sugs.push({icon:'📋',texto:'Preparar resumen mensual para '+cl.nombre,tipo:'Resumen pendiente',color:'#2D9B6F'});
+      if(!tieneRes) sugs.push({icon:'📋',texto:'Preparar resumen mensual para '+cl.nombre,tipo:'Resumen pendiente',color:'#1A7A52'});
     });
 
     if(!sugs.length){
-      autoEl.innerHTML='<div style="color:#94A3B8;font-size:14px;padding:12px 0;">✅ No hay tareas automáticas pendientes por ahora.</div>';
+      autoEl.innerHTML='<div style="color:#888880;font-size:14px;padding:12px 0;">✅ No hay tareas automáticas pendientes por ahora.</div>';
     } else {
       autoEl.innerHTML = sugs.map(s=>`
         <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F1F5F9;">
           <div style="width:36px;height:36px;background:${s.color}15;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${s.icon}</div>
-          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#1E293B;">${s.texto}</div><div style="font-size:12px;color:#94A3B8;">${s.tipo}</div></div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#0D0D0D;">${s.texto}</div><div style="font-size:12px;color:#888880;">${s.tipo}</div></div>
           <span style="font-size:11px;font-weight:700;color:${s.color};background:${s.color}15;padding:3px 10px;border-radius:6px;">${s.tipo}</span>
         </div>`).join('');
     }
@@ -3426,14 +3526,14 @@ function renderRecordatorios(){
   const tb = document.getElementById('rec-tbody');
   if(!tb) return;
   if(!recs.length){
-    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#94A3B8;padding:32px;">No hay recordatorios. Creá el primero →</td></tr>';
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#888880;padding:32px;">No hay recordatorios. Creá el primero →</td></tr>';
     return;
   }
   tb.innerHTML = recs.map(r=>{
     const proxima = r.proximaFecha||'';
     const vencido = proxima && proxima < hoy;
     const pronto  = proxima >= hoy && proxima <= en15;
-    const color   = vencido?'#D64545':pronto?'#D4A017':'#2D9B6F';
+    const color   = vencido?'#B83232':pronto?'#8A6A00':'#1A7A52';
     const label   = vencido?'Vencido':pronto?'Esta quincena':'OK';
     return `<tr>
       <td><div class="td-main">${r.titulo}</div><div class="td-sub">${r.notas||''}</div></td>
@@ -3503,7 +3603,7 @@ function renderDashboardChecklist(){
     const diaRes = parseInt(cli.diaResumen)||1;
     const enviado = resumenes.find(r=>r.cliente===cli.nombre&&r.fecha&&r.fecha.startsWith(mesActual));
     const estado = enviado?(enviado.estado==='pagado'?'pagado':'enviado'):(diaHoy>=diaRes?'vencido':'pendiente');
-    tareas.push({tipo:'resumen',icon:'📋',color:'#6C5CE7',titulo:'Enviar resumen a '+cli.nombre,sub:cli.servicio||'',diaTarget:diaRes,estado,cliente:cli.nombre});
+    tareas.push({tipo:'resumen',icon:'📋',color:'#0D0D0D',titulo:'Enviar resumen a '+cli.nombre,sub:cli.servicio||'',diaTarget:diaRes,estado,cliente:cli.nombre});
   });
 
   clientes.filter(c=>c.estado==='Activo').forEach(cli=>{
@@ -3512,19 +3612,19 @@ function renderDashboardChecklist(){
     const cobrado = facturas.find(f=>f.cliente===cli.nombre&&f.estado==='cobrada'&&f.fecha&&f.fecha.startsWith(mesActual));
     const pendFac = facturas.find(f=>f.cliente===cli.nombre&&f.estado!=='cobrada'&&f.fecha&&f.fecha.startsWith(mesActual));
     if(!cobrado){
-      tareas.push({tipo:'cobro',icon:'💰',color:'#2D9B6F',titulo:'Cobrar a '+cli.nombre,sub:pendFac?fmt(+pendFac.monto||0)+' pendiente':'Sin factura este mes',diaTarget:diaCobro,estado:diaHoy>=diaCobro?'vencido':'pendiente',cliente:cli.nombre});
+      tareas.push({tipo:'cobro',icon:'💰',color:'#1A7A52',titulo:'Cobrar a '+cli.nombre,sub:pendFac?fmt(+pendFac.monto||0)+' pendiente':'Sin factura este mes',diaTarget:diaCobro,estado:diaHoy>=diaCobro?'vencido':'pendiente',cliente:cli.nombre});
     }
   });
 
   proveedores.filter(p=>p.estado==='activo'&&p.vencimiento).forEach(prov=>{
     const pagado = cxp.find(x=>x.estado==='pagado'&&x.proveedor===prov.nombre&&x.fecha&&x.fecha.startsWith(mesActual));
     if(!pagado){
-      tareas.push({tipo:'pago',icon:'💸',color:'#D4A017',titulo:'Pagar a '+prov.nombre,sub:fmt(+prov.costo||0)+' — vence '+prov.vencimiento,diaTarget:parseInt((prov.vencimiento||'').split('-')[2])||1,estado:prov.vencimiento<hoy?'vencido':'pendiente',proveedor:prov.nombre});
+      tareas.push({tipo:'pago',icon:'💸',color:'#8A6A00',titulo:'Pagar a '+prov.nombre,sub:fmt(+prov.costo||0)+' — vence '+prov.vencimiento,diaTarget:parseInt((prov.vencimiento||'').split('-')[2])||1,estado:prov.vencimiento<hoy?'vencido':'pendiente',proveedor:prov.nombre});
     }
   });
 
   empleados.filter(e=>e.estado!=='pagado').forEach(emp=>{
-    tareas.push({tipo:'sueldo',icon:'👤',color:'#D64545',titulo:'Pagar sueldo: '+emp.nombre,sub:fmt(+emp.sueldo||0)+' — '+(emp.rol||''),diaTarget:1,estado:'pendiente',empleadoId:emp.id});
+    tareas.push({tipo:'sueldo',icon:'👤',color:'#B83232',titulo:'Pagar sueldo: '+emp.nombre,sub:fmt(+emp.sueldo||0)+' — '+(emp.rol||''),diaTarget:1,estado:'pendiente',empleadoId:emp.id});
   });
 
   if(!tareas.length){ el.innerHTML=''; return; }
@@ -3533,21 +3633,21 @@ function renderDashboardChecklist(){
   const completados=tareas.filter(t=>t.estado==='enviado'||t.estado==='pagado').length;
   const pendientes=tareas.filter(t=>t.estado==='pendiente').length;
 
-  el.innerHTML=`<div style="background:white;border-radius:16px;border:1.5px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(15,23,42,0.06);margin-bottom:4px;">
-    <div style="background:linear-gradient(135deg,#1E293B,#2E1A5E);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;">
+  el.innerHTML=`<div style="background:white;border-radius:16px;border:1.5px solid #DDD9D0;overflow:hidden;box-shadow:0 1px 8px rgba(15,23,42,0.06);margin-bottom:4px;">
+    <div style="background:linear-gradient(135deg,#0D0D0D,#2E1A5E);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;">
       <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;color:white;">Checklist de ${nombreMes}</div>
       <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;">${completados} completadas &middot; ${pendientes} pendientes &middot; ${vencidos} vencidas</div></div>
-      <div style="display:flex;gap:6px;">${vencidos>0?`<span style="background:#D64545;color:white;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">${vencidos} vencidas</span>`:''}<span style="background:rgba(255,255,255,0.15);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${tareas.length} tareas</span></div>
+      <div style="display:flex;gap:6px;">${vencidos>0?`<span style="background:#B83232;color:white;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">${vencidos} vencidas</span>`:''}<span style="background:rgba(255,255,255,0.15);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${tareas.length} tareas</span></div>
     </div>
     <div style="padding:4px 0;">${tareas.map((t,i)=>{
       const done=t.estado==='enviado'||t.estado==='pagado';
       const urgent=t.estado==='vencido';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid #F1F5F9;background:${done?'#F8FAFC':urgent?'#FFF5F5':'white'};border-left:3px solid ${done?'#2D9B6F':urgent?'#D64545':'#E2E8F0'};">
+      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid #F1F5F9;background:${done?'#F8FAFC':urgent?'#FFF5F5':'white'};border-left:3px solid ${done?'#1A7A52':urgent?'#B83232':'#DDD9D0'};">
         <div style="width:32px;height:32px;background:${t.color}15;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${t.icon}</div>
-        <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:${done?'#94A3B8':'#1E293B'};${done?'text-decoration:line-through;':''}">${t.titulo}</div>
-        <div style="font-size:11px;color:#94A3B8;">${t.sub}</div></div>
-        <span style="font-size:11px;font-weight:700;color:${done?'#2D9B6F':urgent?'#D64545':'#94A3B8'};background:${done?'#ECFDF5':urgent?'#FEF2F2':'#F8FAFC'};padding:3px 9px;border-radius:5px;white-space:nowrap;">${done?'Hecho':urgent?'Vencido':'Dia '+t.diaTarget}</span>
-        ${!done?`<button onclick="irATarea(${i})" style="padding:5px 10px;background:#6C5CE7;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">Ir</button>`:''}
+        <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:${done?'#888880':'#0D0D0D'};${done?'text-decoration:line-through;':''}">${t.titulo}</div>
+        <div style="font-size:11px;color:#888880;">${t.sub}</div></div>
+        <span style="font-size:11px;font-weight:700;color:${done?'#1A7A52':urgent?'#B83232':'#888880'};background:${done?'#ECFDF5':urgent?'#FEF2F2':'#F8FAFC'};padding:3px 9px;border-radius:5px;white-space:nowrap;">${done?'Hecho':urgent?'Vencido':'Dia '+t.diaTarget}</span>
+        ${!done?`<button onclick="irATarea(${i})" style="padding:5px 10px;background:#0D0D0D;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">Ir</button>`:''}
       </div>`;
     }).join('')}</div>
   </div>`;
@@ -3594,11 +3694,11 @@ function renderAgenda(){
 
   // Group by tipo
   const grupos = {
-    'resumen': { label:'Resúmenes a enviar', icon:'◫', color:'#6C5CE7', items:[] },
-    'cobro':   { label:'Cobros', icon:'◈', color:'#2D9B6F', items:[] },
-    'pago':    { label:'Pagos', icon:'◉', color:'#D4A017', items:[] },
-    'sueldo':  { label:'Sueldos', icon:'◎', color:'#D64545', items:[] },
-    'otro':    { label:'Otros', icon:'◷', color:'#64748B', items:[] },
+    'resumen': { label:'Resúmenes a enviar', icon:'◫', color:'#0D0D0D', items:[] },
+    'cobro':   { label:'Cobros', icon:'◈', color:'#1A7A52', items:[] },
+    'pago':    { label:'Pagos', icon:'◉', color:'#8A6A00', items:[] },
+    'sueldo':  { label:'Sueldos', icon:'◎', color:'#B83232', items:[] },
+    'otro':    { label:'Otros', icon:'◷', color:'#666660', items:[] },
   };
   itemsMes.forEach(x=>{ if(grupos[x.tipo]) grupos[x.tipo].items.push(x); else grupos['otro'].items.push(x); });
 
@@ -3610,46 +3710,46 @@ function renderAgenda(){
     <!-- Header -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E293B;">${meses[mesDefault]} ${anioDefault}</div>
-        <div style="font-size:13px;color:#94A3B8;margin-top:3px;">${hechos} de ${totalItems} tareas completadas</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;">${meses[mesDefault]} ${anioDefault}</div>
+        <div style="font-size:13px;color:#888880;margin-top:3px;">${hechos} de ${totalItems} tareas completadas</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <select onchange="cambiarMesAgenda(this.value)" style="border:1.5px solid #E2E8F0;border-radius:10px;padding:8px 12px;font-size:13px;font-family:'Inter',sans-serif;color:#1E293B;outline:none;background:white;cursor:pointer;">
+        <select onchange="cambiarMesAgenda(this.value)" style="border:1.5px solid #DDD9D0;border-radius:10px;padding:8px 12px;font-size:13px;font-family:'Inter',sans-serif;color:#0D0D0D;outline:none;background:white;cursor:pointer;">
           ${meses.map((m,i)=>{
             const y = i < mesActual-1 ? anioActual+1 : anioActual;
             const k = `${y}-${String(i+1).padStart(2,'0')}`;
             return `<option value="${k}" ${k===mesKey?'selected':''}>${m} ${y}</option>`;
           }).join('')}
         </select>
-        <button onclick="openAddAgenda('${mesKey}')" style="padding:9px 16px;background:#6C5CE7;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">+ Agregar</button>
+        <button onclick="openAddAgenda('${mesKey}')" style="padding:9px 16px;background:#0D0D0D;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">+ Agregar</button>
       </div>
     </div>
 
     <!-- Progress bar -->
     ${totalItems>0?`
-    <div style="background:white;border-radius:12px;border:1px solid #E2E8F0;padding:16px 20px;margin-bottom:20px;">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:#94A3B8;font-weight:600;margin-bottom:8px;">
+    <div style="background:white;border-radius:12px;border:1px solid #DDD9D0;padding:16px 20px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#888880;font-weight:600;margin-bottom:8px;">
         <span>Progreso del mes</span><span>${pct}%</span>
       </div>
-      <div style="height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden;">
+      <div style="height:6px;background:#F0EDE6;border-radius:3px;overflow:hidden;">
         <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#6C5CE7,#2D9B6F);border-radius:3px;transition:width 0.4s;"></div>
       </div>
     </div>`:''}
 
     <!-- Sugerencias automáticas -->
-    <div style="background:#F8FAFC;border-radius:12px;border:1px dashed #E2E8F0;padding:16px 20px;margin-bottom:20px;">
-      <div style="font-size:12px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Sugerencias para ${meses[mesDefault]}</div>
+    <div style="background:#F5F2EC;border-radius:12px;border:1px dashed #DDD9D0;padding:16px 20px;margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Sugerencias para ${meses[mesDefault]}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         ${clientes.filter(c=>c.estado==='Activo').map(cli=>`
-          <button onclick="addSugerencia('resumen','${cli.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #E2E8F0;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#6C5CE7';this.style.color='#6C5CE7'" onmouseout="this.style.borderColor='#E2E8F0';this.style.color='#475569'">
+          <button onclick="addSugerencia('resumen','${cli.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #DDD9D0;border-radius:8px;font-size:12px;font-weight:600;color:#5A5650;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#0D0D0D';this.style.color='#0D0D0D'" onmouseout="this.style.borderColor='#DDD9D0';this.style.color='#5A5650'">
             + Resumen ${cli.nombre}
           </button>`).join('')}
         ${proveedores.filter(p=>p.estado==='activo').map(prov=>`
-          <button onclick="addSugerencia('pago','${prov.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #E2E8F0;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#D4A017';this.style.color='#D4A017'" onmouseout="this.style.borderColor='#E2E8F0';this.style.color='#475569'">
+          <button onclick="addSugerencia('pago','${prov.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #DDD9D0;border-radius:8px;font-size:12px;font-weight:600;color:#5A5650;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#8A6A00';this.style.color='#8A6A00'" onmouseout="this.style.borderColor='#DDD9D0';this.style.color='#5A5650'">
             + Pago ${prov.nombre}
           </button>`).join('')}
         ${empleados.filter(e=>e.estado!=='pagado').map(emp=>`
-          <button onclick="addSugerencia('sueldo','${emp.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #E2E8F0;border-radius:8px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='#D64545';this.style.color='#D64545'" onmouseout="this.style.borderColor='#E2E8F0';this.style.color='#475569'">
+          <button onclick="addSugerencia('sueldo','${emp.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #DDD9D0;border-radius:8px;font-size:12px;font-weight:600;color:#5A5650;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='#B83232';this.style.color='#B83232'" onmouseout="this.style.borderColor='#DDD9D0';this.style.color='#5A5650'">
             + Sueldo ${emp.nombre}
           </button>`).join('')}
       </div>
@@ -3658,19 +3758,19 @@ function renderAgenda(){
     <!-- Grupos de tareas -->
     ${Object.entries(grupos).filter(([,g])=>g.items.length>0).map(([tipo,g])=>`
       <div style="margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-left:4px;">${g.icon} ${g.label}</div>
-        <div style="background:white;border-radius:12px;border:1px solid #E2E8F0;overflow:hidden;">
+        <div style="font-size:11px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-left:4px;">${g.icon} ${g.label}</div>
+        <div style="background:white;border-radius:12px;border:1px solid #DDD9D0;overflow:hidden;">
           ${g.items.map((item,i)=>`
             <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:${i<g.items.length-1?'1px solid #F8FAFC':'none'};${item.hecho?'opacity:0.5;':''}">
-              <button onclick="toggleAgendaItem('${item.id}')" style="width:20px;height:20px;border-radius:6px;border:2px solid ${item.hecho?g.color:'#E2E8F0'};background:${item.hecho?g.color:'white'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+              <button onclick="toggleAgendaItem('${item.id}')" style="width:20px;height:20px;border-radius:6px;border:2px solid ${item.hecho?g.color:'#DDD9D0'};background:${item.hecho?g.color:'white'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
                 ${item.hecho?'<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
               </button>
               <div style="flex:1;">
-                <div style="font-size:14px;font-weight:600;color:#1E293B;${item.hecho?'text-decoration:line-through;color:#94A3B8;':''}">${item.titulo}</div>
-                ${item.fecha||item.monto?`<div style="font-size:12px;color:#94A3B8;margin-top:2px;">${item.fecha?'Fecha: '+item.fecha:''}${item.fecha&&item.monto?' · ':''}${item.monto?fmt(item.monto):''}</div>`:''}
+                <div style="font-size:14px;font-weight:600;color:#0D0D0D;${item.hecho?'text-decoration:line-through;color:#888880;':''}">${item.titulo}</div>
+                ${item.fecha||item.monto?`<div style="font-size:12px;color:#888880;margin-top:2px;">${item.fecha?'Fecha: '+item.fecha:''}${item.fecha&&item.monto?' · ':''}${item.monto?fmt(item.monto):''}</div>`:''}
               </div>
-              ${item.fecha&&item.fecha<hoy&&!item.hecho?`<span style="font-size:11px;font-weight:700;color:#D64545;background:#FEF2F2;padding:2px 8px;border-radius:4px;">Vencida</span>`:''}
-              <button onclick="eliminarAgendaItem('${item.id}')" style="background:none;border:none;cursor:pointer;color:#CBD5E1;font-size:16px;padding:4px;" onmouseover="this.style.color='#D64545'" onmouseout="this.style.color='#CBD5E1'">×</button>
+              ${item.fecha&&item.fecha<hoy&&!item.hecho?`<span style="font-size:11px;font-weight:700;color:#B83232;background:#FBF0F0;padding:2px 8px;border-radius:4px;">Vencida</span>`:''}
+              <button onclick="eliminarAgendaItem('${item.id}')" style="background:none;border:none;cursor:pointer;color:#C8C4BA;font-size:16px;padding:4px;" onmouseover="this.style.color='#B83232'" onmouseout="this.style.color='#C8C4BA'">×</button>
             </div>`).join('')}
         </div>
       </div>`).join('')}
@@ -3678,8 +3778,8 @@ function renderAgenda(){
     ${totalItems===0?`
     <div style="text-align:center;padding:48px 20px;">
       <div style="font-size:32px;margin-bottom:12px;">📅</div>
-      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#1E293B;margin-bottom:6px;">Agenda vacía para ${meses[mesDefault]}</div>
-      <div style="font-size:13px;color:#94A3B8;">Usá las sugerencias de arriba o agregá tareas manualmente</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#0D0D0D;margin-bottom:6px;">Agenda vacía para ${meses[mesDefault]}</div>
+      <div style="font-size:13px;color:#888880;">Usá las sugerencias de arriba o agregá tareas manualmente</div>
     </div>`:''}
   `;
 
@@ -3774,30 +3874,30 @@ function renderRecordatorios(){
     clientes.filter(c=>c.estado==='Activo').forEach(cl=>{
       const mesActual = hoy.substring(0,7);
       const tieneFactura = facturas.find(f=>f.cliente===cl.nombre&&f.fecha&&f.fecha.startsWith(mesActual));
-      if(!tieneFactura) sugs.push({icon:'🧾',texto:'Emitir factura a '+cl.nombre,tipo:'Factura a emitir',color:'#6C5CE7'});
+      if(!tieneFactura) sugs.push({icon:'🧾',texto:'Emitir factura a '+cl.nombre,tipo:'Factura a emitir',color:'#0D0D0D'});
     });
     // Facturas vencidas sin cobrar
     facturas.filter(f=>f.estado!=='cobrada'&&f.vencimiento&&f.vencimiento<hoy).forEach(f=>{
-      sugs.push({icon:'💰',texto:'Cobrar factura '+f.numero+' a '+f.cliente+' — '+fmt(f.monto),tipo:'Cobro vencido',color:'#D64545'});
+      sugs.push({icon:'💰',texto:'Cobrar factura '+f.numero+' a '+f.cliente+' — '+fmt(f.monto),tipo:'Cobro vencido',color:'#B83232'});
     });
     // CxP vencidas
     cxp.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento<hoy).forEach(x=>{
-      sugs.push({icon:'💸',texto:'Pagar a '+x.proveedor+' — '+fmt(x.monto),tipo:'Pago vencido',color:'#D4A017'});
+      sugs.push({icon:'💸',texto:'Pagar a '+x.proveedor+' — '+fmt(x.monto),tipo:'Pago vencido',color:'#8A6A00'});
     });
     // Resumenes sin enviar este mes
     clientes.filter(c=>c.estado==='Activo').forEach(cl=>{
       const mesActual = hoy.substring(0,7);
       const tieneRes = resumenes.find(r=>r.cliente===cl.nombre&&r.fecha&&r.fecha.startsWith(mesActual));
-      if(!tieneRes) sugs.push({icon:'📋',texto:'Preparar resumen mensual para '+cl.nombre,tipo:'Resumen pendiente',color:'#2D9B6F'});
+      if(!tieneRes) sugs.push({icon:'📋',texto:'Preparar resumen mensual para '+cl.nombre,tipo:'Resumen pendiente',color:'#1A7A52'});
     });
 
     if(!sugs.length){
-      autoEl.innerHTML='<div style="color:#94A3B8;font-size:14px;padding:12px 0;">✅ No hay tareas automáticas pendientes por ahora.</div>';
+      autoEl.innerHTML='<div style="color:#888880;font-size:14px;padding:12px 0;">✅ No hay tareas automáticas pendientes por ahora.</div>';
     } else {
       autoEl.innerHTML = sugs.map(s=>`
         <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F1F5F9;">
           <div style="width:36px;height:36px;background:${s.color}15;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${s.icon}</div>
-          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#1E293B;">${s.texto}</div><div style="font-size:12px;color:#94A3B8;">${s.tipo}</div></div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#0D0D0D;">${s.texto}</div><div style="font-size:12px;color:#888880;">${s.tipo}</div></div>
           <span style="font-size:11px;font-weight:700;color:${s.color};background:${s.color}15;padding:3px 10px;border-radius:6px;">${s.tipo}</span>
         </div>`).join('');
     }
@@ -3807,14 +3907,14 @@ function renderRecordatorios(){
   const tb = document.getElementById('rec-tbody');
   if(!tb) return;
   if(!recs.length){
-    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#94A3B8;padding:32px;">No hay recordatorios. Creá el primero →</td></tr>';
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#888880;padding:32px;">No hay recordatorios. Creá el primero →</td></tr>';
     return;
   }
   tb.innerHTML = recs.map(r=>{
     const proxima = r.proximaFecha||'';
     const vencido = proxima && proxima < hoy;
     const pronto  = proxima >= hoy && proxima <= en15;
-    const color   = vencido?'#D64545':pronto?'#D4A017':'#2D9B6F';
+    const color   = vencido?'#B83232':pronto?'#8A6A00':'#1A7A52';
     const label   = vencido?'Vencido':pronto?'Esta quincena':'OK';
     return `<tr>
       <td><div class="td-main">${r.titulo}</div><div class="td-sub">${r.notas||''}</div></td>
@@ -3890,7 +3990,7 @@ function renderEstadisticas(){
   document.getElementById('est-margen').textContent = margen + '%';
 
   // Paleta
-  const paleta = ['#6C5CE7','#2D9B6F','#D64545','#D4A017','#3B82F6','#E63946','#F4A261','#2A9D8F','#E9C46A','#264653'];
+  const paleta = ['#0D0D0D','#1A7A52','#B83232','#8A6A00','#3B82F6','#E63946','#F4A261','#2A9D8F','#E9C46A','#264653'];
 
   // ── 1. FACTURACIÓN POR MES ──
   const facPorMes = {};
@@ -3914,7 +4014,7 @@ function renderEstadisticas(){
         datasets: [{
           label: 'Facturación',
           data: mesesOrdenados.map(m=>facPorMes[m]),
-          backgroundColor: '#6C5CE7',
+          backgroundColor: '#0D0D0D',
           borderRadius: 8,
         }]
       },
@@ -3942,7 +4042,7 @@ function renderEstadisticas(){
       labels: ['Ganancia neta', 'Gastos'],
       datasets: [{
         data: [Math.max(gan,0), tg],
-        backgroundColor: ['#2D9B6F', '#D64545'],
+        backgroundColor: ['#1A7A52', '#B83232'],
         borderWidth: 0,
         hoverOffset: 8
       }]
@@ -4038,12 +4138,12 @@ function generarHTMLResumen(r){
   let logRows='';
   (r.envios_data||[]).forEach(e=>{ logRows+=`<tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">${e.fecha}</td><td style="padding:7px 10px;font-size:11px;color:#666;border-bottom:1px solid #f0f0f0;">${e.tracking}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.calle}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.localidad}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.zona}</td><td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:700;border-bottom:1px solid #f0f0f0;">${fmtN(e.tarifa)}</td></tr>`; });
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Resumen ${r.periodo} — ${r.cliente}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #6C5CE7;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#6C5CE7;}.badge-sub{font-size:12px;color:#94A3B8;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#1E293B;margin-bottom:3px;}.info-sub{font-size:12px;color:#64748B;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;background:#F8FAFC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#1E293B;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#2D9B6F;}.banco{background:#EEF2FF;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#6C5CE7;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#64748B;}.bv{font-weight:700;color:#1E293B;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#94A3B8;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}</style>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #6C5CE7;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#0D0D0D;}.badge-sub{font-size:12px;color:#888880;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#0D0D0D;margin-bottom:3px;}.info-sub{font-size:12px;color:#666660;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#5A5650;text-transform:uppercase;letter-spacing:1px;background:#F5F2EC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#0D0D0D;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#1A7A52;}.banco{background:#F0EDE6;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#0D0D0D;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#666660;}.bv{font-weight:700;color:#0D0D0D;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#888880;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}</style>
 </head><body>
 <div class="header"><img src="${logoSrc}" class="logo" alt="ODSA SRL" onerror="this.style.display='none'"/><div class="badge"><div class="badge-title">RESUMEN</div><div class="badge-sub">Período: ${r.periodo}</div><div class="badge-sub">Fecha: ${fechaHoy}</div></div></div>
 <div class="info-row"><div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div><div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">administracion@nigrum.com.ar</div></div><div class="info-box"><div class="info-label">Cliente</div><div class="info-val">${r.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.email?`<div class="info-sub">${cli.email}</div>`:''}</div></div>
-${r.servicios&&r.servicios.length?`<div class="sec">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalSrv)}</td></tr></tfoot></table>`:''}
-${r.envios_data&&r.envios_data.length?`<div class="sec sep">Logística — ${r.envios_data.length} envíos</div><table><thead><tr><th>Fecha</th><th>Tracking</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th style="text-align:right">Tarifa</th></tr></thead><tbody>${logRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td colspan="5" style="padding:10px 14px;">Subtotal logística</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalLog)}</td></tr></tfoot></table>`:''}
+${r.servicios&&r.servicios.length?`<div class="sec">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#F5F2EC;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalSrv)}</td></tr></tfoot></table>`:''}
+${r.envios_data&&r.envios_data.length?`<div class="sec sep">Logística — ${r.envios_data.length} envíos</div><table><thead><tr><th>Fecha</th><th>Tracking</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th style="text-align:right">Tarifa</th></tr></thead><tbody>${logRows}</tbody><tfoot><tr style="background:#F5F2EC;font-weight:900;"><td colspan="5" style="padding:10px 14px;">Subtotal logística</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalLog)}</td></tr></tfoot></table>`:''}
 <div class="totales"><div class="tot-row"><span>Subtotal</span><span style="font-weight:700;">${fmtN(r.subtotal)}</span></div><div class="tot-row"><span>IVA (${r.iva}%)</span><span style="font-weight:700;">${fmtN(r.ivaMonto)}</span></div><div class="tot-final"><span>TOTAL</span><span class="amt">${fmtN(r.totalFinal)}</span></div></div>
 ${bp.cbu?`<div class="banco"><div class="banco-title">Datos para transferir</div><div class="banco-row"><span class="bk">Banco</span><span class="bv">${bp.banco}</span></div><div class="banco-row"><span class="bk">CBU</span><span class="bv">${bp.cbu}</span></div>${bp.alias?`<div class="banco-row"><span class="bk">Alias</span><span class="bv">${bp.alias}</span></div>`:''}${bp.cuit?`<div class="banco-row"><span class="bk">CUIT</span><span class="bv">${bp.cuit}</span></div>`:''}</div>`:''}
 <div class="footer">ODSA SRL · CUIT: 30-71887849-3 · ${fechaHoy}</div>
@@ -4180,7 +4280,7 @@ async function doForgot(){
 
   // Admin hardcoded
   if(email===ADMIN_EMAIL.toLowerCase()){
-    ok.innerHTML='\u2705 <b>Contrase\u00f1a del administrador:</b><br><br><div style="background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">administracion2026</div><br><button onclick="showScreen(\"login\")" style="background:#6C5CE7;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login →</button>';
+    ok.innerHTML='\u2705 <b>Contrase\u00f1a del administrador:</b><br><br><div style="background:#F5F2EC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">administracion2026</div><br><button onclick="showScreen(\"login\")" style="background:#0D0D0D;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login →</button>';
     ok.style.display='block';
     return;
   }
@@ -4193,9 +4293,9 @@ async function doForgot(){
     }
     const u = users[0];
     if(u.pass==='google_oauth'){
-      ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen(\"login\")" style="color:#6C5CE7;cursor:pointer;font-weight:700;">Ir al login →</a>';
+      ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen(\"login\")" style="color:#0D0D0D;cursor:pointer;font-weight:700;">Ir al login →</a>';
     } else {
-      ok.innerHTML='\u2705 Hola <b>'+u.nombre+'</b>, tu contrase\u00f1a es:<br><br><div style="background:#F8FAFC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">'+u.pass+'</div><br><button onclick="showScreen(\"login\")" style="background:#6C5CE7;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login \u2192</button>';
+      ok.innerHTML='\u2705 Hola <b>'+u.nombre+'</b>, tu contrase\u00f1a es:<br><br><div style="background:#F5F2EC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">'+u.pass+'</div><br><button onclick="showScreen(\"login\")" style="background:#0D0D0D;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login \u2192</button>';
     }
     ok.style.display='block';
   }catch(e){
@@ -4243,7 +4343,7 @@ async function checkGoogleCallback(){
             showScreen('login');
             const err = document.getElementById('login-error');
             err.textContent='Tu cuenta Google fue registrada. Esperá la aprobación del administrador.';
-            err.style.background='#EEF2FF'; err.style.color='#6C5CE7'; err.style.display='block';
+            err.style.background='#F0EDE6'; err.style.color='#0D0D0D'; err.style.display='block';
             window.location.hash='';
             return;
           }
@@ -4267,29 +4367,29 @@ async function checkGoogleCallback(){
 async function renderInvitaciones(){
   const tb = document.getElementById('invit-tbody');
   if(!tb) return;
-  tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:20px;">Cargando...</td></tr>';
+  tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888880;padding:20px;">Cargando...</td></tr>';
   try{
     const data = await supaFetch('usuarios?role=eq.pendiente&select=*&order=created_at.desc');
     if(!data||!data.length){
-      tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94A3B8;padding:32px;">No hay solicitudes pendientes ✓</td></tr>';
+      tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888880;padding:32px;">No hay solicitudes pendientes ✓</td></tr>';
       return;
     }
     tb.innerHTML = data.map(u=>`
       <tr>
         <td><div class="td-main">${u.nombre}</div></td>
-        <td style="font-size:13px;color:#64748B;">${u.email}</td>
-        <td style="font-size:13px;color:#64748B;">${u.empresa||'—'}</td>
-        <td style="font-size:13px;color:#94A3B8;font-style:italic;">${u.mensaje||'—'}</td>
+        <td style="font-size:13px;color:#666660;">${u.email}</td>
+        <td style="font-size:13px;color:#666660;">${u.empresa||'—'}</td>
+        <td style="font-size:13px;color:#888880;font-style:italic;">${u.mensaje||'—'}</td>
         <td><span class="badge badge-yellow">⏳ Pendiente</span></td>
         <td>
           <div class="action-btns">
-            <button class="action-btn" style="color:#2D9B6F;border-color:#2D9B6F;" onclick="aprobarUsuario('${u.id}','${u.email}')">✓ Aprobar</button>
-            <button class="action-btn" style="color:#D64545;" onclick="rechazarUsuario('${u.id}')">✕ Rechazar</button>
+            <button class="action-btn" style="color:#1A7A52;border-color:#1A7A52;" onclick="aprobarUsuario('${u.id}','${u.email}')">✓ Aprobar</button>
+            <button class="action-btn" style="color:#B83232;" onclick="rechazarUsuario('${u.id}')">✕ Rechazar</button>
           </div>
         </td>
       </tr>`).join('');
   }catch(e){
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#D64545;padding:20px;">Error al cargar. Verificá la conexión.</td></tr>';
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#B83232;padding:20px;">Error al cargar. Verificá la conexión.</td></tr>';
   }
 }
 
@@ -4362,157 +4462,128 @@ function renderCuentaCorriente(){
 
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const hoy = today();
-  const mesHoyIdx = new Date().getMonth();
+  const mesHoyIdx = new Date().getMonth(); // 0-based
 
+  // Which clients to show
   let clientesShow = clientes.filter(c=>c.estado==='Activo'||c.estado==='activo');
   if(filtroCliente) clientesShow = clientesShow.filter(c=>c.nombre===filtroCliente);
 
   if(!clientesShow.length){
-    el.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:40px;">No hay clientes activos aún.</div>';
+    el.innerHTML = '<div style="text-align:center;color:#888880;padding:40px;">No hay clientes activos aún.</div>';
     return;
   }
 
   el.innerHTML = clientesShow.map(cl=>{
-    // ── Build payment rows: one row per factura with its pagos
-    const factsAnio = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(String(anio)));
-    const totalAnio = factsAnio.reduce((a,f)=>a+(+f.monto||0),0);
-    const cobradoAnio = factsAnio.filter(f=>f.estado==='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
-    const pendienteAnio = totalAnio - cobradoAnio;
-
-    // ── Build month summary rows
-    const filasMes = MESES.map((mes, idx)=>{
+    // Build 12 months
+    const filas = MESES.map((mes, idx)=>{
       const mmStr = String(idx+1).padStart(2,'0');
       const periodoKey = `${anio}-${mmStr}`;
       const esFuturo = anio > new Date().getFullYear() || (anio === new Date().getFullYear() && idx > mesHoyIdx);
 
+      // ── Factura
       const factsMes = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(periodoKey));
       const factTotal = factsMes.reduce((a,f)=>a+(+f.monto||0),0);
+      const factCobrado = factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0);
       const factEstado = factsMes.length===0 ? (esFuturo?'futuro':'sin-factura') : factsMes.every(f=>f.estado==='cobrada') ? 'cobrada' : 'pendiente';
 
-      function pill(label,color,bg){ return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${bg};color:${color};">${label}</span>`; }
+      // ── Resumen
+      const resMes = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(periodoKey));
+      const resEstado = resMes.length===0 ? (esFuturo?'futuro':'sin-resumen') : resMes.some(r=>r.estado==='pagado'||r.estado==='enviado') ? 'enviado' : 'pendiente';
+      const resTotalFinal = resMes.reduce((a,r)=>a+(+r.totalFinal||0),0);
 
-      let pillFact;
-      if(factEstado==='futuro') pillFact = pill('—','#94A3B8','#F1F5F9');
-      else if(factEstado==='sin-factura') pillFact = pill('Sin factura','#D64545','#FEF2F2');
-      else if(factEstado==='cobrada') pillFact = pill('✓ Cobrada','#2D9B6F','#ECFDF5');
-      else pillFact = pill('⏳ Pendiente','#D4A017','#FEFCE8');
+      // ── Cobro CxC
+      const cxcMes = cxc.filter(x=>(x.clienteId===cl.id||x.cliente===cl.nombre) && x.fecha && x.fecha.startsWith(periodoKey));
+      const cobradoCxC = cxcMes.filter(x=>x.estado==='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
+      const pendCxC = cxcMes.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
+
+      // ── Status pills
+      function pill(label, color, bg){
+        return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${bg};color:${color};">${label}</span>`;
+      }
+
+      let pillFact, pillRes, pillCobro;
+
+      if(factEstado==='futuro') pillFact = pill('—','#888880','#F1F5F9');
+      else if(factEstado==='sin-factura') pillFact = pill('Sin factura','#B83232','#FEF2F2');
+      else if(factEstado==='cobrada') pillFact = pill('✓ Cobrada','#1A7A52','#ECFDF5');
+      else pillFact = pill('⏳ Pendiente','#8A6A00','#FEFCE8');
+
+      if(resEstado==='futuro') pillRes = pill('—','#888880','#F1F5F9');
+      else if(resEstado==='sin-resumen') pillRes = pill('No enviado','#B83232','#FEF2F2');
+      else if(resEstado==='enviado') pillRes = pill('✓ Enviado','#1A7A52','#ECFDF5');
+      else pillRes = pill('⏳ Pendiente','#8A6A00','#FEFCE8');
+
+      if(esFuturo) pillCobro = pill('—','#888880','#F1F5F9');
+      else if(factsMes.length===0 && cxcMes.length===0) pillCobro = pill('—','#888880','#F1F5F9');
+      else if(pendCxC===0 && factEstado==='cobrada') pillCobro = pill('✓ Al día','#1A7A52','#ECFDF5');
+      else if(pendCxC>0) pillCobro = pill(fmt(pendCxC)+' pend.','#B83232','#FEF2F2');
+      else pillCobro = pill('✓ Al día','#1A7A52','#ECFDF5');
 
       const esActual = !esFuturo && periodoKey === hoy.substring(0,7);
-      const rowBg = esActual ? 'background:#F5F3FF;border-left:3px solid #6C5CE7;' : '';
+      const rowBg = esActual ? 'background:#FAFAF8;border-left:3px solid #6C5CE7;' : '';
 
-      // ── Payment detail rows for this month
-      const pagoRows = factsMes.flatMap(f=>(f.pagos||[]).map(p=>`
-        <tr style="background:#F8FAFC;">
-          <td style="padding:6px 16px 6px 32px;font-size:11px;color:#94A3B8;">↳ Pago</td>
-          <td style="padding:6px 16px;font-size:11px;color:#64748B;">${p.fecha||'—'}</td>
-          <td style="padding:6px 16px;font-size:11px;color:#2D9B6F;font-weight:700;">${fmt(p.monto)}</td>
-          <td style="padding:6px 16px;font-size:11px;color:#64748B;">${p.medio||'—'}</td>
-          <td style="padding:6px 16px;font-size:11px;color:#94A3B8;">${p.nota||''}</td>
-        </tr>`)).join('');
-
-      const factRef = factsMes.map(f=>f.numero||'Factura').join(', ');
-
-      return `
-        <tr style="${rowBg}">
-          <td style="padding:10px 16px;font-size:13px;font-weight:${esActual?'700':'500'};color:${esActual?'#6C5CE7':'#334155'};">${mes}</td>
-          <td style="padding:10px 16px;">${pillFact}${factsMes.length>0?` <span style="font-size:11px;color:#94A3B8;">${fmt(factTotal)}</span>`:''}</td>
-          <td style="padding:10px 16px;font-size:12px;color:#94A3B8;">${factRef}</td>
-          <td style="padding:10px 16px;font-size:12px;color:#2D9B6F;font-weight:600;">${factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0)>0?fmt(factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0)):'—'}</td>
-          <td style="padding:10px 16px;font-size:12px;color:#64748B;">${factsMes.flatMap(f=>(f.pagos||[]).map(p=>p.medio)).filter((v,i,a)=>a.indexOf(v)===i).join(', ')||'—'}</td>
-          <td style="padding:10px 16px;font-size:12px;color:#94A3B8;">${factsMes.flatMap(f=>(f.pagos||[]).map(p=>p.fecha)).filter(Boolean).sort().pop()||'—'}</td>
-        </tr>${pagoRows}`;
+      return `<tr style="${rowBg}">
+        <td style="padding:10px 16px;font-size:13px;font-weight:${esActual?'700':'500'};color:${esActual?'#0D0D0D':'#2A2A2A'};">${mes}</td>
+        <td style="padding:10px 16px;">${pillFact}${factsMes.length>0?` <span style="font-size:11px;color:#888880;">${fmt(factTotal)}</span>`:''}</td>
+        <td style="padding:10px 16px;">${pillRes}${resTotalFinal>0?` <span style="font-size:11px;color:#888880;">${fmt(resTotalFinal)}</span>`:''}</td>
+        <td style="padding:10px 16px;">${pillCobro}</td>
+        <td style="padding:10px 16px;font-size:12px;color:#888880;">
+          ${factsMes.map(f=>`<a href="#" onclick="goTo('facturacion',document.querySelector('.nav-item'));setTimeout(()=>document.getElementById('fact-estado').value=f.estado==='cobrada'?'cobrada':'pendiente',200);return false;" style="color:#0D0D0D;text-decoration:none;">${f.numero||'Factura'}</a>`).join(', ')||''}
+        </td>
+      </tr>`;
     });
+
+    // Summary row
+    const factsAnio = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(String(anio)));
+    const totalAnio = factsAnio.reduce((a,f)=>a+(+f.monto||0),0);
+    const cobradoAnio = factsAnio.filter(f=>f.estado==='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
+    const pendienteAnio = totalAnio - cobradoAnio;
+    const resEnviados = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(String(anio)) && (r.estado==='enviado'||r.estado==='pagado')).length;
+    const resMeses = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(String(anio))).length;
 
     return `
     <div class="table-card" style="margin-bottom:20px;">
-      <div class="table-head" style="background:#F8FAFC;">
+      <div class="table-head" style="background:#F5F2EC;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:40px;height:40px;background:#EEF2FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>
+          <div style="width:40px;height:40px;background:#F0EDE6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>
           <div>
-            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;color:#1E293B;">${cl.nombre}</div>
-            <div style="font-size:12px;color:#94A3B8;">${cl.servicio||''}</div>
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;color:#0D0D0D;">${cl.nombre}</div>
+            <div style="font-size:12px;color:#888880;">${cl.servicio||''}</div>
           </div>
         </div>
-        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-          <div style="text-align:right;"><div style="font-size:11px;color:#94A3B8;">Facturado ${anio}</div><div style="font-size:16px;font-weight:800;color:#1E293B;">${fmt(totalAnio)}</div></div>
-          <div style="text-align:right;"><div style="font-size:11px;color:#94A3B8;">Cobrado</div><div style="font-size:16px;font-weight:800;color:#2D9B6F;">${fmt(cobradoAnio)}</div></div>
-          ${pendienteAnio>0?`<div style="text-align:right;"><div style="font-size:11px;color:#94A3B8;">Pendiente</div><div style="font-size:16px;font-weight:800;color:#D64545;">${fmt(pendienteAnio)}</div></div>`:''}
-          <button onclick="exportarCuentaCorriente('${cl.nombre}',${anio})" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#2D9B6F;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">
-            ⬇ Excel
-          </button>
+        <div style="display:flex;gap:20px;align-items:center;">
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:#888880;">Facturado ${anio}</div>
+            <div style="font-size:16px;font-weight:800;color:#0D0D0D;">${fmt(totalAnio)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:#888880;">Cobrado</div>
+            <div style="font-size:16px;font-weight:800;color:#1A7A52;">${fmt(cobradoAnio)}</div>
+          </div>
+          ${pendienteAnio>0?`<div style="text-align:right;"><div style="font-size:11px;color:#888880;">Pendiente</div><div style="font-size:16px;font-weight:800;color:#B83232;">${fmt(pendienteAnio)}</div></div>`:''}
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:#888880;">Resúmenes</div>
+            <div style="font-size:15px;font-weight:800;color:#0D0D0D;">${resEnviados}/${resMeses}</div>
+          </div>
         </div>
       </div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;">
           <thead>
-            <tr style="background:#F8FAFC;">
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;width:110px;">Mes</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Factura</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">N° Comprobante</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Cobrado</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Medio de pago</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Fecha cobro</th>
+            <tr style="background:#F5F2EC;">
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Mes</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Factura</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Resumen enviado</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Cobro</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Referencia</th>
             </tr>
           </thead>
-          <tbody>${filasMes.join('')}</tbody>
+          <tbody>${filas.join('')}</tbody>
         </table>
       </div>
     </div>`;
   }).join('');
 }
-
-function exportarCuentaCorriente(clienteNombre, anio){
-  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const factsAnio = facturas.filter(f=>f.cliente===clienteNombre && f.fecha && f.fecha.startsWith(String(anio)));
-
-  // Build rows
-  const rows = [['Mes','N° Comprobante','Fecha Emisión','Fecha Vencimiento','Monto Factura','Estado','Fecha Cobro','Monto Cobrado','Medio de Pago','Nota']];
-
-  MESES.forEach((mes, idx)=>{
-    const mmStr = String(idx+1).padStart(2,'0');
-    const periodoKey = `${anio}-${mmStr}`;
-    const factsMes = factsAnio.filter(f=>f.fecha && f.fecha.startsWith(periodoKey));
-
-    if(factsMes.length===0){
-      rows.push([mes,'—','','','','Sin factura','','','','']);
-    } else {
-      factsMes.forEach(f=>{
-        const pagos = f.pagos||[];
-        if(pagos.length===0){
-          rows.push([mes, f.numero||'—', f.fecha||'', f.vencimiento||'', f.monto||0, f.estado==='cobrada'?'Cobrada':'Pendiente','','','','']);
-        } else {
-          pagos.forEach((p,i)=>{
-            rows.push([
-              i===0?mes:'',
-              i===0?(f.numero||'—'):'',
-              i===0?(f.fecha||''):'',
-              i===0?(f.vencimiento||''):'',
-              i===0?(f.monto||0):'',
-              i===0?(f.estado==='cobrada'?'Cobrada':'Pendiente'):'',
-              p.fecha||'',
-              p.monto||0,
-              p.medio||'',
-              p.nota||''
-            ]);
-          });
-        }
-      });
-    }
-  });
-
-  // Build CSV
-  const csv = rows.map(r=>r.map(v=>typeof v==='string'&&v.includes(',')?`"${v}"`:v).join(',')).join('\n');
-  const BOM = '\uFEFF';
-  const blob = new Blob([BOM+csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `CuentaCorriente_${clienteNombre.replace(/\s+/g,'_')}_${anio}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('✅ Exportado correctamente');
-}
-
 
 </script>
 </body>
