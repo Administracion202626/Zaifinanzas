@@ -1545,32 +1545,46 @@ function exportarAAbesa(){
     };
     
     const codigo = JSON.stringify(resumen);
-    
-    // Send data to ABESA via fetch (cross-origin won't work, use localStorage broadcast)
-    // Try opening ABESA with data encoded in URL hash
     const encoded = encodeURIComponent(codigo);
+    
+    // Open ABESA in background iframe to write data, then close it
     const abesaUrl = 'https://statuesque-vacherin-7ce13f.netlify.app/#nigrum=' + encoded;
     
-    let modal = document.getElementById('modal-abesa-export');
-    if(!modal){
-      modal = document.createElement('div');
-      modal.id = 'modal-abesa-export';
-      modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center';
-      document.body.appendChild(modal);
+    // Use hidden iframe to send data to ABESA without showing it
+    let iframe = document.getElementById('abesa-sync-frame');
+    if(!iframe){
+      iframe = document.createElement('iframe');
+      iframe.id = 'abesa-sync-frame';
+      iframe.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';
+      document.body.appendChild(iframe);
     }
-    modal.innerHTML=`
-      <div style="background:#fff;border-radius:14px;padding:28px 32px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-        <div style="font-size:17px;font-weight:700;margin-bottom:4px">✓ Datos listos para exportar</div>
-        <div style="font-size:12px;color:#888;margin-bottom:20px">Hacé clic en el botón para abrir ABESA con los datos cargados automáticamente</div>
-        <a href="${abesaUrl}" target="_blank" onclick="setTimeout(()=>modal.remove(),500)" style="display:block;text-align:center;background:linear-gradient(135deg,#C9A84C,#B8943E);color:#fff;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:12px">
-          → Abrir ABESA con datos de Nigrum
-        </a>
-        <button onclick="document.getElementById('modal-abesa-export').remove()" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;font-family:inherit;font-size:13px">Cerrar</button>
-      </div>`;
-    modal.style.display='flex';
+    iframe.src = abesaUrl;
+    
+    // Show success toast
+    const btn = document.getElementById('btn-exportar-abesa-nigrum');
+    if(btn){
+      btn.textContent = '✓ Datos enviados a ABESA';
+      btn.style.background = '#2D9B6F';
+      setTimeout(()=>{
+        btn.textContent = '↑ Exportar datos a ABESA';
+        btn.style.background = '';
+      }, 3000);
+    }
+    
+    // Also show small toast notification
+    let toast = document.getElementById('nigrum-toast');
+    if(!toast){
+      toast = document.createElement('div');
+      toast.id = 'nigrum-toast';
+      toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1B2A4A;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '✓ Datos sincronizados con ABESA';
+    toast.style.display = 'block';
+    setTimeout(()=>{ toast.style.display = 'none'; }, 3000);
     
   }catch(e){
-    alert('Error al exportar: '+e.message);
+    alert('Error al exportar: ' + e.message);
   }
 }
 
