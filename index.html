@@ -366,8 +366,8 @@ tr:hover td{background:#F5F2EC;}
     <div class="nav-item" onclick="goTo('clientes',this)"><span class="ni">◈</span>Clientes</div>
     <div class="nav-item" onclick="goTo('catalogo',this)"><span class="ni">▦</span>Catálogo</div>
     <div class="nav-item" onclick="goTo('facturacion',this)"><span class="ni">◫</span>Facturación</div>
-    <div class="nav-item" onclick="goTo('resumenes',this)"><span class="ni">◪</span>Resúmenes</div>
     <div class="nav-item" onclick="goTo('cuentacorriente',this)"><span class="ni">📒</span>Cuenta Corriente</div>
+    <div class="nav-item" onclick="goTo('perfil',this)"><span class="ni">◈</span>Perfil empresa</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Finanzas</div>
@@ -383,7 +383,6 @@ tr:hover td{background:#F5F2EC;}
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Zaifi IA</div>
-    <div class="nav-item" onclick="goTo('perfil',this)"><span class="ni">◈</span>Perfil empresa</div>
     <div class="nav-item" onclick="goTo('rentabilidad',this)"><span class="ni">◎</span>Rentabilidad</div>
     <div class="nav-item" onclick="goTo('proyeccion',this)"><span class="ni">◉</span>Proyección</div>
     <div class="nav-item" onclick="goTo('estadisticas',this)"><span class="ni">◈</span>Estadísticas</div>
@@ -1646,7 +1645,7 @@ function renderCxC(){
     <td><span class="badge ${badge}">${label}</span></td>
     <td><div class="action-btns">
       ${x.estado!=='cobrado'?`<button class="action-btn" style="color:#1A7A52" onclick="cobrarCxC('${x.id}','${x.facturaId||''}','${x.resumenId||''}')">Cobrar</button>`:''}
-      ${!x._readonly?`<button class="action-btn" onclick="editarCxCxP('cxc','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('cxc','${x.id}')">Eliminar</button>`:`<button class="action-btn" onclick="goTo('${x.tipo==='factura'?'facturacion':'resumenes'}',document.querySelector('.nav-item'))">Ver ${x.tipo}</button>`}
+      ${!x._readonly?`<button class="action-btn" onclick="editarCxCxP('cxc','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('cxc','${x.id}')">Eliminar</button>`:`<button class="action-btn" onclick="goTo('facturacion',document.querySelector('.nav-item'))">Ver factura</button>`}
     </div></td></tr>`;
   }).join(''):empty('No hay cuentas por cobrar.');
 }
@@ -3508,8 +3507,7 @@ function irATarea(idx){
   const t = window._checklistTareas&&window._checklistTareas[idx];
   if(!t) return;
   const nav = document.querySelector('.nav-item');
-  if(t.tipo==='resumen') goTo('resumenes',nav);
-  else if(t.tipo==='cobro') goTo('facturacion',nav);
+  if(t.tipo==='cobro') goTo('facturacion',nav);
   else if(t.tipo==='pago') goTo('cxp',nav);
   else if(t.tipo==='sueldo'){ marcarPagoEmp(t.empleadoId); }
 }
