@@ -244,14 +244,40 @@ tr:hover td{background:#F5F2EC;}
   <!-- Nav -->
   <div class="landing-nav">
     <div class="landing-logo">
-      <div class="landing-logo-icon">
-        <svg viewBox="0 0 40 40" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="19" cy="26" rx="12" ry="9" fill="white" opacity="0.9"/>
-          <rect x="22" y="14" width="5" height="10" rx="2.5" fill="white"/>
-          <circle cx="26" cy="10" r="7" fill="white"/>
+      <div class="landing-logo-icon" style="width:48px;height:48px;border-radius:12px;background:#18181B;border:1px solid #3F3F46;display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 78 78" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+          <!-- Body -->
+          <ellipse cx="38" cy="52" rx="17" ry="13" fill="white"/>
+          <!-- Neck -->
+          <rect x="43" y="36" width="7" height="14" rx="3.5" fill="white"/>
+          <!-- Head -->
+          <circle cx="48" cy="30" r="10" fill="white"/>
+          <!-- Crest feathers -->
+          <ellipse cx="43" cy="20" rx="2.5" ry="4" fill="#E63946" transform="rotate(-10 43 20)"/>
+          <ellipse cx="50" cy="18" rx="2.5" ry="4.5" fill="#E63946"/>
+          <ellipse cx="56" cy="21" rx="2" ry="3.5" fill="#E63946" transform="rotate(15 56 21)"/>
+          <!-- Wattle -->
+          <ellipse cx="53" cy="38" rx="2.5" ry="3.5" fill="#E63946"/>
+          <!-- Beak -->
+          <polygon points="56,29 64,26 56,33" fill="#FFD93D"/>
+          <!-- Eye -->
+          <circle cx="52" cy="27" r="2.5" fill="#1A1A2E"/>
+          <circle cx="53" cy="26" r="0.8" fill="white"/>
+          <!-- Wing hint -->
+          <ellipse cx="30" cy="52" rx="8" ry="5" fill="rgba(200,200,200,0.3)" transform="rotate(-15 30 52)"/>
+          <!-- Dollar sign on body -->
+          <text x="40" y="57" text-anchor="middle" font-size="13" font-weight="900" fill="#1A1A2E" font-family="system-ui">$</text>
+          <!-- Legs -->
+          <line x1="34" y1="64" x2="30" y2="72" stroke="#FFD93D" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="42" y1="64" x2="46" y2="72" stroke="#FFD93D" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="30" y1="72" x2="26" y2="72" stroke="#FFD93D" stroke-width="2" stroke-linecap="round"/>
+          <line x1="46" y1="72" x2="50" y2="72" stroke="#FFD93D" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
-      <span class="landing-logo-text">Zaifi</span>
+      <div style="display:flex;flex-direction:column;line-height:1;">
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#FAFAFA;letter-spacing:-0.5px;">Zaifi</span>
+        <span style="font-size:10px;font-weight:600;color:#52525B;letter-spacing:1.5px;text-transform:uppercase;">Gestión</span>
+      </div>
     </div>
     <div style="display:flex;gap:10px;">
       <button class="landing-btn-ghost" onclick="showScreen('login')" style="padding:10px 20px;font-size:13px;">Iniciar sesión</button>
