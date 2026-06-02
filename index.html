@@ -1450,18 +1450,54 @@ function renderFacturas(){
 function marcarCobrada(id, monto){
   const f=facturas.find(x=>x.id===id);
   if(!f) return;
-  if(monto===undefined){
-    // Ask for amount
-    const input = parseFloat(prompt('Monto a registrar (Total: '+fmt(f.monto)+'):'));
-    monto = isNaN(input) ? f.monto : input;
-  }
+
+  // Modal para registrar cobro con fecha y medio de pago
+  const modalHtml = `
+    <div class="modal-title">Registrar cobro</div>
+    <div class="modal-sub">${f.cliente} — ${f.numero||'Factura'} · Total: ${fmt(f.monto)}</div>
+    <div class="form-group"><label class="form-label">Monto cobrado</label>
+      <input class="form-input" id="cobro-monto" type="number" value="${f.monto-(f.montoCobrado||0)}" min="0"/></div>
+    <div class="form-group"><label class="form-label">Fecha de cobro</label>
+      <input class="form-input" id="cobro-fecha" type="date" value="${today()}"/></div>
+    <div class="form-group"><label class="form-label">Medio de pago</label>
+      <select class="form-select" id="cobro-medio">
+        <option value="Transferencia">Transferencia</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Cheque">Cheque</option>
+        <option value="Mercado Pago">Mercado Pago</option>
+        <option value="Otro">Otro</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Nota (opcional)</label>
+      <input class="form-input" id="cobro-nota" type="text" placeholder="Ej: depósito cuenta Santander"/></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmarCobro('${id}')">✓ Registrar cobro →</button>
+    </div>`;
+  document.getElementById('modal-content').innerHTML = modalHtml;
+  document.getElementById('modal').classList.add('open');
+}
+
+function confirmarCobro(id){
+  const f=facturas.find(x=>x.id===id);
+  if(!f) return;
+  const monto = parseFloat(document.getElementById('cobro-monto').value)||0;
+  const fecha = document.getElementById('cobro-fecha').value||today();
+  const medio = document.getElementById('cobro-medio').value||'Transferencia';
+  const nota  = document.getElementById('cobro-nota').value||'';
+  if(!monto||monto<=0){ alert('Ingresá un monto válido'); return; }
+
+  // Store payment record
+  if(!f.pagos) f.pagos = [];
+  f.pagos.push({id:uid(), fecha, monto, medio, nota});
   f.montoCobrado = (f.montoCobrado||0) + monto;
   f.estado = f.montoCobrado >= f.monto ? 'cobrada' : 'pendiente';
   if(f.montoCobrado >= f.monto) f.montoCobrado = f.monto;
+
   // Update linked CxC
   const cxcItem = cxc.find(x=>x.facturaId===id);
   if(cxcItem){ cxcItem.monto=Math.max(0,f.monto-f.montoCobrado); if(f.estado==='cobrada') cxcItem.estado='cobrado'; save('cxc',cxc); }
   save('facturas',facturas);
+  closeModal();
   renderFacturas();
   toast('✅ Cobro de '+fmt(monto)+' registrado');
 }
@@ -4326,9 +4362,8 @@ function renderCuentaCorriente(){
 
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const hoy = today();
-  const mesHoyIdx = new Date().getMonth(); // 0-based
+  const mesHoyIdx = new Date().getMonth();
 
-  // Which clients to show
   let clientesShow = clientes.filter(c=>c.estado==='Activo'||c.estado==='activo');
   if(filtroCliente) clientesShow = clientesShow.filter(c=>c.nombre===filtroCliente);
 
@@ -4338,72 +4373,55 @@ function renderCuentaCorriente(){
   }
 
   el.innerHTML = clientesShow.map(cl=>{
-    // Build 12 months
-    const filas = MESES.map((mes, idx)=>{
+    // ── Build payment rows: one row per factura with its pagos
+    const factsAnio = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(String(anio)));
+    const totalAnio = factsAnio.reduce((a,f)=>a+(+f.monto||0),0);
+    const cobradoAnio = factsAnio.filter(f=>f.estado==='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
+    const pendienteAnio = totalAnio - cobradoAnio;
+
+    // ── Build month summary rows
+    const filasMes = MESES.map((mes, idx)=>{
       const mmStr = String(idx+1).padStart(2,'0');
       const periodoKey = `${anio}-${mmStr}`;
       const esFuturo = anio > new Date().getFullYear() || (anio === new Date().getFullYear() && idx > mesHoyIdx);
 
-      // ── Factura
       const factsMes = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(periodoKey));
       const factTotal = factsMes.reduce((a,f)=>a+(+f.monto||0),0);
-      const factCobrado = factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0);
       const factEstado = factsMes.length===0 ? (esFuturo?'futuro':'sin-factura') : factsMes.every(f=>f.estado==='cobrada') ? 'cobrada' : 'pendiente';
 
-      // ── Resumen
-      const resMes = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(periodoKey));
-      const resEstado = resMes.length===0 ? (esFuturo?'futuro':'sin-resumen') : resMes.some(r=>r.estado==='pagado'||r.estado==='enviado') ? 'enviado' : 'pendiente';
-      const resTotalFinal = resMes.reduce((a,r)=>a+(+r.totalFinal||0),0);
+      function pill(label,color,bg){ return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${bg};color:${color};">${label}</span>`; }
 
-      // ── Cobro CxC
-      const cxcMes = cxc.filter(x=>(x.clienteId===cl.id||x.cliente===cl.nombre) && x.fecha && x.fecha.startsWith(periodoKey));
-      const cobradoCxC = cxcMes.filter(x=>x.estado==='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
-      const pendCxC = cxcMes.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
-
-      // ── Status pills
-      function pill(label, color, bg){
-        return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${bg};color:${color};">${label}</span>`;
-      }
-
-      let pillFact, pillRes, pillCobro;
-
+      let pillFact;
       if(factEstado==='futuro') pillFact = pill('—','#94A3B8','#F1F5F9');
       else if(factEstado==='sin-factura') pillFact = pill('Sin factura','#D64545','#FEF2F2');
       else if(factEstado==='cobrada') pillFact = pill('✓ Cobrada','#2D9B6F','#ECFDF5');
       else pillFact = pill('⏳ Pendiente','#D4A017','#FEFCE8');
 
-      if(resEstado==='futuro') pillRes = pill('—','#94A3B8','#F1F5F9');
-      else if(resEstado==='sin-resumen') pillRes = pill('No enviado','#D64545','#FEF2F2');
-      else if(resEstado==='enviado') pillRes = pill('✓ Enviado','#2D9B6F','#ECFDF5');
-      else pillRes = pill('⏳ Pendiente','#D4A017','#FEFCE8');
-
-      if(esFuturo) pillCobro = pill('—','#94A3B8','#F1F5F9');
-      else if(factsMes.length===0 && cxcMes.length===0) pillCobro = pill('—','#94A3B8','#F1F5F9');
-      else if(pendCxC===0 && factEstado==='cobrada') pillCobro = pill('✓ Al día','#2D9B6F','#ECFDF5');
-      else if(pendCxC>0) pillCobro = pill(fmt(pendCxC)+' pend.','#D64545','#FEF2F2');
-      else pillCobro = pill('✓ Al día','#2D9B6F','#ECFDF5');
-
       const esActual = !esFuturo && periodoKey === hoy.substring(0,7);
-      const rowBg = esActual ? 'background:#FAFAF8;border-left:3px solid #6C5CE7;' : '';
+      const rowBg = esActual ? 'background:#F5F3FF;border-left:3px solid #6C5CE7;' : '';
 
-      return `<tr style="${rowBg}">
-        <td style="padding:10px 16px;font-size:13px;font-weight:${esActual?'700':'500'};color:${esActual?'#6C5CE7':'#334155'};">${mes}</td>
-        <td style="padding:10px 16px;">${pillFact}${factsMes.length>0?` <span style="font-size:11px;color:#94A3B8;">${fmt(factTotal)}</span>`:''}</td>
-        <td style="padding:10px 16px;">${pillRes}${resTotalFinal>0?` <span style="font-size:11px;color:#94A3B8;">${fmt(resTotalFinal)}</span>`:''}</td>
-        <td style="padding:10px 16px;">${pillCobro}</td>
-        <td style="padding:10px 16px;font-size:12px;color:#94A3B8;">
-          ${factsMes.map(f=>`<a href="#" onclick="goTo('facturacion',document.querySelector('.nav-item'));setTimeout(()=>document.getElementById('fact-estado').value=f.estado==='cobrada'?'cobrada':'pendiente',200);return false;" style="color:#6C5CE7;text-decoration:none;">${f.numero||'Factura'}</a>`).join(', ')||''}
-        </td>
-      </tr>`;
+      // ── Payment detail rows for this month
+      const pagoRows = factsMes.flatMap(f=>(f.pagos||[]).map(p=>`
+        <tr style="background:#F8FAFC;">
+          <td style="padding:6px 16px 6px 32px;font-size:11px;color:#94A3B8;">↳ Pago</td>
+          <td style="padding:6px 16px;font-size:11px;color:#64748B;">${p.fecha||'—'}</td>
+          <td style="padding:6px 16px;font-size:11px;color:#2D9B6F;font-weight:700;">${fmt(p.monto)}</td>
+          <td style="padding:6px 16px;font-size:11px;color:#64748B;">${p.medio||'—'}</td>
+          <td style="padding:6px 16px;font-size:11px;color:#94A3B8;">${p.nota||''}</td>
+        </tr>`)).join('');
+
+      const factRef = factsMes.map(f=>f.numero||'Factura').join(', ');
+
+      return `
+        <tr style="${rowBg}">
+          <td style="padding:10px 16px;font-size:13px;font-weight:${esActual?'700':'500'};color:${esActual?'#6C5CE7':'#334155'};">${mes}</td>
+          <td style="padding:10px 16px;">${pillFact}${factsMes.length>0?` <span style="font-size:11px;color:#94A3B8;">${fmt(factTotal)}</span>`:''}</td>
+          <td style="padding:10px 16px;font-size:12px;color:#94A3B8;">${factRef}</td>
+          <td style="padding:10px 16px;font-size:12px;color:#2D9B6F;font-weight:600;">${factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0)>0?fmt(factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0)):'—'}</td>
+          <td style="padding:10px 16px;font-size:12px;color:#64748B;">${factsMes.flatMap(f=>(f.pagos||[]).map(p=>p.medio)).filter((v,i,a)=>a.indexOf(v)===i).join(', ')||'—'}</td>
+          <td style="padding:10px 16px;font-size:12px;color:#94A3B8;">${factsMes.flatMap(f=>(f.pagos||[]).map(p=>p.fecha)).filter(Boolean).sort().pop()||'—'}</td>
+        </tr>${pagoRows}`;
     });
-
-    // Summary row
-    const factsAnio = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(String(anio)));
-    const totalAnio = factsAnio.reduce((a,f)=>a+(+f.monto||0),0);
-    const cobradoAnio = factsAnio.filter(f=>f.estado==='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
-    const pendienteAnio = totalAnio - cobradoAnio;
-    const resEnviados = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(String(anio)) && (r.estado==='enviado'||r.estado==='pagado')).length;
-    const resMeses = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(String(anio))).length;
 
     return `
     <div class="table-card" style="margin-bottom:20px;">
@@ -4415,39 +4433,86 @@ function renderCuentaCorriente(){
             <div style="font-size:12px;color:#94A3B8;">${cl.servicio||''}</div>
           </div>
         </div>
-        <div style="display:flex;gap:20px;align-items:center;">
-          <div style="text-align:right;">
-            <div style="font-size:11px;color:#94A3B8;">Facturado ${anio}</div>
-            <div style="font-size:16px;font-weight:800;color:#1E293B;">${fmt(totalAnio)}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px;color:#94A3B8;">Cobrado</div>
-            <div style="font-size:16px;font-weight:800;color:#2D9B6F;">${fmt(cobradoAnio)}</div>
-          </div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div style="text-align:right;"><div style="font-size:11px;color:#94A3B8;">Facturado ${anio}</div><div style="font-size:16px;font-weight:800;color:#1E293B;">${fmt(totalAnio)}</div></div>
+          <div style="text-align:right;"><div style="font-size:11px;color:#94A3B8;">Cobrado</div><div style="font-size:16px;font-weight:800;color:#2D9B6F;">${fmt(cobradoAnio)}</div></div>
           ${pendienteAnio>0?`<div style="text-align:right;"><div style="font-size:11px;color:#94A3B8;">Pendiente</div><div style="font-size:16px;font-weight:800;color:#D64545;">${fmt(pendienteAnio)}</div></div>`:''}
-          <div style="text-align:right;">
-            <div style="font-size:11px;color:#94A3B8;">Resúmenes</div>
-            <div style="font-size:15px;font-weight:800;color:#6C5CE7;">${resEnviados}/${resMeses}</div>
-          </div>
+          <button onclick="exportarCuentaCorriente('${cl.nombre}',${anio})" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#2D9B6F;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">
+            ⬇ Excel
+          </button>
         </div>
       </div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;">
           <thead>
             <tr style="background:#F8FAFC;">
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Mes</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;width:110px;">Mes</th>
               <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Factura</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Resumen enviado</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Cobro</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Referencia</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">N° Comprobante</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Cobrado</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Medio de pago</th>
+              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #E2E8F0;">Fecha cobro</th>
             </tr>
           </thead>
-          <tbody>${filas.join('')}</tbody>
+          <tbody>${filasMes.join('')}</tbody>
         </table>
       </div>
     </div>`;
   }).join('');
 }
+
+function exportarCuentaCorriente(clienteNombre, anio){
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const factsAnio = facturas.filter(f=>f.cliente===clienteNombre && f.fecha && f.fecha.startsWith(String(anio)));
+
+  // Build rows
+  const rows = [['Mes','N° Comprobante','Fecha Emisión','Fecha Vencimiento','Monto Factura','Estado','Fecha Cobro','Monto Cobrado','Medio de Pago','Nota']];
+
+  MESES.forEach((mes, idx)=>{
+    const mmStr = String(idx+1).padStart(2,'0');
+    const periodoKey = `${anio}-${mmStr}`;
+    const factsMes = factsAnio.filter(f=>f.fecha && f.fecha.startsWith(periodoKey));
+
+    if(factsMes.length===0){
+      rows.push([mes,'—','','','','Sin factura','','','','']);
+    } else {
+      factsMes.forEach(f=>{
+        const pagos = f.pagos||[];
+        if(pagos.length===0){
+          rows.push([mes, f.numero||'—', f.fecha||'', f.vencimiento||'', f.monto||0, f.estado==='cobrada'?'Cobrada':'Pendiente','','','','']);
+        } else {
+          pagos.forEach((p,i)=>{
+            rows.push([
+              i===0?mes:'',
+              i===0?(f.numero||'—'):'',
+              i===0?(f.fecha||''):'',
+              i===0?(f.vencimiento||''):'',
+              i===0?(f.monto||0):'',
+              i===0?(f.estado==='cobrada'?'Cobrada':'Pendiente'):'',
+              p.fecha||'',
+              p.monto||0,
+              p.medio||'',
+              p.nota||''
+            ]);
+          });
+        }
+      });
+    }
+  });
+
+  // Build CSV
+  const csv = rows.map(r=>r.map(v=>typeof v==='string'&&v.includes(',')?`"${v}"`:v).join(',')).join('\n');
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `CuentaCorriente_${clienteNombre.replace(/\s+/g,'_')}_${anio}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Exportado correctamente');
+}
+
 
 </script>
 </body>
