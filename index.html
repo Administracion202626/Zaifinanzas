@@ -414,7 +414,19 @@ tr:hover td{background:#F8FAFC;}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="stats-row">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;gap:8px;flex-wrap:wrap">
+  <button onclick="importarBackup()" style="background:#fff;color:#1B2A4A;border:1px solid #D8CEB8;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px">
+    <span style="font-size:15px">📂</span> Importar backup
+  </button>
+  <button onclick="exportarBackup()" style="background:#fff;color:#1B2A4A;border:1px solid #D8CEB8;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px">
+    <span style="font-size:15px">💾</span> Guardar backup
+  </button>
+  <button id="btn-exportar-abesa-nigrum" onclick="exportarAAbesa()" style="background:linear-gradient(135deg,#C9A84C,#B8943E);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(201,168,76,.3)">
+    <span style="font-size:16px">↑</span> Exportar datos a ABESA
+  </button>
+  <input type="file" id="backup-file-input" accept=".json" style="display:none" onchange="cargarBackupArchivo(event)">
+</div>
+<div class="stats-row">
         <div class="stat-card"><div class="stat-icon" style="background:#EEF2FF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" id="dash-facturacion">$0</div><div class="stat-label">Facturación total</div></div>
         <div class="stat-card"><div class="stat-icon" style="background:#ECFDF5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2D9B6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-val" id="dash-clientes">0</div><div class="stat-label">Clientes activos</div></div>
         <div class="stat-card"><div class="stat-icon" style="background:#FEFCE8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="stat-val" id="dash-pendientes">$0</div><div class="stat-label">Por cobrar</div></div>
@@ -512,10 +524,6 @@ tr:hover td{background:#F8FAFC;}
             <div class="form-group">
               <label class="form-label">Fecha de emisión</label>
               <input class="form-input" id="fac-fecha" type="date"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Fecha de vencimiento</label>
-              <input class="form-input" id="fac-vencimiento" type="date"/>
             </div>
           </div>
           <div style="padding:0 24px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
@@ -1062,15 +1070,6 @@ tr:hover td{background:#F8FAFC;}
 // ══════════════════════════════════════════════
 const SUPA_URL = 'https://idvzrkadkqhxuboyctsa.supabase.co';
 const SUPA_KEY = 'sb_publishable_NvTG8MMuxyotB5pWuD7PQg_GVWi7S75';
-// Users are stored in a shared localStorage key for cross-device support
-// Admin is always available hardcoded
-const SHARED_USERS_KEY = 'zaifi_shared_users_v2';
-function getSharedUsers(){
-  try{ return JSON.parse(localStorage.getItem(SHARED_USERS_KEY))||[]; }catch(e){ return []; }
-}
-function saveSharedUsers(users){
-  localStorage.setItem(SHARED_USERS_KEY, JSON.stringify(users));
-}
 
 async function supaFetch(path, method='GET', body=null){
   const opts = {
@@ -1133,7 +1132,7 @@ async function saveSupa(tabla, arr){
   localStorage.setItem(dbKey(tabla), JSON.stringify(arr));
 }
 
-const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
+const ADMIN_EMAIL = 'administracion@odsa.com.ar';
 const ADMIN_PASS  = 'administracion2026';
 
 // Cuenta admin siempre disponible aunque se borren los datos del navegador
@@ -1164,41 +1163,69 @@ function showScreen(name){
 }
 
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim().toLowerCase().replace(/\s+/g,'');
+  // Clean input thoroughly
+  const emailRaw = document.getElementById('login-email').value;
+  const email = emailRaw.trim().toLowerCase().replace(/\s+/g,'');
   const pass  = document.getElementById('login-pass').value.trim();
   const err   = document.getElementById('login-error');
   err.style.display='none';
+  err.style.background=''; err.style.color='';
 
-  if(!email||!pass){ err.textContent='Completá email y contraseña'; err.style.display='block'; return; }
-
-  // 1. Admin siempre funciona
-  if(email==='administracion@nigrum.com.ar' && pass==='administracion2026'){
-    setSession(ADMIN_ACCOUNT); loadApp(ADMIN_ACCOUNT); return;
+  if(!email||!pass){ 
+    err.textContent='Completá email y contraseña'; 
+    err.style.display='block'; return; 
   }
 
-  // 2. Buscar en todos los stores de usuarios
-  const allUsers = [...getUsersCache(), ...getSharedUsers()];
-  const deduped = allUsers.filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
-  let user = deduped.find(u=>u.email.toLowerCase()===email && u.pass===pass);
+  // Show loading state
+  const btn = document.querySelector('.auth-btn');
+  if(btn){ btn.textContent='Verificando...'; btn.disabled=true; }
 
-  if(!user){
-    // 3. Intentar Supabase como último recurso
+  try{
+    // Admin siempre funciona (hardcoded)
+    if(email===ADMIN_EMAIL.toLowerCase() && pass===ADMIN_PASS){
+      setSession(ADMIN_ACCOUNT); loadApp(ADMIN_ACCOUNT); return;
+    }
+
+    // Check Supabase first (source of truth)
+    let user = null;
     try{
-      const res = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*');
-      if(res&&res.length){ if(res[0].pass===pass){ user=res[0]; } }
-    }catch(e){}
+      const supaUsers = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*');
+      if(supaUsers&&supaUsers.length){
+        const found = supaUsers.find(u=>u.pass===pass);
+        if(found) user = found;
+        else{ 
+          // Wrong password
+          err.textContent='Contraseña incorrecta'; 
+          err.style.display='block'; return; 
+        }
+      }
+    }catch(e){ 
+      console.log('Supabase error, checking cache:',e); 
+      // Fallback to cache
+      const users = getUsersCache();
+      user = users.find(u=>u.email.toLowerCase()===email && u.pass===pass);
+    }
+
+    if(!user){ 
+      err.textContent='No existe una cuenta con ese email'; 
+      err.style.display='block'; return; 
+    }
+    if(user.role==='pendiente'){ 
+      err.textContent='Tu cuenta está pendiente de aprobación del administrador'; 
+      err.style.display='block'; return; 
+    }
+
+    // Update cache
+    const users = getUsersCache();
+    const idx = users.findIndex(u=>u.email.toLowerCase()===email);
+    if(idx>=0) users[idx]=user; else users.push(user);
+    saveUsersCache(users);
+
+    setSession(user);
+    loadApp(user);
+  } finally {
+    if(btn){ btn.textContent='Ingresar →'; btn.disabled=false; }
   }
-
-  if(!user){ err.textContent='Email o contraseña incorrectos'; err.style.display='block'; return; }
-  if(user.role==='pendiente'){ err.textContent='Tu cuenta está pendiente de aprobación del administrador'; err.style.display='block'; return; }
-
-  // Guardar en ambos stores
-  const cache = getUsersCache();
-  if(!cache.find(u=>u.email===email)){ cache.push(user); saveUsersCache(cache); }
-  const shared = getSharedUsers();
-  if(!shared.find(u=>u.email===email)){ shared.push(user); saveSharedUsers(shared); }
-
-  setSession(user); loadApp(user);
 }
 
 async function doRegister(){
@@ -1226,9 +1253,6 @@ async function doRegister(){
   const user = {id:'u'+Date.now(),nombre,empresa,email,pass,role,mensaje,created_at:new Date().toISOString()};
 
   try{ await upsertUsuarioSupa(user); }catch(e){ console.log('Register error:',e); }
-  // Save to shared users for cross-device access
-  const shared = getSharedUsers();
-  if(!shared.find(u=>u.email===email)){ shared.push(user); saveSharedUsers(shared); }
 
   if(isAdminEmail){
     users.push(user); saveUsersCache(users);
@@ -1367,45 +1391,27 @@ function renderFacturas(){
   const el=document.getElementById('facturas-list');
   const tipoColors={'A':'#003087','B':'#2D9B6F','C':'#D4A017','presupuesto':'#6C5CE7','interna':'#64748B'};
   const tipoLabels={'A':'Fact. A','B':'Fact. B','C':'Fact. C','presupuesto':'Presup.','interna':'Interno'};
-  const hoyF = today();
   el.innerHTML=f.length?f.map(x=>{
     const tc=tipoColors[x.tipo]||'#64748B';
     const tl=tipoLabels[x.tipo]||x.tipo||'Factura';
-    const cobrado = x.montoCobrado||0;
-    const pendiente = Math.max(0, (+x.monto||0) - cobrado);
-    const pct = x.monto ? Math.min((cobrado/x.monto)*100,100) : 0;
-    const vencida = x.vencimiento && x.vencimiento < hoyF && x.estado !== 'cobrada';
-    const diasVence = x.vencimiento ? Math.round((new Date(x.vencimiento)-new Date(hoyF))/(1000*60*60*24)) : null;
-    const venceLabel = diasVence===null?'':diasVence<0?`Venció hace ${Math.abs(diasVence)}d`:diasVence===0?'Vence hoy':`Vence en ${diasVence}d`;
     return `
-    <div class="factura-card" style="flex-direction:column;align-items:stretch;gap:12px;border-color:${vencida?'#FCA5A5':'#E2E8F0'};">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="width:44px;height:44px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
-            <span style="background:${tc}18;color:${tc};font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;">${tl}</span>
-            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;">${x.numero||'—'}</span>
-          </div>
-          <div style="font-size:12px;color:#64748B;">${x.cliente} · Emitida: ${x.fecha||'—'}${x.vencimiento?' · <span style="color:'+(vencida?'#D64545':'#D4A017')+';font-weight:600;">'+venceLabel+'</span>':''}</div>
+    <div class="factura-card">
+      <div style="width:44px;height:44px;background:#EEF2FF;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+          <span style="background:${tc}18;color:${tc};font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;">${tl}</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;">${x.numero||'—'}</span>
         </div>
-        <div style="text-align:right;">
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:900;">${fmt(x.monto)}</div>
-          <span class="badge ${x.estado==='cobrada'?'badge-green':vencida?'badge-red':'badge-yellow'}">${x.estado==='cobrada'?'✓ Cobrada':vencida?'⚠️ Vencida':'⏳ Pendiente'}</span>
-        </div>
+        <div style="font-size:13px;color:#64748B;">${x.cliente} · ${x.fecha||''}</div>
+        ${x.concepto?`<div style="font-size:12px;color:#94A3B8;margin-top:2px;">${x.concepto}</div>`:''}
       </div>
-      ${x.estado!=='cobrada'?`
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748B;margin-bottom:4px;">
-          <span>Cobrado: ${fmt(cobrado)}</span><span>Pendiente: ${fmt(pendiente)}</span>
-        </div>
-        <div style="height:5px;background:#F1F5F9;border-radius:3px;overflow:hidden;">
-          <div style="height:100%;width:${pct}%;background:#2D9B6F;border-radius:3px;"></div>
-        </div>
-      </div>`:''}
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#2D9B6F;border-color:#2D9B6F;" onclick="marcarCobrada('${x.id}')">$ Registrar cobro</button>`:''}
-        ${cobrado>0?`<button class="action-btn" onclick="revertirCobroFactura('${x.id}')">↩ Revertir</button>`:''}
-        <button class="action-btn" style="color:#6C5CE7;" onclick="verDocFactura('${x.id}')">📄 Ver</button>
+      <div style="text-align:right;">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:900;">${fmt(x.monto)}</div>
+        <span class="badge ${x.estado==='cobrada'?'badge-green':x.estado==='vencida'?'badge-red':'badge-yellow'}" style="margin-top:4px;">${x.estado==='cobrada'?'✓ Cobrada':x.estado==='vencida'?'Vencida':'⏳ Pendiente'}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px;">
+        ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#2D9B6F" onclick="marcarCobrada('${x.id}')">Cobrar</button>`:''}
+        <button class="action-btn" style="color:#6C5CE7;" onclick="generarDocFactura(facturas.find(f=>f.id==='${x.id}'),'${x.tipo||'A'}')">📄 Ver doc</button>
         <button class="action-btn" onclick="editarItem('facturas','${x.id}')">Editar</button>
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
       </div>
@@ -1413,37 +1419,8 @@ function renderFacturas(){
   updateDashboard();
 }
 
-function marcarCobrada(id, monto){
-  const f=facturas.find(x=>x.id===id);
-  if(!f) return;
-  if(monto===undefined){
-    // Ask for amount
-    const input = parseFloat(prompt('Monto a registrar (Total: '+fmt(f.monto)+'):'));
-    monto = isNaN(input) ? f.monto : input;
-  }
-  f.montoCobrado = (f.montoCobrado||0) + monto;
-  f.estado = f.montoCobrado >= f.monto ? 'cobrada' : 'pendiente';
-  if(f.montoCobrado >= f.monto) f.montoCobrado = f.monto;
-  // Update linked CxC
-  const cxcItem = cxc.find(x=>x.facturaId===id);
-  if(cxcItem){ cxcItem.monto=Math.max(0,f.monto-f.montoCobrado); if(f.estado==='cobrada') cxcItem.estado='cobrado'; save('cxc',cxc); }
-  save('facturas',facturas);
-  renderFacturas();
-  toast('✅ Cobro de '+fmt(monto)+' registrado');
-}
-
-function verDocFactura(id){
-  var f=facturas.find(function(x){return x.id===id;});
-  if(f) generarDocFactura(f, f.tipo||'A');
-}
-function revertirCobroFactura(id){
-  const f=facturas.find(x=>x.id===id);
-  if(!f||!confirm('¿Revertir el cobro de esta factura?')) return;
-  f.montoCobrado=0; f.estado='pendiente';
-  // Reopen CxC
-  const cxcItem = cxc.find(x=>x.facturaId===id);
-  if(cxcItem){ cxcItem.monto=f.monto; cxcItem.estado='pendiente'; save('cxc',cxc); }
-  save('facturas',facturas); renderFacturas(); toast('↩ Cobro revertido');
+function marcarCobrada(id){
+  const f=facturas.find(x=>x.id===id);if(f){f.estado='cobrada';save('facturas',facturas);renderFacturas();toast('✅ Factura marcada como cobrada');}
 }
 
 function renderGastos(){
@@ -1550,6 +1527,60 @@ function renderCxP(){
 }
 
 function pagarCxP(id){const r=cxp.find(x=>x.id===id);if(r){r.estado='pagado';save('cxp',cxp);renderCxP();toast('✅ Pago registrado');}}
+
+
+// ══════════════════════════════════════════════
+// EXPORT TO ABESA
+// ══════════════════════════════════════════════
+function exportarAAbesa(){
+  try{
+    const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
+    const tg=gastos.reduce((a,x)=>a+(+x.monto||0),0);
+    const tp=facturas.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+(+x.monto||0),0);
+    const gan=tf-tg;
+    
+    const resumen={
+      timestamp: new Date().toISOString(),
+      empresa: 'Nigrum',
+      ingresos: tf,
+      gastos: tg,
+      resultado: gan,
+      pendientes_cobro: tp,
+      clientes: clientes.length,
+      facturas_count: facturas.length,
+      gastos_count: gastos.length
+    };
+    
+    // Guardar directo en localStorage (mismo dominio Netlify que ABESA)
+    localStorage.setItem('nigrum_abesa_export', JSON.stringify(resumen));
+    
+    // Show success on button
+    const btn = document.getElementById('btn-exportar-abesa-nigrum');
+    if(btn){
+      btn.textContent = '✓ Datos enviados a ABESA';
+      btn.style.background = '#1A7A52';
+      setTimeout(()=>{
+        btn.textContent = '↑ Exportar datos a ABESA';
+        btn.style.background = '';
+      }, 3000);
+    }
+    
+    // Toast notification
+    let toast = document.getElementById('nigrum-toast');
+    if(!toast){
+      toast = document.createElement('div');
+      toast.id = 'nigrum-toast';
+      toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1B2A4A;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '✓ Datos sincronizados con ABESA';
+    toast.style.display = 'block';
+    setTimeout(()=>{ toast.style.display = 'none'; }, 3000);
+    
+  }catch(e){
+    alert('Error al exportar: ' + e.message);
+  }
+}
 
 function updateDashboard(){
   const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
@@ -2408,7 +2439,7 @@ function generarFactura(tipo, id){
     +'<div class="fac-fecha">Fecha: '+fechaHoy+'</div>'
     +'<span class="fac-tag">'+fiscal+'</span></div></div>'
     +'<div class="info-row">'
-    +'<div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>'+emisorExtra+'<div class="info-sub">administracion@nigrum.com.ar</div></div>'
+    +'<div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>'+emisorExtra+'<div class="info-sub">administracion@odsa.com.ar</div></div>'
     +'<div class="info-box"><div class="info-label">Receptor</div><div class="info-val">'+r.cliente+'</div>'+cliEmail+cliSector+'<div class="info-sub">Per\u00edodo: '+r.periodo+'</div></div>'
     +'</div>'
     +srvSection
@@ -3088,8 +3119,7 @@ function guardarFacturaFull(){
   const tipo    = document.getElementById('fac-tipo').value;
   const numero  = document.getElementById('fac-numero').value;
   const cliente = document.getElementById('fac-cliente').value;
-  const fecha      = document.getElementById('fac-fecha').value;
-  const vencimiento= document.getElementById('fac-vencimiento')?.value||'';
+  const fecha   = document.getElementById('fac-fecha').value;
   const estado  = document.getElementById('fac-estado-form').value;
   if(!cliente){ toast('⚠️ Seleccioná un cliente'); return; }
   if(!facServicios.length&&!facEnvios.length){ toast('⚠️ Agregá al menos un servicio o envío'); return; }
@@ -3113,18 +3143,9 @@ function guardarFacturaFull(){
     monto = subtotal;
   }
 
-  const obj = {id:facEditId||uid(),tipo,numero,cliente,fecha:fecha||today(),vencimiento,estado,monto,montoCobrado:facEditId?(facturas.find(x=>x.id===facEditId)?.montoCobrado||0):0,servicios:facServicios,envios_data:facEnvios,totalSrv,totalLog,subtotal,neto,ivaM,cuit:cli.cuit,condicion:cli.condicion,domicilio:cli.domicilio};
+  const obj = {id:facEditId||uid(),tipo,numero,cliente,fecha:fecha||today(),estado,monto,servicios:facServicios,envios_data:facEnvios,totalSrv,totalLog,subtotal,neto,ivaM,cuit:cli.cuit,condicion:cli.condicion,domicilio:cli.domicilio};
   if(facEditId){ const i=facturas.findIndex(x=>x.id===facEditId); if(i>=0)facturas[i]=obj; }
-  else {
-    facturas.push(obj);
-    // Auto-crear CxC para la factura
-    const cxcExisteFac = cxc.find(x=>x.facturaId===obj.id);
-    if(!cxcExisteFac && monto>0){
-      cxc.unshift({id:uid(), cliente, concepto:(tipo==='interna'?'Recibo':'Factura '+tipo)+' '+numero,
-        monto, fecha:fecha||today(), vencimiento, estado:'pendiente', facturaId:obj.id});
-      save('cxc',cxc);
-    }
-  }
+  else facturas.push(obj);
   save('facturas',facturas);
   volverListaFac();
   renderFacturas();
@@ -3163,7 +3184,7 @@ function generarDocFactura(f, tipoOverride){
 <div class="header"><img src="${typeof NIGRUM_LOGO!=='undefined'?NIGRUM_LOGO:''}" class="logo" alt="ODSA SRL" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div style="display:none;font-family:Arial;font-size:22px;font-weight:900;color:#1E293B;">Nigrum<span style="color:${colorPrimary}">.</span></div>
 <div class="fac-badge"><div class="fac-tipo">${tipoLabel}</div><div class="fac-nro">N° ${f.numero||'—'}</div><div class="fac-fecha">Fecha: ${fechaHoy}</div><span class="fac-tag">${esFacA?'Responsable Inscripto':f.tipo==='presupuesto'?'Presupuesto':'Uso interno'}</span></div></div>
 <div class="info-row">
-  <div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>${esFacA?'<div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">IVA Responsable Inscripto</div>':''}<div class="info-sub">administracion@nigrum.com.ar</div></div>
+  <div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>${esFacA?'<div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">IVA Responsable Inscripto</div>':''}<div class="info-sub">administracion@odsa.com.ar</div></div>
   <div class="info-box"><div class="info-label">Receptor</div><div class="info-val">${f.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.condicion?`<div class="info-sub">${cli.condicion}</div>`:''} ${cli.domicilio?`<div class="info-sub">${cli.domicilio}</div>`:''}</div>
 </div>
 ${f.servicios&&f.servicios.length?`<div class="sec-title">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#f8f8f8;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(f.totalSrv)}</td></tr></tfoot></table>`:''}
@@ -3371,7 +3392,7 @@ function generarHTMLResumen(r){
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #6C5CE7;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#6C5CE7;}.badge-sub{font-size:12px;color:#94A3B8;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#1E293B;margin-bottom:3px;}.info-sub{font-size:12px;color:#64748B;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:1px;background:#F8FAFC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#1E293B;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#2D9B6F;}.banco{background:#EEF2FF;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#6C5CE7;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#64748B;}.bv{font-weight:700;color:#1E293B;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#94A3B8;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}</style>
 </head><body>
 <div class="header"><img src="${logoSrc}" class="logo" alt="ODSA SRL" onerror="this.style.display='none'"/><div class="badge"><div class="badge-title">RESUMEN</div><div class="badge-sub">Período: ${r.periodo}</div><div class="badge-sub">Fecha: ${fechaHoy}</div></div></div>
-<div class="info-row"><div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div><div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">administracion@nigrum.com.ar</div></div><div class="info-box"><div class="info-label">Cliente</div><div class="info-val">${r.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.email?`<div class="info-sub">${cli.email}</div>`:''}</div></div>
+<div class="info-row"><div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div><div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">administracion@odsa.com.ar</div></div><div class="info-box"><div class="info-label">Cliente</div><div class="info-val">${r.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.email?`<div class="info-sub">${cli.email}</div>`:''}</div></div>
 ${r.servicios&&r.servicios.length?`<div class="sec">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalSrv)}</td></tr></tfoot></table>`:''}
 ${r.envios_data&&r.envios_data.length?`<div class="sec sep">Logística — ${r.envios_data.length} envíos</div><table><thead><tr><th>Fecha</th><th>Tracking</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th style="text-align:right">Tarifa</th></tr></thead><tbody>${logRows}</tbody><tfoot><tr style="background:#F8FAFC;font-weight:900;"><td colspan="5" style="padding:10px 14px;">Subtotal logística</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalLog)}</td></tr></tfoot></table>`:''}
 <div class="totales"><div class="tot-row"><span>Subtotal</span><span style="font-weight:700;">${fmtN(r.subtotal)}</span></div><div class="tot-row"><span>IVA (${r.iva}%)</span><span style="font-weight:700;">${fmtN(r.ivaMonto)}</span></div><div class="tot-final"><span>TOTAL</span><span class="amt">${fmtN(r.totalFinal)}</span></div></div>
@@ -3428,7 +3449,7 @@ function enviarResumenMail(id){
   const subject = encodeURIComponent(`Resumen ${r.periodo} — ${r.cliente} | ODSA SRL`);
   let body = `Hola ${r.cliente},\n\nAdjunto el PDF con el resumen del período ${r.periodo}.\n\nTOTAL: ${fmtN(r.totalFinal)}\n`;
   if(bp.cbu){ body+=`\nDatos bancarios:\nBanco: ${bp.banco}\nCBU: ${bp.cbu}`; if(bp.alias) body+=`\nAlias: ${bp.alias}`; body+='\n'; }
-  body+=`\nAnte cualquier consulta estamos disponibles.\n\nSaludos,\nODSA SRL\nadministracion@nigrum.com.ar`;
+  body+=`\nAnte cualquier consulta estamos disponibles.\n\nSaludos,\nODSA SRL\nadministracion@odsa.com.ar`;
   const mailUrl = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`;
   descargarPDFResumen(r, ()=>{ window.open(mailUrl,'_blank'); toast('📧 Adjuntá el PDF descargado al email'); });
 }
@@ -3579,15 +3600,83 @@ async function rechazarUsuario(uid){
   }catch(e){ toast('⚠️ Error al rechazar'); }
 }
 
+// Auto-login as admin
 const session=getSession();
-if(session){loadApp(session);}
-else{
-  checkGoogleCallback().then(loaded=>{
-    if(!loaded){
-      const s=getSession();
-      if(s) loadApp(s); else showScreen('login');
+if(session){
+  loadApp(session);
+} else {
+  // Set admin session automatically
+  setSession(ADMIN_ACCOUNT);
+  loadApp(ADMIN_ACCOUNT);
+}
+
+function exportarBackup(){
+  try{
+    const backup = {
+      version: '1.0',
+      fecha: new Date().toISOString(),
+      empresa: 'Nigrum',
+      clientes: clientes,
+      facturas: facturas,
+      gastos: gastos
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nigrum_backup_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    mostrarToast('💾 Backup descargado');
+  }catch(e){alert('Error al exportar: '+e.message);}
+}
+
+function importarBackup(){
+  document.getElementById('backup-file-input').click();
+}
+
+function cargarBackupArchivo(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const backup = JSON.parse(e.target.result);
+      if(!backup.empresa || backup.empresa !== 'Nigrum'){
+        alert('Este backup no es de Nigrum');
+        return;
+      }
+      if(!confirm('¿Importar backup del ' + new Date(backup.fecha).toLocaleString('es-AR') + '?\nEsto reemplazará todos los datos actuales.')){
+        return;
+      }
+      if(backup.clientes) clientes = backup.clientes;
+      if(backup.facturas) facturas = backup.facturas;
+      if(backup.gastos) gastos = backup.gastos;
+      guardarDatos();
+      updateDashboard();
+      renderClientes();
+      renderFacturas();
+      renderGastos();
+      mostrarToast('✓ Backup importado correctamente');
+    }catch(err){
+      alert('Error al leer el backup: '+err.message);
     }
-  });
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function mostrarToast(msg){
+  let toast = document.getElementById('nigrum-toast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'nigrum-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1B2A4A;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(()=>{ toast.style.display='none'; }, 3000);
 }
 </script>
 </body>
