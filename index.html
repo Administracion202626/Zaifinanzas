@@ -760,7 +760,10 @@ tr:hover td{background:#F5F2EC;}
       <div class="table-card">
         <div class="table-head">
           <div><div class="th-title">Gastos</div><div class="th-sub" id="gastos-total-label">Total: $0</div></div>
-          <div style="display:flex;gap:10px;"><div class="search-box"><span>🔍</span><input placeholder="Buscar..." oninput="searchTable(this,'gastos-tbody')"/></div><button class="tb-btn tb-btn-primary" onclick="openModal('add-gasto')">+ Registrar gasto</button></div>
+          <div style="display:flex;gap:10px;"><div class="search-box"><span>🔍</span><input placeholder="Buscar..." oninput="searchTable(this,'gastos-tbody')"/></div><div style="display:flex;gap:8px;">
+              <button class="tb-btn tb-btn-sec" onclick="openModal('add-gasto-extra')">+ Gasto adicional</button>
+              <button class="tb-btn tb-btn-primary" onclick="openModal('add-gasto')">+ Factura proveedor</button>
+            </div></div>
         </div>
         <table><thead><tr><th>Descripción</th><th>Proveedor</th><th>Categoría</th><th>Fecha</th><th>Vencimiento</th><th>Monto</th><th>Acciones</th></tr></thead>
         <tbody id="gastos-tbody"></tbody></table>
@@ -1557,9 +1560,18 @@ function renderGastos(){
   document.getElementById('gastos-total-label').textContent='Total: '+fmt(total);
   const tb=document.getElementById('gastos-tbody');
   tb.innerHTML=g.length?g.map(x=>`
-    <tr><td><div class="td-main">${x.descripcion}</div></td><td><span class="badge badge-gray">${x.categoria||'—'}</span></td>
-    <td style="color:var(--text3);">${x.fecha||'—'}</td><td style="font-weight:800;color:var(--red);">${fmt(x.monto)}</td>
-    <td><div class="action-btns"><button class="action-btn" onclick="editarItem('gastos','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('gastos','${x.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay gastos con esos filtros.');
+    <tr>
+      <td><div class="td-main">${x.descripcion}</div>${x.notas?`<div class="td-sub">${x.notas}</div>`:''}</td>
+      <td><span class="badge badge-gray">${x.proveedor||'—'}</span></td>
+      <td><span class="badge badge-gray">${x.categoria||'—'}</span></td>
+      <td style="color:var(--text3);font-size:12px;">${x.fecha||'—'}</td>
+      <td style="color:var(--text3);font-size:12px;">${x.vencimiento||'—'}</td>
+      <td style="font-weight:700;color:var(--red);">${fmt(x.monto)}</td>
+      <td><div class="action-btns">
+        <button class="action-btn" onclick="editarItem('gastos','${x.id}')">Editar</button>
+        <button class="action-btn" onclick="eliminar('gastos','${x.id}')">Eliminar</button>
+      </div></td>
+    </tr>`).join(''):empty('No hay gastos con esos filtros.');
   updateDashboard();
 }
 
@@ -1903,12 +1915,21 @@ const modals={
     {id:'icono',label:'Ícono (emoji)',type:'text',ph:'📦'},
   ]},
   'nueva-factura':{title:'Nueva factura',sub:'_custom_'},
-  'add-gasto':{title:'Registrar gasto',sub:'Anotá un gasto de la empresa',fields:[
-    {id:'descripcion',label:'Descripción',type:'text',ph:'Ej: Adobe Creative Cloud'},
+  'add-gasto':{title:'Factura de proveedor',sub:'Registrá una factura o cargo de un proveedor',fields:[
+    {id:'descripcion',label:'Descripción / Concepto',type:'text',ph:'Ej: Factura Adobe Creative Cloud'},
+    {id:'proveedor',label:'Proveedor',type:'text',ph:'Ej: Adobe'},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
+    {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
+    {id:'fecha',label:'Fecha de emisión',type:'date'},
+    {id:'vencimiento',label:'Fecha de vencimiento',type:'date'},
+    {id:'notas',label:'Notas (opcional)',type:'text',ph:'Ej: Nro. factura, referencia...'},
+  ]},
+  'add-gasto-extra':{title:'Gasto adicional',sub:'Registrá un gasto que no es factura de proveedor',fields:[
+    {id:'descripcion',label:'Descripción',type:'text',ph:'Ej: Taxi, almuerzo de trabajo, insumos...'},
     {id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha',type:'date'},
-    {id:'vencimiento',label:'Fecha de vencimiento',type:'date'},
+    {id:'notas',label:'Notas (opcional)',type:'text',ph:'Detalle adicional'},
   ]},
   'add-empleado':{title:'Nuevo empleado',sub:'Agregá un integrante del equipo',fields:[
     {id:'nombre',label:'Nombre completo',type:'text',ph:'Nombre Apellido'},
@@ -2000,14 +2021,20 @@ function saveModal(type){
       const d=gf('descripcion'),m=gf('monto');if(!d||!m){toast('⚠️ Completá descripción y monto');return;}
       const gId=uid();
       const venc=gf('vencimiento');
-      const provSel=document.getElementById('gasto-prov-sel');
-      const provNombre=provSel?provSel.value:d;
-      gastos.push({id:gId,descripcion:d,proveedor:provNombre,categoria:gf('categoria')||'Otro',monto:m,fecha:gf('fecha')||today(),vencimiento:venc});
+      const provNombre=gf('proveedor')||d;
+      gastos.push({id:gId,descripcion:d,proveedor:provNombre,categoria:gf('categoria')||'Otro',monto:m,fecha:gf('fecha')||today(),vencimiento:venc,notas:gf('notas')||''});
       save('gastos',gastos);
       // Auto-crear CxP vinculada al proveedor
       cxp.push({id:uid(),proveedor:provNombre||d,concepto:d,monto:m,fecha:gf('fecha')||today(),vencimiento:venc,estado:'pendiente',gastoId:gId});
       save('cxp',cxp); renderCxP();
-      closeModal();renderGastos();toast('✅ Gasto registrado y CxP creada');
+      closeModal();renderGastos();toast('✅ Factura de proveedor registrada');
+    },
+    'add-gasto-extra':()=>{
+      const d=gf('descripcion'),m=gf('monto');if(!d||!m){toast('⚠️ Completá descripción y monto');return;}
+      const gId=uid();
+      gastos.push({id:gId,descripcion:d,proveedor:'',categoria:gf('categoria')||'Otro',monto:m,fecha:gf('fecha')||today(),vencimiento:'',notas:gf('notas')||''});
+      save('gastos',gastos);
+      closeModal();renderGastos();toast('✅ Gasto adicional registrado');
     },
     'add-empleado':()=>{
       const n=gf('nombre');if(!n){toast('⚠️ Ingresá el nombre');return;}
@@ -2835,7 +2862,7 @@ const editFields = {
   clientes:   [{id:'nombre',label:'Nombre / Empresa',type:'text'},{id:'email',label:'Email',type:'email'},{id:'telefono',label:'WhatsApp',type:'text'},{id:'cuit',label:'CUIT / CUIL',type:'text'},{id:'condicion',label:'Condición IVA',type:'select',opts:['Responsable Inscripto','Monotributista','Consumidor Final','Exento']},{id:'domicilio',label:'Domicilio fiscal',type:'text'},{id:'sector',label:'Sector',type:'text'},{id:'servicio',label:'Servicio',type:'text'},{id:'estado',label:'Estado',type:'select',opts:['Activo','Pendiente','Inactivo']},{id:'diaResumen',label:'Día resumen (1-31)',type:'number'},{id:'diaCobro',label:'Día cobro (1-31)',type:'number'},{id:'plazoCobroDias',label:'Plazo cobro (días)',type:'number'}],
   catalogo:   [{id:'nombre',label:'Nombre del servicio',type:'text'},{id:'descripcion',label:'Descripción',type:'text'},{id:'precio',label:'Precio ($)',type:'number'},{id:'icono',label:'Ícono (emoji)',type:'text'}],
   facturas:   [{id:'numero',label:'Número',type:'text'},{id:'cliente',label:'Cliente',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrada','vencida']}],
-  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'}],
+  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
   empleados:  [{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'rol',label:'Rol',type:'text'},{id:'empresa',label:'Empresa',type:'text'},{id:'sueldo',label:'Sueldo ($)',type:'number'},{id:'estado',label:'Estado pago',type:'select',opts:['pendiente','pagado']}],
   proveedores:[{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Servicios','Alquiler','Logística','Otro']},{id:'costo',label:'Costo ($)',type:'number'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']}],
   cxc:        [{id:'cliente',label:'Cliente',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']}],
