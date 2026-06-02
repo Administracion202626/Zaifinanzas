@@ -383,9 +383,7 @@ tr:hover td{background:#F5F2EC;}
   </div>
   <div class="nav-section">
     <div class="nav-section-label">Zaifi IA</div>
-    <div class="nav-item" onclick="goTo('agenda',this)"><span class="ni">◷</span>Agenda mensual</div>
-    <div class="nav-item" onclick="goTo('vencimientos',this)"><span class="ni">◷</span>Vencimientos</div>
-    <div class="nav-item" onclick="goTo('estadocuenta',this)"><span class="ni">◈</span>Estado de cuenta</div>
+    <div class="nav-item" onclick="goTo('perfil',this)"><span class="ni">◈</span>Perfil empresa</div>
     <div class="nav-item" onclick="goTo('rentabilidad',this)"><span class="ni">◎</span>Rentabilidad</div>
     <div class="nav-item" onclick="goTo('proyeccion',this)"><span class="ni">◉</span>Proyección</div>
     <div class="nav-item" onclick="goTo('estadisticas',this)"><span class="ni">◈</span>Estadísticas</div>
@@ -936,33 +934,6 @@ tr:hover td{background:#F5F2EC;}
       </div>
     </div>
 
-    <!-- VENCIMIENTOS -->
-    <div class="page" id="page-vencimientos">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;">
-        <div class="stat-card"><div class="stat-icon" style="background:#FBF0F0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="stat-val" style="color:#B83232" id="venc-vencidos">0</div><div class="stat-label">Vencidos sin resolver</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#FBF6E6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A6A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:#8A6A00" id="venc-semana">0</div><div class="stat-label">Vencen esta semana</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#EAF4EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:#1A7A52" id="venc-ok">0</div><div class="stat-label">Al día</div></div>
-      </div>
-      <div class="table-card">
-        <div class="table-head"><div><div class="th-title">Próximos vencimientos</div><div class="th-sub">Facturas, CxC, CxP y proveedores ordenados por fecha</div></div></div>
-        <table><thead><tr><th>Tipo</th><th>Descripción</th><th>Vencimiento</th><th>Monto</th><th>Estado</th><th>Acción</th></tr></thead>
-        <tbody id="venc-tbody"></tbody></table>
-      </div>
-    </div>
-
-    <!-- ESTADO DE CUENTA -->
-    <div class="page" id="page-estadocuenta">
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
-        <div class="search-box" style="flex:1;max-width:300px;"><span style="color:#888880;">⌕</span><input id="ec-search" placeholder="Buscar cliente..." oninput="filtrarEstadoCuenta()" style="width:100%;"/></div>
-        <select class="form-select" id="ec-cliente-sel" onchange="verEstadoCuenta()" style="max-width:260px;">
-          <option value="">Seleccioná un cliente</option>
-        </select>
-      </div>
-      <div id="ec-content">
-        <div style="text-align:center;color:#888880;padding:60px;font-size:15px;">Seleccioná un cliente para ver su estado de cuenta</div>
-      </div>
-    </div>
-
     <!-- RENTABILIDAD -->
     <div class="page" id="page-rentabilidad">
       <div style="background:linear-gradient(135deg,#0D0D0D,#2E1A5E);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
@@ -1053,11 +1024,56 @@ tr:hover td{background:#F5F2EC;}
       <div id="cc-content"></div>
     </div>
 
-    <!-- AGENDA MENSUAL -->
-    <div class="page" id="page-agenda">
-      <div id="agenda-content"></div>
-    </div>
 
+    <!-- PERFIL EMPRESA -->
+    <div class="page" id="page-perfil">
+      <div style="max-width:680px;">
+        <div style="margin-bottom:24px;">
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:700;color:#FAFAFA;margin-bottom:4px;">Perfil de la empresa</div>
+          <div style="font-size:13px;color:#71717A;">Estos datos aparecen en todas las facturas que generás</div>
+        </div>
+
+        <div class="table-card" style="margin-bottom:16px;">
+          <div class="table-head"><div class="th-title">Datos generales</div></div>
+          <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group"><label class="form-label">Razón social</label>
+              <input class="form-input" id="perfil-razon" type="text" placeholder="Ej: ODSA SRL"/></div>
+            <div class="form-group"><label class="form-label">Nombre comercial</label>
+              <input class="form-input" id="perfil-nombre" type="text" placeholder="Ej: Nigrum"/></div>
+            <div class="form-group"><label class="form-label">CUIT</label>
+              <input class="form-input" id="perfil-cuit" type="text" placeholder="30-XXXXXXXX-X"/></div>
+            <div class="form-group"><label class="form-label">Condición IVA</label>
+              <select class="form-select" id="perfil-iva">
+                <option value="Responsable Inscripto">Responsable Inscripto</option>
+                <option value="Monotributista">Monotributista</option>
+                <option value="Exento">Exento</option>
+              </select></div>
+            <div class="form-group"><label class="form-label">Email de facturación</label>
+              <input class="form-input" id="perfil-email" type="email" placeholder="facturacion@empresa.com"/></div>
+            <div class="form-group"><label class="form-label">Teléfono / WhatsApp</label>
+              <input class="form-input" id="perfil-tel" type="text" placeholder="+54 9 11 XXXX-XXXX"/></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Domicilio fiscal</label>
+              <input class="form-input" id="perfil-domicilio" type="text" placeholder="Calle 123, Ciudad, Provincia"/></div>
+          </div>
+        </div>
+
+        <div class="table-card" style="margin-bottom:16px;">
+          <div class="table-head"><div class="th-title">Datos adicionales para facturas</div></div>
+          <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="form-group"><label class="form-label">Inicio de actividades</label>
+              <input class="form-input" id="perfil-inicio" type="date"/></div>
+            <div class="form-group"><label class="form-label">Ingresos brutos</label>
+              <input class="form-input" id="perfil-iibb" type="text" placeholder="Nro. IIBB o jurisdicción"/></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Nota al pie de factura (opcional)</label>
+              <input class="form-input" id="perfil-nota" type="text" placeholder="Ej: Transferencia en 24hs hábiles a CBU..."/></div>
+          </div>
+        </div>
+
+        <button onclick="guardarPerfil()" style="width:100%;padding:13px;background:#FAFAFA;color:#18181B;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">
+          Guardar perfil
+        </button>
+      </div>
+    </div>
 
     <!-- ESTADÍSTICAS -->
     <div class="page" id="page-estadisticas">
@@ -1844,7 +1860,7 @@ const recModal = {
 
 const bancosModals = {
   'add-banco-propio': {
-    title:'Nueva cuenta propia', sub:'Datos bancarios de ODSA SRL para recibir pagos',
+    title:'Nueva cuenta propia', sub:'Datos bancarios de '+(getPerfil().razon||getPerfil().nombre||'la empresa')+' para recibir pagos',
     fields:[
       {id:'banco',label:'Banco',type:'text',ph:'Ej: Banco Galicia'},
       {id:'tipo',label:'Tipo de cuenta',type:'select',opts:['Cuenta Corriente','Caja de Ahorro','Cuenta Virtual (CVU)']},
@@ -2041,13 +2057,11 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
   if(page==='estadisticas') renderEstadisticas();
-  if(page==='vencimientos') renderVencimientos();
   if(page==='cuentacorriente') initCuentaCorriente();
-  if(page==='agenda') renderAgenda();
-  if(page==='estadocuenta') initEstadoCuenta();
+  if(page==='perfil') cargarPerfil();
   if(page==='rentabilidad') renderRentabilidad();
   if(page==='proyeccion') renderProyeccion();
   if(page==='invitaciones') renderInvitaciones();
@@ -2647,7 +2661,7 @@ function generarFactura(tipo, id){
 
   var ivaRow = esFacA ? '<div class="tot-row"><span>IVA ('+r.iva+'%)</span><span style="font-weight:700;">'+fmtN(r.ivaMonto)+'</span></div>' : '';
   var totalFinal = esFacA ? r.totalFinal : r.subtotal;
-  var emisorExtra = esFacA ? '<div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">IVA Responsable Inscripto</div>' : '';
+  var _prf=getPerfil(); var emisorExtra = esFacA ? '<div class="info-sub">CUIT: '+(_prf.cuit||'—')+'</div><div class="info-sub">'+(_prf.iva||'Responsable Inscripto')+'</div>' : '';
   var cliEmail = cli.email ? '<div class="info-sub">'+cli.email+'</div>' : '';
   var cliSector = cli.sector ? '<div class="info-sub">'+cli.sector+'</div>' : '';
   var tipoLabel = esFacA ? 'FACTURA A' : 'RECIBO INTERNO';
@@ -2693,7 +2707,7 @@ function generarFactura(tipo, id){
     +'<div class="fac-fecha">Fecha: '+fechaHoy+'</div>'
     +'<span class="fac-tag">'+fiscal+'</span></div></div>'
     +'<div class="info-row">'
-    +'<div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>'+emisorExtra+'<div class="info-sub">administracion@nigrum.com.ar</div></div>'
+    +'<div class="info-box"><div class="info-label">Emisor</div><div class="info-val">'+(getPerfil().razon||getPerfil().nombre||'Mi empresa')+'</div>'+emisorExtra+'<div class="info-sub">'+(getPerfil().email||'')+'</div></div>'
     +'<div class="info-box"><div class="info-label">Receptor</div><div class="info-val">'+r.cliente+'</div>'+cliEmail+cliSector+'<div class="info-sub">Per\u00edodo: '+r.periodo+'</div></div>'
     +'</div>'
     +srvSection
@@ -2853,77 +2867,11 @@ function guardarEdicion(tipo, id){
 // ══════════════════════════════════════════════
 // VENCIMIENTOS
 // ══════════════════════════════════════════════
-function renderVencimientos(){
-  const hoy=today();
-  const en7=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
-  const items=[];
-  facturas.filter(f=>f.estado!=='cobrada').forEach(f=>items.push({tipo:'Factura',tipoClass:'badge-blue',desc:f.cliente+(f.numero?' · '+f.numero:''),venc:f.fecha,monto:+f.monto||0,id:f.id,table:'facturas'}));
-  cxc.filter(x=>x.estado!=='cobrado'&&x.vencimiento).forEach(x=>items.push({tipo:'CxC',tipoClass:'badge-green',desc:x.cliente+(x.concepto?' · '+x.concepto:''),venc:x.vencimiento,monto:+x.monto||0,id:x.id,table:'cxc'}));
-  cxp.filter(x=>x.estado!=='pagado'&&x.vencimiento).forEach(x=>items.push({tipo:'CxP',tipoClass:'badge-red',desc:x.proveedor+(x.concepto?' · '+x.concepto:''),venc:x.vencimiento,monto:+x.monto||0,id:x.id,table:'cxp'}));
-  proveedores.filter(p=>p.estado==='activo'&&p.vencimiento).forEach(p=>items.push({tipo:'Proveedor',tipoClass:'badge-gray',desc:p.nombre,venc:p.vencimiento,monto:+p.costo||0,id:p.id,table:'proveedores'}));
-  items.sort((a,b)=>a.venc>b.venc?1:-1);
-  document.getElementById('venc-vencidos').textContent=items.filter(x=>x.venc<hoy).length;
-  document.getElementById('venc-semana').textContent=items.filter(x=>x.venc>=hoy&&x.venc<=en7).length;
-  document.getElementById('venc-ok').textContent=items.filter(x=>x.venc>en7).length;
-  const tb=document.getElementById('venc-tbody');
-  if(!items.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888880;padding:32px;">¡Todo al día! No hay vencimientos pendientes ✓</td></tr>';return;}
-  tb.innerHTML=items.map(x=>{
-    const vencido=x.venc<hoy; const pronto=x.venc>=hoy&&x.venc<=en7;
-    const color=vencido?'#B83232':pronto?'#8A6A00':'#1A7A52';
-    const dias=Math.round((new Date(x.venc)-new Date(hoy))/(1000*60*60*24));
-    const label=vencido?`Venció hace ${Math.abs(dias)}d`:dias===0?'Hoy':dias===1?'Mañana':`En ${dias}d`;
-    return `<tr><td><span class="badge ${x.tipoClass}">${x.tipo}</span></td><td><div class="td-main">${x.desc}</div></td>
-    <td><div style="color:${color};font-weight:600;font-size:13px;">${x.venc}</div><div style="font-size:11px;color:${color};">${label}</div></td>
-    <td style="font-weight:700;">${fmt(x.monto)}</td>
-    <td><span class="badge ${vencido?'badge-red':pronto?'badge-yellow':'badge-green'}">${vencido?'Vencido':pronto?'Urgente':'OK'}</span></td>
-    <td><button class="action-btn" onclick="editarItem('${x.table}','${x.id}')">Editar</button></td></tr>`;
-  }).join('');
-}
 
 // ══════════════════════════════════════════════
 // ESTADO DE CUENTA
 // ══════════════════════════════════════════════
-function initEstadoCuenta(){
-  const sel=document.getElementById('ec-cliente-sel');
-  sel.innerHTML='<option value="">Seleccioná un cliente</option>'+clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
-}
 
-function verEstadoCuenta(){
-  const cliente=document.getElementById('ec-cliente-sel').value;
-  if(!cliente)return;
-  const cli=clientes.find(c=>c.nombre===cliente)||{};
-  const facsCli=facturas.filter(f=>f.cliente===cliente);
-  const cxcCli=cxc.filter(x=>x.cliente===cliente);
-  const totalFact=facsCli.reduce((a,f)=>a+(+f.monto||0),0);
-  const cobrado=facsCli.filter(f=>f.estado==='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
-  const pendiente=facsCli.filter(f=>f.estado!=='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
-  const cxcPend=cxcCli.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
-  const facRows=facsCli.map(f=>`<tr>
-    <td style="font-size:13px;">${f.fecha||'—'}</td><td><div class="td-main">${f.numero||'—'}</div></td>
-    <td style="font-weight:700;">${fmt(f.monto)}</td>
-    <td><span class="badge ${f.estado==='cobrada'?'badge-green':f.estado==='vencida'?'badge-red':'badge-yellow'}">${f.estado==='cobrada'?'Cobrada':f.estado==='vencida'?'Vencida':'Pendiente'}</span></td>
-    <td>${f.estado!=='cobrada'?`<button class="action-btn" style="color:#1A7A52" onclick="marcarCobrada('${f.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
-  const cxcRows=cxcCli.map(x=>`<tr>
-    <td style="font-size:13px;">${x.vencimiento||'—'}</td><td><div class="td-main">${x.concepto||'—'}</div></td>
-    <td style="font-weight:700;">${fmt(x.monto)}</td>
-    <td><span class="badge ${x.estado==='cobrado'?'badge-green':'badge-yellow'}">${x.estado==='cobrado'?'Cobrado':'Pendiente'}</span></td>
-    <td>${x.estado!=='cobrado'?`<button class="action-btn" style="color:#1A7A52" onclick="cobrarCxC('${x.id}');verEstadoCuenta()">Cobrar</button>`:''}</td></tr>`).join('');
-  document.getElementById('ec-content').innerHTML=`
-    <div style="background:white;border-radius:16px;border:1px solid #DDD9D0;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 8px rgba(15,23,42,0.06);">
-      <div style="width:56px;height:56px;background:#F0EDE6;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#0D0D0D;flex-shrink:0;">${cliente[0].toUpperCase()}</div>
-      <div style="flex:1;"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#0D0D0D;">${cliente}</div><div style="font-size:13px;color:#666660;margin-top:3px;">${cli.email||''} ${cli.sector?'· '+cli.sector:''}</div></div>
-      <button class="tb-btn tb-btn-primary" onclick="generarLinkPago('${cliente}')">🔗 Link de pago</button>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
-      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Total facturado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;">${fmt(totalFact)}</div></div>
-      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Cobrado</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1A7A52;">${fmt(cobrado)}</div></div>
-      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#8A6A00;">${fmt(pendiente)}</div></div>
-      <div class="stat-card"><div style="font-size:11px;color:#888880;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">CxC pendiente</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#B83232;">${fmt(cxcPend)}</div></div>
-    </div>
-    ${facsCli.length?`<div class="table-card" style="margin-bottom:16px;"><div class="table-head"><div><div class="th-title">Facturas</div><div class="th-sub">${facsCli.length} factura${facsCli.length!==1?'s':''}</div></div></div><table><thead><tr><th>Fecha</th><th>Número</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>${facRows}</tbody></table></div>`:''}
-    ${cxcCli.length?`<div class="table-card"><div class="table-head"><div><div class="th-title">Cuentas por cobrar</div></div></div><table><thead><tr><th>Vencimiento</th><th>Concepto</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>${cxcRows}</tbody></table></div>`:''}
-    ${!facsCli.length&&!cxcCli.length?'<div style="text-align:center;color:#888880;padding:40px;">Este cliente no tiene registros aún.</div>':''}`;
-}
 
 // ══════════════════════════════════════════════
 // LINK DE PAGO
@@ -2950,7 +2898,7 @@ ${itemsHtml?`<div class="items">${itemsHtml}</div>`:''}
 ${bp.alias?`<div class="br"><span class="bk">Alias</span><span class="bv" onclick="navigator.clipboard.writeText('${bp.alias}').then(()=>alert('Alias copiado!'))">${bp.alias}</span></div>`:''}
 ${bp.cuit?`<div class="br"><span class="bk">CUIT</span><span class="bv">${bp.cuit}</span></div>`:''}
 <div class="hint">Tocá el CBU o Alias para copiar</div></div>
-<div class="footer">ODSA SRL · CUIT: 30-71887849-3 · ${fechaHoy}</div>
+<div class="footer">${_prf.razon||_prf.nombre||"Mi empresa"} · CUIT: ${_prf.cuit||"—"} · ${fechaHoy}</div>
 </div></div></body></html>`);
 }
 
@@ -3160,12 +3108,12 @@ function enviarWhatsApp(clienteNombre, tipo){
     if(facsPend.length) mensaje += `📄 Facturas pendientes:\n${facsPend.map(f=>`• ${f.numero||'Factura'}: ${fmt(f.monto)}`).join('\n')}\n\n`;
     mensaje += `🏦 *Datos para transferir:*\nBanco: ${bp.banco}\nCBU: ${bp.cbu}${bp.alias?'\nAlias: '+bp.alias:''}\n\nCualquier consulta estamos disponibles. ¡Gracias!`;
   } else if(tipo==='saludo'){
-    mensaje = `Hola ${clienteNombre}! 👋\n\nTe escribimos desde *ODSA SRL*. ¿En qué podemos ayudarte hoy?`;
+    mensaje = `Hola ${clienteNombre}! 👋\n\nTe escribimos desde *${getPerfil().razon||getPerfil().nombre||'nuestra empresa'}*. ¿En qué podemos ayudarte hoy?`;
   } else if(tipo==='factura'){
     const facs = facturas.filter(f=>f.cliente===clienteNombre).slice(-1);
     const f = facs[0];
-    if(f) mensaje = `Hola ${clienteNombre}! 👋\n\nTe informamos que se emitió la factura *${f.numero||''}* por *${fmt(f.monto)}*.\n\nAntes cualquier consulta, ¡estamos a disposición!\n\n*ODSA SRL*`;
-    else mensaje = `Hola ${clienteNombre}! Te escribimos desde ODSA SRL.`;
+    if(f) mensaje = `Hola ${clienteNombre}! 👋\n\nTe informamos que se emitió la factura *${f.numero||''}* por *${fmt(f.monto)}*.\n\nAntes cualquier consulta, ¡estamos a disposición!\n\n*${getPerfil().razon||getPerfil().nombre||'nuestra empresa'}*`;
+    else mensaje = `Hola ${clienteNombre}! Te escribimos desde ${getPerfil().razon||getPerfil().nombre||'nuestra empresa'}.`;
   }
 
   const url = `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}`;
@@ -3174,38 +3122,6 @@ function enviarWhatsApp(clienteNombre, tipo){
 
 // Agregar botón WhatsApp en estado de cuenta
 const _origVerEstadoCuenta = verEstadoCuenta;
-function verEstadoCuenta(){
-  _origVerEstadoCuenta();
-  // Agregar botones WA después de renderizar
-  setTimeout(()=>{
-    const header = document.querySelector('#ec-content .tb-btn-primary');
-    if(header&&header.parentElement){
-      const waBtn = document.createElement('button');
-      waBtn.className='tb-btn';
-      waBtn.style.cssText='background:#25D366;color:white;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;';
-      const cliente = document.getElementById('ec-cliente-sel').value;
-      waBtn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.858L.057 23.428a.75.75 0 0 0 .921.921l5.57-1.475A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.686-.502-5.222-1.378l-.374-.22-3.875 1.026 1.026-3.762-.242-.389A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg> Enviar por WhatsApp';
-      waBtn.onclick = ()=>{
-        const menu = document.createElement('div');
-        menu.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:flex;align-items:center;justify-content:center;';
-        menu.innerHTML=`<div style="background:white;border-radius:16px;padding:24px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#0D0D0D;margin-bottom:6px;">📱 Enviar por WhatsApp</div>
-          <div style="font-size:13px;color:#666660;margin-bottom:20px;">¿Qué querés enviarle a ${cliente}?</div>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <button onclick="enviarWhatsApp('${cliente}','linkpago');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#EDEDEA;color:#0D0D0D;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">💳 Link de pago con saldo pendiente</button>
-            <button onclick="enviarWhatsApp('${cliente}','factura');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#EAF4EE;color:#1A7A52;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">🧾 Aviso de factura emitida</button>
-            <button onclick="enviarWhatsApp('${cliente}','saludo');this.closest('.wa-menu').remove()" style="padding:12px 16px;background:#F5F2EC;color:#5A5650;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">👋 Mensaje de contacto</button>
-            <button onclick="this.closest('.wa-menu').remove()" style="padding:10px;background:#F0EDE6;color:#888880;border:none;border-radius:10px;font-size:13px;cursor:pointer;">Cancelar</button>
-          </div>
-        </div>`;
-        menu.className='wa-menu';
-        menu.onclick=e=>{if(e.target===menu)menu.remove();};
-        document.body.appendChild(menu);
-      };
-      header.parentElement.appendChild(waBtn);
-    }
-  },100);
-}
 
 // ══════════════════════════════════════════════
 // FACTURACIÓN AVANZADA — FLUJO COMPLETO
@@ -3448,7 +3364,7 @@ function generarDocFactura(f, tipoOverride){
 <div class="header"><img src="${typeof NIGRUM_LOGO!=='undefined'?NIGRUM_LOGO:''}" class="logo" alt="ODSA SRL" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div style="display:none;font-family:Arial;font-size:22px;font-weight:900;color:#0D0D0D;">Nigrum<span style="color:${colorPrimary}">.</span></div>
 <div class="fac-badge"><div class="fac-tipo">${tipoLabel}</div><div class="fac-nro">N° ${f.numero||'—'}</div><div class="fac-fecha">Fecha: ${fechaHoy}</div><span class="fac-tag">${esFacA?'Responsable Inscripto':f.tipo==='presupuesto'?'Presupuesto':'Uso interno'}</span></div></div>
 <div class="info-row">
-  <div class="info-box"><div class="info-label">Emisor</div><div class="info-val">ODSA SRL</div>${esFacA?'<div class="info-sub">CUIT: 30-71887849-3</div><div class="info-sub">IVA Responsable Inscripto</div>':''}<div class="info-sub">administracion@nigrum.com.ar</div></div>
+  <div class="info-box"><div class="info-label">Emisor</div><div class="info-val">${_prf.razon||_prf.nombre||"Mi empresa"}</div>${esFacA?'<div class="info-sub">CUIT: '+(_prf.cuit||"—")+'</div><div class="info-sub">'+(_prf.iva||"Responsable Inscripto")+'</div>':''}<div class="info-sub">${_prf.email||""}</div></div>
   <div class="info-box"><div class="info-label">Receptor</div><div class="info-val">${f.cliente}</div>${cli.cuit?`<div class="info-sub">CUIT: ${cli.cuit}</div>`:''} ${cli.condicion?`<div class="info-sub">${cli.condicion}</div>`:''} ${cli.domicilio?`<div class="info-sub">${cli.domicilio}</div>`:''}</div>
 </div>
 ${f.servicios&&f.servicios.length?`<div class="sec-title">Servicios</div><table><thead><tr><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead><tbody>${srvRows}</tbody><tfoot><tr style="background:#f8f8f8;font-weight:900;"><td style="padding:10px 14px;">Subtotal servicios</td><td style="padding:10px 14px;text-align:right;">${fmtN(f.totalSrv)}</td></tr></tfoot></table>`:''}
@@ -3589,70 +3505,6 @@ function saveRecordatorioModal(){
 
 
 // ── CHECKLIST MENSUAL AUTOMÁTICO ──
-function renderDashboardChecklist(){
-  const el = document.getElementById('dash-checklist');
-  if(!el) return;
-  const hoy = today();
-  const ahora = new Date();
-  const diaHoy = ahora.getDate();
-  const mesActual = hoy.substring(0,7);
-  const nombreMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][ahora.getMonth()];
-  const tareas = [];
-
-  clientes.filter(c=>c.estado==='Activo').forEach(cli=>{
-    const diaRes = parseInt(cli.diaResumen)||1;
-    const enviado = resumenes.find(r=>r.cliente===cli.nombre&&r.fecha&&r.fecha.startsWith(mesActual));
-    const estado = enviado?(enviado.estado==='pagado'?'pagado':'enviado'):(diaHoy>=diaRes?'vencido':'pendiente');
-    tareas.push({tipo:'resumen',icon:'📋',color:'#0D0D0D',titulo:'Enviar resumen a '+cli.nombre,sub:cli.servicio||'',diaTarget:diaRes,estado,cliente:cli.nombre});
-  });
-
-  clientes.filter(c=>c.estado==='Activo').forEach(cli=>{
-    const diaCobro = parseInt(cli.diaCobro)||0;
-    if(!diaCobro) return;
-    const cobrado = facturas.find(f=>f.cliente===cli.nombre&&f.estado==='cobrada'&&f.fecha&&f.fecha.startsWith(mesActual));
-    const pendFac = facturas.find(f=>f.cliente===cli.nombre&&f.estado!=='cobrada'&&f.fecha&&f.fecha.startsWith(mesActual));
-    if(!cobrado){
-      tareas.push({tipo:'cobro',icon:'💰',color:'#1A7A52',titulo:'Cobrar a '+cli.nombre,sub:pendFac?fmt(+pendFac.monto||0)+' pendiente':'Sin factura este mes',diaTarget:diaCobro,estado:diaHoy>=diaCobro?'vencido':'pendiente',cliente:cli.nombre});
-    }
-  });
-
-  proveedores.filter(p=>p.estado==='activo'&&p.vencimiento).forEach(prov=>{
-    const pagado = cxp.find(x=>x.estado==='pagado'&&x.proveedor===prov.nombre&&x.fecha&&x.fecha.startsWith(mesActual));
-    if(!pagado){
-      tareas.push({tipo:'pago',icon:'💸',color:'#8A6A00',titulo:'Pagar a '+prov.nombre,sub:fmt(+prov.costo||0)+' — vence '+prov.vencimiento,diaTarget:parseInt((prov.vencimiento||'').split('-')[2])||1,estado:prov.vencimiento<hoy?'vencido':'pendiente',proveedor:prov.nombre});
-    }
-  });
-
-  empleados.filter(e=>e.estado!=='pagado').forEach(emp=>{
-    tareas.push({tipo:'sueldo',icon:'👤',color:'#B83232',titulo:'Pagar sueldo: '+emp.nombre,sub:fmt(+emp.sueldo||0)+' — '+(emp.rol||''),diaTarget:1,estado:'pendiente',empleadoId:emp.id});
-  });
-
-  if(!tareas.length){ el.innerHTML=''; return; }
-  tareas.sort((a,b)=>{if(a.estado==='vencido'&&b.estado!=='vencido')return -1;if(b.estado==='vencido'&&a.estado!=='vencido')return 1;return(a.diaTarget||0)-(b.diaTarget||0);});
-  const vencidos=tareas.filter(t=>t.estado==='vencido').length;
-  const completados=tareas.filter(t=>t.estado==='enviado'||t.estado==='pagado').length;
-  const pendientes=tareas.filter(t=>t.estado==='pendiente').length;
-
-  el.innerHTML=`<div style="background:white;border-radius:16px;border:1.5px solid #DDD9D0;overflow:hidden;box-shadow:0 1px 8px rgba(15,23,42,0.06);margin-bottom:4px;">
-    <div style="background:linear-gradient(135deg,#0D0D0D,#2E1A5E);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;">
-      <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;color:white;">Checklist de ${nombreMes}</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;">${completados} completadas &middot; ${pendientes} pendientes &middot; ${vencidos} vencidas</div></div>
-      <div style="display:flex;gap:6px;">${vencidos>0?`<span style="background:#B83232;color:white;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">${vencidos} vencidas</span>`:''}<span style="background:rgba(255,255,255,0.15);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">${tareas.length} tareas</span></div>
-    </div>
-    <div style="padding:4px 0;">${tareas.map((t,i)=>{
-      const done=t.estado==='enviado'||t.estado==='pagado';
-      const urgent=t.estado==='vencido';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid #F1F5F9;background:${done?'#F8FAFC':urgent?'#FFF5F5':'white'};border-left:3px solid ${done?'#1A7A52':urgent?'#B83232':'#DDD9D0'};">
-        <div style="width:32px;height:32px;background:${t.color}15;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${t.icon}</div>
-        <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:${done?'#888880':'#0D0D0D'};${done?'text-decoration:line-through;':''}">${t.titulo}</div>
-        <div style="font-size:11px;color:#888880;">${t.sub}</div></div>
-        <span style="font-size:11px;font-weight:700;color:${done?'#1A7A52':urgent?'#B83232':'#888880'};background:${done?'#ECFDF5':urgent?'#FEF2F2':'#F8FAFC'};padding:3px 9px;border-radius:5px;white-space:nowrap;">${done?'Hecho':urgent?'Vencido':'Dia '+t.diaTarget}</span>
-        ${!done?`<button onclick="irATarea(${i})" style="padding:5px 10px;background:#0D0D0D;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">Ir</button>`:''}
-      </div>`;
-    }).join('')}</div>
-  </div>`;
-  window._checklistTareas = tareas;
-}
 
 function irATarea(idx){
   const t = window._checklistTareas&&window._checklistTareas[idx];
@@ -3667,138 +3519,6 @@ function irATarea(idx){
 // ══════════════════════════════════════════════
 // AGENDA MENSUAL
 // ══════════════════════════════════════════════
-function getAgendaItems(){ try{return JSON.parse(localStorage.getItem(dbKey('agenda')))||[];}catch(e){return[];} }
-function saveAgendaItems(d){ localStorage.setItem(dbKey('agenda'),JSON.stringify(d)); }
-
-function renderAgenda(){
-  const el = document.getElementById('agenda-content');
-  if(!el) return;
-
-  const hoy = today();
-  const ahora = new Date();
-  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const mesActual = ahora.getMonth();
-  const anioActual = ahora.getFullYear();
-
-  // Mes selector (default: next month if past day 20)
-  const mesDefault = ahora.getDate() > 20
-    ? (mesActual === 11 ? 0 : mesActual + 1)
-    : mesActual;
-  const anioDefault = mesActual === 11 && ahora.getDate() > 20
-    ? anioActual + 1
-    : anioActual;
-
-  const items = getAgendaItems();
-  const mesKey = `${anioDefault}-${String(mesDefault+1).padStart(2,'0')}`;
-  const itemsMes = items.filter(x=>x.mes===mesKey);
-
-  // Group by tipo
-  const grupos = {
-    'resumen': { label:'Resúmenes a enviar', icon:'◫', color:'#0D0D0D', items:[] },
-    'cobro':   { label:'Cobros', icon:'◈', color:'#1A7A52', items:[] },
-    'pago':    { label:'Pagos', icon:'◉', color:'#8A6A00', items:[] },
-    'sueldo':  { label:'Sueldos', icon:'◎', color:'#B83232', items:[] },
-    'otro':    { label:'Otros', icon:'◷', color:'#666660', items:[] },
-  };
-  itemsMes.forEach(x=>{ if(grupos[x.tipo]) grupos[x.tipo].items.push(x); else grupos['otro'].items.push(x); });
-
-  const totalItems = itemsMes.length;
-  const hechos = itemsMes.filter(x=>x.hecho).length;
-  const pct = totalItems ? Math.round((hechos/totalItems)*100) : 0;
-
-  el.innerHTML = `
-    <!-- Header -->
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;">${meses[mesDefault]} ${anioDefault}</div>
-        <div style="font-size:13px;color:#888880;margin-top:3px;">${hechos} de ${totalItems} tareas completadas</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <select onchange="cambiarMesAgenda(this.value)" style="border:1.5px solid #DDD9D0;border-radius:10px;padding:8px 12px;font-size:13px;font-family:'Inter',sans-serif;color:#0D0D0D;outline:none;background:white;cursor:pointer;">
-          ${meses.map((m,i)=>{
-            const y = i < mesActual-1 ? anioActual+1 : anioActual;
-            const k = `${y}-${String(i+1).padStart(2,'0')}`;
-            return `<option value="${k}" ${k===mesKey?'selected':''}>${m} ${y}</option>`;
-          }).join('')}
-        </select>
-        <button onclick="openAddAgenda('${mesKey}')" style="padding:9px 16px;background:#0D0D0D;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">+ Agregar</button>
-      </div>
-    </div>
-
-    <!-- Progress bar -->
-    ${totalItems>0?`
-    <div style="background:white;border-radius:12px;border:1px solid #DDD9D0;padding:16px 20px;margin-bottom:20px;">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:#888880;font-weight:600;margin-bottom:8px;">
-        <span>Progreso del mes</span><span>${pct}%</span>
-      </div>
-      <div style="height:6px;background:#F0EDE6;border-radius:3px;overflow:hidden;">
-        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#6C5CE7,#2D9B6F);border-radius:3px;transition:width 0.4s;"></div>
-      </div>
-    </div>`:''}
-
-    <!-- Sugerencias automáticas -->
-    <div style="background:#F5F2EC;border-radius:12px;border:1px dashed #DDD9D0;padding:16px 20px;margin-bottom:20px;">
-      <div style="font-size:12px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Sugerencias para ${meses[mesDefault]}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        ${clientes.filter(c=>c.estado==='Activo').map(cli=>`
-          <button onclick="addSugerencia('resumen','${cli.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #DDD9D0;border-radius:8px;font-size:12px;font-weight:600;color:#5A5650;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#0D0D0D';this.style.color='#0D0D0D'" onmouseout="this.style.borderColor='#DDD9D0';this.style.color='#5A5650'">
-            + Resumen ${cli.nombre}
-          </button>`).join('')}
-        ${proveedores.filter(p=>p.estado==='activo').map(prov=>`
-          <button onclick="addSugerencia('pago','${prov.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #DDD9D0;border-radius:8px;font-size:12px;font-weight:600;color:#5A5650;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#8A6A00';this.style.color='#8A6A00'" onmouseout="this.style.borderColor='#DDD9D0';this.style.color='#5A5650'">
-            + Pago ${prov.nombre}
-          </button>`).join('')}
-        ${empleados.filter(e=>e.estado!=='pagado').map(emp=>`
-          <button onclick="addSugerencia('sueldo','${emp.nombre}','${mesKey}')" style="padding:6px 12px;background:white;border:1.5px solid #DDD9D0;border-radius:8px;font-size:12px;font-weight:600;color:#5A5650;cursor:pointer;font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='#B83232';this.style.color='#B83232'" onmouseout="this.style.borderColor='#DDD9D0';this.style.color='#5A5650'">
-            + Sueldo ${emp.nombre}
-          </button>`).join('')}
-      </div>
-    </div>
-
-    <!-- Grupos de tareas -->
-    ${Object.entries(grupos).filter(([,g])=>g.items.length>0).map(([tipo,g])=>`
-      <div style="margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-left:4px;">${g.icon} ${g.label}</div>
-        <div style="background:white;border-radius:12px;border:1px solid #DDD9D0;overflow:hidden;">
-          ${g.items.map((item,i)=>`
-            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:${i<g.items.length-1?'1px solid #F8FAFC':'none'};${item.hecho?'opacity:0.5;':''}">
-              <button onclick="toggleAgendaItem('${item.id}')" style="width:20px;height:20px;border-radius:6px;border:2px solid ${item.hecho?g.color:'#DDD9D0'};background:${item.hecho?g.color:'white'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
-                ${item.hecho?'<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
-              </button>
-              <div style="flex:1;">
-                <div style="font-size:14px;font-weight:600;color:#0D0D0D;${item.hecho?'text-decoration:line-through;color:#888880;':''}">${item.titulo}</div>
-                ${item.fecha||item.monto?`<div style="font-size:12px;color:#888880;margin-top:2px;">${item.fecha?'Fecha: '+item.fecha:''}${item.fecha&&item.monto?' · ':''}${item.monto?fmt(item.monto):''}</div>`:''}
-              </div>
-              ${item.fecha&&item.fecha<hoy&&!item.hecho?`<span style="font-size:11px;font-weight:700;color:#B83232;background:#FBF0F0;padding:2px 8px;border-radius:4px;">Vencida</span>`:''}
-              <button onclick="eliminarAgendaItem('${item.id}')" style="background:none;border:none;cursor:pointer;color:#C8C4BA;font-size:16px;padding:4px;" onmouseover="this.style.color='#B83232'" onmouseout="this.style.color='#C8C4BA'">×</button>
-            </div>`).join('')}
-        </div>
-      </div>`).join('')}
-
-    ${totalItems===0?`
-    <div style="text-align:center;padding:48px 20px;">
-      <div style="font-size:32px;margin-bottom:12px;">📅</div>
-      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#0D0D0D;margin-bottom:6px;">Agenda vacía para ${meses[mesDefault]}</div>
-      <div style="font-size:13px;color:#888880;">Usá las sugerencias de arriba o agregá tareas manualmente</div>
-    </div>`:''}
-  `;
-
-  window._agendaMesKey = mesKey;
-}
-
-function cambiarMesAgenda(mesKey){
-  window._agendaMesKey = mesKey;
-  renderAgenda();
-}
-
-function addSugerencia(tipo, contacto, mesKey){
-  const items = getAgendaItems();
-  const existe = items.find(x=>x.mes===mesKey&&x.tipo===tipo&&x.titulo.includes(contacto));
-  if(existe){ toast('Ya existe esa tarea para este mes'); return; }
-  const titulos = {resumen:'Enviar resumen a',cobro:'Cobrar a',pago:'Pagar a',sueldo:'Sueldo de'};
-  items.push({id:uid(),mes:mesKey,tipo,titulo:(titulos[tipo]||'')+' '+contacto,contacto,fecha:'',monto:'',hecho:false,creado:today()});
-  saveAgendaItems(items); renderAgenda(); toast('✅ Tarea agregada');
-}
 
 function toggleAgendaItem(id){
   const items = getAgendaItems();
@@ -3811,30 +3531,6 @@ function eliminarAgendaItem(id){
   saveAgendaItems(items); renderAgenda();
 }
 
-function openAddAgenda(mesKey){
-  document.getElementById('modal-content').innerHTML=`
-    <div class="modal-title">Nueva tarea</div>
-    <div class="modal-sub">Agregar a la agenda de ${mesKey}</div>
-    <div class="form-group"><label class="form-label">Tipo</label>
-      <select class="form-select" id="ag-tipo">
-        <option value="resumen">Resumen a enviar</option>
-        <option value="cobro">Cobro</option>
-        <option value="pago">Pago</option>
-        <option value="sueldo">Sueldo</option>
-        <option value="otro">Otro</option>
-      </select></div>
-    <div class="form-group"><label class="form-label">Descripción</label>
-      <input class="form-input" id="ag-titulo" placeholder="Ej: Enviar resumen a Griflor Deco"/></div>
-    <div class="form-group"><label class="form-label">Fecha límite</label>
-      <input class="form-input" id="ag-fecha" type="date"/></div>
-    <div class="form-group"><label class="form-label">Monto (opcional)</label>
-      <input class="form-input" id="ag-monto" type="number" placeholder="0"/></div>
-    <div class="modal-btns">
-      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="modal-btn modal-btn-primary" onclick="saveAddAgenda('${mesKey}')">Guardar →</button>
-    </div>`;
-  document.getElementById('modal').classList.add('open');
-}
 
 function saveAddAgenda(mesKey){
   const titulo = document.getElementById('ag-titulo')?.value.trim();
@@ -4146,7 +3842,7 @@ ${r.servicios&&r.servicios.length?`<div class="sec">Servicios</div><table><thead
 ${r.envios_data&&r.envios_data.length?`<div class="sec sep">Logística — ${r.envios_data.length} envíos</div><table><thead><tr><th>Fecha</th><th>Tracking</th><th>Dirección</th><th>Localidad</th><th>Zona</th><th style="text-align:right">Tarifa</th></tr></thead><tbody>${logRows}</tbody><tfoot><tr style="background:#F5F2EC;font-weight:900;"><td colspan="5" style="padding:10px 14px;">Subtotal logística</td><td style="padding:10px 14px;text-align:right;">${fmtN(r.totalLog)}</td></tr></tfoot></table>`:''}
 <div class="totales"><div class="tot-row"><span>Subtotal</span><span style="font-weight:700;">${fmtN(r.subtotal)}</span></div><div class="tot-row"><span>IVA (${r.iva}%)</span><span style="font-weight:700;">${fmtN(r.ivaMonto)}</span></div><div class="tot-final"><span>TOTAL</span><span class="amt">${fmtN(r.totalFinal)}</span></div></div>
 ${bp.cbu?`<div class="banco"><div class="banco-title">Datos para transferir</div><div class="banco-row"><span class="bk">Banco</span><span class="bv">${bp.banco}</span></div><div class="banco-row"><span class="bk">CBU</span><span class="bv">${bp.cbu}</span></div>${bp.alias?`<div class="banco-row"><span class="bk">Alias</span><span class="bv">${bp.alias}</span></div>`:''}${bp.cuit?`<div class="banco-row"><span class="bk">CUIT</span><span class="bv">${bp.cuit}</span></div>`:''}</div>`:''}
-<div class="footer">ODSA SRL · CUIT: 30-71887849-3 · ${fechaHoy}</div>
+<div class="footer">${_prf.razon||_prf.nombre||"Mi empresa"} · CUIT: ${_prf.cuit||"—"} · ${fechaHoy}</div>
 </body></html>`;
 }
 
@@ -4178,7 +3874,7 @@ function enviarResumenWA(id){
   if(r.envios_data&&r.envios_data.length){ msg+=`📦 *Logística:* ${r.envios_data.length} envíos — ${fmtN(r.totalLog)}\n\n`; }
   msg+=`✅ *TOTAL: ${fmtN(r.totalFinal)}*\n\n`;
   if(bp.cbu){ msg+=`🏦 *Datos para transferir:*\nBanco: ${bp.banco}\nCBU: ${bp.cbu}`; if(bp.alias) msg+=`\nAlias: ${bp.alias}`; msg+='\n\n'; }
-  msg+=`Te adjuntamos el PDF con el detalle completo.\n¡Gracias! 🙌\n*ODSA SRL*`;
+  msg+=`Te adjuntamos el PDF con el detalle completo.\n¡Gracias! 🙌\n*${getPerfil().razon||getPerfil().nombre||'nuestra empresa'}*`;
   const waUrl = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
   descargarPDFResumen(r, ()=>{ window.open(waUrl,'_blank'); });
 }
@@ -4583,6 +4279,34 @@ function renderCuentaCorriente(){
       </div>
     </div>`;
   }).join('');
+}
+
+
+// ══════════════════════════════════════════════
+// PERFIL EMPRESA
+// ══════════════════════════════════════════════
+
+function getPerfil(){
+  try{ return JSON.parse(localStorage.getItem(dbKey('perfil_empresa')))||{}; }catch(e){ return {}; }
+}
+function savePerfil(d){ localStorage.setItem(dbKey('perfil_empresa'), JSON.stringify(d)); }
+
+function cargarPerfil(){
+  const p = getPerfil();
+  ['razon','nombre','cuit','iva','email','tel','domicilio','inicio','iibb','nota'].forEach(f=>{
+    const el = document.getElementById('perfil-'+f);
+    if(el) el.value = p[f]||'';
+  });
+}
+
+function guardarPerfil(){
+  const p = {};
+  ['razon','nombre','cuit','iva','email','tel','domicilio','inicio','iibb','nota'].forEach(f=>{
+    const el = document.getElementById('perfil-'+f);
+    if(el) p[f] = el.value.trim();
+  });
+  savePerfil(p);
+  toast('Perfil guardado');
 }
 
 </script>
