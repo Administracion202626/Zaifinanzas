@@ -1803,11 +1803,51 @@ function renderEmpleados(){
     <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#5B7EBF;">${e.nombre[0].toUpperCase()}</div><div><div class="td-main">${e.nombre}</div><div class="td-sub">${e.email||''}</div></div></div></td>
     <td>${e.rol||'—'}</td><td><span class="badge badge-gray">${e.empresa||'—'}</span></td><td style="font-weight:800;">${fmt(e.sueldo)}</td>
     <td><span class="badge ${e.estado==='pagado'?'badge-green':'badge-yellow'}">${e.estado==='pagado'?'✓ Pagado':'⏳ Pendiente'}</span></td>
-    <td><div class="action-btns">${e.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="marcarPagoEmp('${e.id}')">Pagar</button>`:''}<button class="action-btn" onclick="editarItem('empleados','${e.id}')">Editar</button><button class="action-btn" onclick="eliminar('empleados','${e.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay empleados →');
+    <td><div class="action-btns">${e.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="marcarPagoEmp('${e.id}')">Pagar</button>`:`<button class="action-btn" style="color:#B83232" onclick="revertirPagoEmp('${e.id}')">Revertir</button>`}<button class="action-btn" onclick="editarItem('empleados','${e.id}')">Editar</button><button class="action-btn" onclick="eliminar('empleados','${e.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay empleados →');
   document.getElementById('emp-count').textContent=empleados.length+' empleado'+(empleados.length!==1?'s':'');
 }
 
-function marcarPagoEmp(id){const e=empleados.find(x=>x.id===id);if(e){e.estado='pagado';save('empleados',empleados);renderEmpleados();toast('✅ Pago registrado');}}
+function marcarPagoEmp(id){
+  const e = empleados.find(x=>x.id===id); if(!e) return;
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Registrar pago de sueldo</div>
+    <div class="modal-sub">${e.nombre} — ${fmt(e.sueldo)}</div>
+    <div class="form-group"><label class="form-label">Monto pagado ($)</label>
+      <input class="form-input" id="mp_monto" type="number" value="${e.sueldo||0}"/></div>
+    <div class="form-group"><label class="form-label">Fecha de pago</label>
+      <input class="form-input" id="mp_fecha" type="date" value="${today()}"/></div>
+    <div class="form-group"><label class="form-label">Notas (opcional)</label>
+      <input class="form-input" id="mp_notas" type="text" placeholder="Ej: transferencia banco Galicia"/></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmarPagoEmp('${id}')">Confirmar pago</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarPagoEmp(id){
+  const e = empleados.find(x=>x.id===id); if(!e) return;
+  const monto = parseFloat(document.getElementById('mp_monto').value)||0;
+  const fecha = document.getElementById('mp_fecha').value||today();
+  const notas = document.getElementById('mp_notas').value.trim();
+  e.estado='pagado'; e.montoPagado=monto; e.fechaPago=fecha; if(notas) e.notasPago=notas;
+  save('empleados',empleados); closeModal(); renderEmpleados(); toast('Pago registrado');
+}
+function revertirPagoEmp(id){
+  const e = empleados.find(x=>x.id===id); if(!e) return;
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Revertir pago</div>
+    <div class="modal-sub">Confirmas que queres desmarcar el pago de <b>${e.nombre}</b>?</div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirEmp('${id}')">Revertir pago</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarRevertirEmp(id){
+  const e = empleados.find(x=>x.id===id); if(!e) return;
+  e.estado='pendiente'; delete e.montoPagado; delete e.fechaPago; delete e.notasPago;
+  save('empleados',empleados); closeModal(); renderEmpleados(); toast('Pago revertido');
+}
 
 function renderProveedores(){
   const cat=document.getElementById('prov-cat').value;
@@ -1878,7 +1918,7 @@ function renderCxC(){
     <td style="font-weight:800;color:#1A7A52;">${fmt(x.monto)}</td>
     <td><span class="badge ${badge}">${label}</span></td>
     <td><div class="action-btns">
-      ${x.estado!=='cobrado'?`<button class="action-btn" style="color:#1A7A52" onclick="cobrarCxC('${x.id}','${x.facturaId||''}','${x.resumenId||''}')">Cobrar</button>`:''}
+      ${x.estado!=='cobrado'?`<button class="action-btn" style="color:#1A7A52" onclick="cobrarCxC('${x.id}','${x.facturaId||''}','${x.resumenId||''}')">Cobrar</button>`:`<button class="action-btn" style="color:#B83232" onclick="revertirCobroCxC('${x.id}')">Revertir</button>`}
       ${!x._readonly?`<button class="action-btn" onclick="editarCxCxP('cxc','${x.id}')">Editar</button><button class="action-btn" onclick="eliminar('cxc','${x.id}')">Eliminar</button>`:`<button class="action-btn" onclick="goTo('facturacion',document.querySelector('.nav-item'))">Ver factura</button>`}
     </div></td></tr>`;
   }).join(''):empty('No hay cuentas por cobrar.');
@@ -1893,8 +1933,46 @@ function cobrarCxC(id, facturaId, resumenId){
     const rid = resumenId||id.replace('res_','');
     marcarPagoResumen(rid,'total'); renderCxC(); return;
   }
-  const r=cxc.find(x=>x.id===id);
-  if(r){r.estado='cobrado';save('cxc',cxc);renderCxC();toast('✅ Cobro registrado');}
+  const r = cxc.find(x=>x.id===id); if(!r) return;
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Registrar cobro</div>
+    <div class="modal-sub">${r.cliente}${r.concepto?' — '+r.concepto:''}</div>
+    <div class="form-group"><label class="form-label">Monto cobrado ($)</label>
+      <input class="form-input" id="cc_monto" type="number" value="${r.monto||0}"/></div>
+    <div class="form-group"><label class="form-label">Fecha de cobro</label>
+      <input class="form-input" id="cc_fecha" type="date" value="${today()}"/></div>
+    <div class="form-group"><label class="form-label">Notas (opcional)</label>
+      <input class="form-input" id="cc_notas" type="text" placeholder="Ej: transferencia recibida"/></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmarCobroCxC('${id}')">Confirmar cobro</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarCobroCxC(id){
+  const r = cxc.find(x=>x.id===id); if(!r) return;
+  r.estado='cobrado';
+  r.montoCobrado = parseFloat(document.getElementById('cc_monto').value)||0;
+  r.fechaCobro = document.getElementById('cc_fecha').value||today();
+  const notas = document.getElementById('cc_notas').value.trim();
+  if(notas) r.notasCobro = notas;
+  save('cxc',cxc); closeModal(); renderCxC(); toast('Cobro registrado');
+}
+function revertirCobroCxC(id){
+  const r = cxc.find(x=>x.id===id); if(!r) return;
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Revertir cobro</div>
+    <div class="modal-sub">Confirmas que queres revertir el cobro de <b>${r.cliente||'este cliente'}</b>?</div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirCxC('${id}')">Revertir cobro</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarRevertirCxC(id){
+  const r = cxc.find(x=>x.id===id); if(!r) return;
+  r.estado='pendiente'; delete r.montoCobrado; delete r.fechaCobro; delete r.notasCobro;
+  save('cxc',cxc); closeModal(); renderCxC(); toast('Cobro revertido');
 }
 
 function renderCxP(){
@@ -1940,24 +2018,69 @@ function renderCxP(){
     <td style="font-weight:800;color:#B83232;">${fmt(x.monto)}</td>
     <td><span class="badge ${badge}">${label}</span></td>
     <td><div class="action-btns">
-      ${x.estado!=='pagado'?`<button class="action-btn" style="color:#1A7A52" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">Pagar</button>`:''}
+      ${x.estado!=='pagado'?`<button class="action-btn" style="color:#1A7A52" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">Pagar</button>`:`<button class="action-btn" style="color:#B83232" onclick="revertirPagoCxP('${x.id}')">Revertir</button>`}
       <button class="action-btn" onclick="editarCxCxP('cxp','${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">Editar</button>
       ${!x._readonly?`<button class="action-btn" onclick="eliminar('cxp','${x.id}')">Eliminar</button>`:''}
     </div></td></tr>`;
   }).join(''):empty('No hay cuentas por pagar.');
 }
 
-function pagarCxP(id){const r=cxp.find(x=>x.id===id);if(r){r.estado='pagado';save('cxp',cxp);renderCxP();toast('✅ Pago registrado');}}
+function pagarCxP(id, montoSug, labelSug){
+  const r = cxp.find(x=>x.id===id); if(!r) return;
+  const label = labelSug || r.proveedor || 'Pago';
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Registrar pago</div>
+    <div class="modal-sub">${label}${r.concepto?' — '+r.concepto:''}</div>
+    <div class="form-group"><label class="form-label">Monto pagado ($)</label>
+      <input class="form-input" id="cp_monto" type="number" value="${montoSug||r.monto||0}"/></div>
+    <div class="form-group"><label class="form-label">Fecha de pago</label>
+      <input class="form-input" id="cp_fecha" type="date" value="${today()}"/></div>
+    <div class="form-group"><label class="form-label">Notas (opcional)</label>
+      <input class="form-input" id="cp_notas" type="text" placeholder="Ej: transferencia, cheque..."/></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmarPagoCxP('${id}')">Confirmar pago</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarPagoCxP(id){
+  const r = cxp.find(x=>x.id===id); if(!r) return;
+  r.estado='pagado';
+  r.montoPagado = parseFloat(document.getElementById('cp_monto').value)||0;
+  r.fechaPago = document.getElementById('cp_fecha').value||today();
+  const notas = document.getElementById('cp_notas').value.trim();
+  if(notas) r.notasPago = notas;
+  save('cxp',cxp); closeModal(); renderCxP(); toast('Pago registrado');
+}
+function revertirPagoCxP(id){
+  const r = cxp.find(x=>x.id===id); if(!r) return;
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Revertir pago</div>
+    <div class="modal-sub">Confirmas que queres revertir el pago de <b>${r.proveedor||'este proveedor'}</b>?</div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirCxP('${id}')">Revertir pago</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarRevertirCxP(id){
+  const r = cxp.find(x=>x.id===id); if(!r) return;
+  r.estado='pendiente'; delete r.montoPagado; delete r.fechaPago; delete r.notasPago;
+  save('cxp',cxp); closeModal(); renderCxP(); toast('Pago revertido');
+}
 
 function pagarCxPItem(id, gastoId, empleadoId){
   if(gastoId){
-    // Just mark in a local record since gastos don't have estado
-    cxp.push({id:uid(),proveedor:'',concepto:'',monto:0,fecha:today(),estado:'pagado',gastoId});
-    save('cxp',cxp); renderCxP(); toast('✅ Gasto marcado como pagado'); return;
+    const g = gastos.find(x=>x.id===gastoId);
+    // Create a CxP record and open the modal
+    const newId = uid();
+    cxp.push({id:newId, proveedor:g?g.descripcion:'Gasto', concepto:g?g.categoria:'', monto:g?g.monto:0, fecha:today(), estado:'pendiente', gastoId});
+    save('cxp',cxp);
+    pagarCxP(newId, g?g.monto:0, g?g.descripcion:'Gasto');
+    return;
   }
   if(empleadoId){
-    const e=empleados.find(x=>x.id===empleadoId);
-    if(e){ e.estado='pagado'; save('empleados',empleados); renderEmpleados(); renderCxP(); toast('✅ Sueldo pagado'); return; }
+    marcarPagoEmp(empleadoId); return;
   }
   pagarCxP(id);
 }
