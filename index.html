@@ -3094,6 +3094,8 @@ const dataMap  = {clientes:()=>clientes,catalogo:()=>catalogo,facturas:()=>factu
 const renderMap= {clientes:renderClientes,catalogo:renderCatalogo,facturas:renderFacturas,gastos:renderGastos,empleados:renderEmpleados,proveedores:renderProveedores,cxc:renderCxC,cxp:renderCxP};
 
 function editarItem(tipo, id){
+  // Facturas usan modal propio
+  if(tipo==='facturas'){ nuevaFacturaFull(id); return; }
   const arr = dataMap[tipo](); const item = arr.find(x=>x.id===id); if(!item) return;
   const fields = editFields[tipo]||[];
   document.getElementById('modal-content').innerHTML = `
@@ -3626,13 +3628,6 @@ ${f.envios_data&&f.envios_data.length?`<div class="sec-title">Logística — ${f
 </div>
 <div class="footer"><span>ODSA SRL · CUIT: 30-71887849-3 · ${fechaHoy}${esFacA?' · Documento con validez fiscal':' · Sin validez fiscal'}</span><span class="fiscal-badge">${tipoLabel}</span></div>
 </div><script>setTimeout(function(){window.print();},400);<\/script></body></html>`);
-}
-
-// Override editarItem for facturas
-const _origEditarItem = editarItem;
-function editarItem(tipo, id){
-  if(tipo==='facturas'){ nuevaFacturaFull(id); return; }
-  _origEditarItem(tipo, id);
 }
 
 // Keep abrirModalFactura for backward compatibility
