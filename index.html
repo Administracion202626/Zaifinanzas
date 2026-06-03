@@ -4481,21 +4481,62 @@ function renderCuentaCorriente(){
 
       let pillFact, pillRes, pillCobro;
 
-      if(factEstado==='futuro') pillFact = pill('—','#888880','#F1F5F9');
-      else if(factEstado==='sin-factura') pillFact = pill('Sin factura','#B83232','#FEF2F2');
-      else if(factEstado==='cobrada') pillFact = pill('✓ Cobrada','#1A7A52','#ECFDF5');
-      else pillFact = pill('⏳ Pendiente','#8A6A00','#FEFCE8');
+      // ── Factura pill: muestra estado real con monto
+      if(factEstado==='futuro'){
+        pillFact = pill('—','#888880','#F1F5F9');
+      } else if(factEstado==='sin-factura'){
+        pillFact = pill('Sin factura','#B83232','#FEF2F2');
+      } else if(factEstado==='cobrada'){
+        pillFact = pill('✓ Cobrada','#1A7A52','#ECFDF5');
+      } else {
+        // Tiene facturas pero no están todas cobradas — mostrar cuánto falta
+        const pendFact = factTotal - factCobrado;
+        const hayVencida = factsMes.some(f=>f.estado!=='cobrada' && f.vencimiento && f.vencimiento < hoy);
+        if(hayVencida) pillFact = pill('⚠️ Vencida','#B83232','#FEF2F2');
+        else pillFact = pill('Pendiente cobro','#8A6A00','#FEFCE8');
+      }
 
+      // ── Resumen pill
       if(resEstado==='futuro') pillRes = pill('—','#888880','#F1F5F9');
       else if(resEstado==='sin-resumen') pillRes = pill('No enviado','#B83232','#FEF2F2');
       else if(resEstado==='enviado') pillRes = pill('✓ Enviado','#1A7A52','#ECFDF5');
       else pillRes = pill('⏳ Pendiente','#8A6A00','#FEFCE8');
 
-      if(esFuturo) pillCobro = pill('—','#888880','#F1F5F9');
-      else if(factsMes.length===0 && cxcMes.length===0) pillCobro = pill('—','#888880','#F1F5F9');
-      else if(pendCxC===0 && factEstado==='cobrada') pillCobro = pill('✓ Al día','#1A7A52','#ECFDF5');
-      else if(pendCxC>0) pillCobro = pill(fmt(pendCxC)+' pend.','#B83232','#FEF2F2');
-      else pillCobro = pill('✓ Al día','#1A7A52','#ECFDF5');
+      // ── Cobro pill: cobrado con fecha, no cobrado naranja, vencido rojo
+      if(esFuturo){
+        pillCobro = pill('—','#888880','#F1F5F9');
+      } else if(factsMes.length===0 && cxcMes.length===0){
+        pillCobro = pill('—','#888880','#F1F5F9');
+      } else {
+        // Buscar fecha de cobro real (la más reciente entre facturas cobradas y cxc cobradas)
+        const fechasCobro = [
+          ...factsMes.filter(f=>f.estado==='cobrada'&&f.fechaCobro).map(f=>f.fechaCobro),
+          ...cxcMes.filter(x=>x.estado==='cobrado'&&x.fechaCobro).map(x=>x.fechaCobro)
+        ].sort().reverse();
+        const fechaCobroMostrar = fechasCobro[0] || null;
+
+        const todoCobrado = factEstado==='cobrada' && pendCxC===0;
+        if(todoCobrado){
+          const fechaFmt = fechaCobroMostrar
+            ? new Date(fechaCobroMostrar+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})
+            : '';
+          pillCobro = pill('✓ Cobrado'+(fechaFmt?' · '+fechaFmt:''),'#1A7A52','#ECFDF5');
+        } else {
+          // Verificar si está vencido: buscar vencimiento de facturas o cxc
+          const vencimientos = [
+            ...factsMes.filter(f=>f.estado!=='cobrada'&&f.vencimiento).map(f=>f.vencimiento),
+            ...cxcMes.filter(x=>x.estado!=='cobrado'&&x.vencimiento).map(x=>x.vencimiento)
+          ];
+          const estaVencido = vencimientos.some(v=>v<hoy);
+          if(estaVencido){
+            const venc = vencimientos.filter(v=>v<hoy).sort()[0];
+            const vencFmt = new Date(venc+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
+            pillCobro = pill('⚠️ Vencido '+vencFmt,'#B83232','#FEF2F2');
+          } else {
+            pillCobro = pill('No cobrado','#C47E1A','#FFF7E6');
+          }
+        }
+      }
 
       const esActual = !esFuturo && periodoKey === hoy.substring(0,7);
       const rowBg = esActual ? 'background:#FAFAF8;border-left:3px solid #6C5CE7;' : '';
