@@ -1904,9 +1904,9 @@ function confirmarPagoGasto(id){
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
-  // Guardar en localStorage primero (fuente inmediata) y luego Supabase
+  // Guardar en localStorage Y Supabase
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
-  saveSupa('gastos', gastos).catch(e=>console.log('Supabase gastos error:',e));
+  saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
   closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function eliminarPagoGasto(id){
@@ -1925,7 +1925,7 @@ function confirmarEliminarPagoGasto(id){
   x.montoPagado=0; x.estado='pendiente'; delete x.fechaPago; delete x.notasPago;
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('Supabase error:',e));
-  closeModal(); renderGastos(); updateDashboard(); toast('Pago eliminado');
+  closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago eliminado');
 }
 
 function revertirPagoGasto(id){
@@ -1942,7 +1942,9 @@ function revertirPagoGasto(id){
 function confirmarRevertirGasto(id){
   const x = gastos.find(g=>g.id===id); if(!x) return;
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
-  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago revertido');
+  localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
+  saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
+  closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago revertido');
 }
 
 function renderEmpleados(){
@@ -2137,10 +2139,8 @@ function renderCxP(){
   });
 
   // Incluir gastos y empleados no registrados en CxP
-  // Re-leer gastos desde localStorage para tener montoPagado actualizado
-  const gastosActuales = (()=>{ try{ return JSON.parse(localStorage.getItem(dbKey('gastos')))||gastos; }catch(e){ return gastos; } })();
   let allCxp = [...f];
-  gastosActuales.forEach(g=>{
+  gastos.forEach(g=>{
     if(!cxp.find(x=>x.gastoId===g.id)&&!f.find(x=>x.gastoId===g.id)){
       allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
         monto:g.monto,montoPagado:+g.montoPagado||0,estado:g.estado||'pendiente',fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
