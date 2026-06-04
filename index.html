@@ -1736,22 +1736,55 @@ function renderFacturas(){
 }
 
 function marcarCobrada(id, monto){
-  const f=facturas.find(x=>x.id===id);
+  const f = facturas.find(x=>x.id===id);
   if(!f) return;
-  if(monto===undefined){
-    // Ask for amount
-    const input = parseFloat(prompt('Monto a registrar (Total: '+fmt(f.monto)+'):'));
-    monto = isNaN(input) ? f.monto : input;
+  if(monto !== undefined){
+    // Called programmatically with a fixed amount
+    _aplicarCobroFactura(f, monto);
+    return;
   }
-  f.montoCobrado = (f.montoCobrado||0) + monto;
+  // Open modal to ask for amount and date
+  const pendiente = Math.max(0, f.monto - (f.montoCobrado||0));
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Registrar cobro</div>
+    <div class="modal-sub">${f.numero||'Factura'} — ${f.cliente} | Total: ${fmt(f.monto)}${f.montoCobrado>0?' | Ya cobrado: '+fmt(f.montoCobrado):''}</div>
+    <div class="form-group"><label class="form-label">Monto a cobrar ($)</label>
+      <input class="form-input" id="fc_monto" type="number" value="${pendiente}" min="1" max="${pendiente}"/></div>
+    <div class="form-group"><label class="form-label">Fecha de cobro</label>
+      <input class="form-input" id="fc_fecha" type="date" value="${today()}"/></div>
+    <div class="form-group"><label class="form-label">Notas (opcional)</label>
+      <input class="form-input" id="fc_notas" type="text" placeholder="Ej: transferencia recibida"/></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmarCobroFactura('${id}')">Confirmar cobro</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarCobroFactura(id){
+  const f = facturas.find(x=>x.id===id); if(!f) return;
+  const monto = parseFloat(document.getElementById('fc_monto').value)||0;
+  if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
+  const fecha = document.getElementById('fc_fecha').value||today();
+  const notas = document.getElementById('fc_notas').value.trim();
+  if(notas) f.notasCobro = (f.notasCobro?f.notasCobro+' | ':'')+notas;
+  f.fechaCobro = fecha;
+  closeModal();
+  _aplicarCobroFactura(f, monto);
+}
+function _aplicarCobroFactura(f, monto){
+  f.montoCobrado = Math.min((f.montoCobrado||0) + monto, f.monto);
   f.estado = f.montoCobrado >= f.monto ? 'cobrada' : 'pendiente';
-  if(f.montoCobrado >= f.monto) f.montoCobrado = f.monto;
   // Update linked CxC
-  const cxcItem = cxc.find(x=>x.facturaId===id);
-  if(cxcItem){ cxcItem.monto=Math.max(0,f.monto-f.montoCobrado); if(f.estado==='cobrada') cxcItem.estado='cobrado'; save('cxc',cxc); }
-  save('facturas',facturas);
+  const cxcItem = cxc.find(x=>x.facturaId===f.id);
+  if(cxcItem){
+    cxcItem.monto = Math.max(0, f.monto - f.montoCobrado);
+    if(f.estado==='cobrada') cxcItem.estado='cobrado';
+    save('cxc', cxc);
+  }
+  save('facturas', facturas);
   renderFacturas();
-  toast('✅ Cobro de '+fmt(monto)+' registrado');
+  updateDashboard();
+  toast('Cobro de '+fmt(monto)+' registrado');
 }
 
 function verDocFactura(id){
@@ -2940,18 +2973,22 @@ function marcarPagoResumen(id, tipo){
     if(cxcItem){ cxcItem.estado='cobrado'; save('cxc',cxc); renderCxC(); }
     toast('✅ Pago total registrado');
   } else if(tipo==='parcial'){
-    const monto = parseFloat(prompt(`¿Cuánto pagó ${r.cliente}? (Total: ${fmt(r.totalFinal)})`));
-    if(isNaN(monto)||monto<=0){ toast('⚠️ Monto inválido'); return; }
-    r.pagadoParcial = Math.min((r.pagadoParcial||0)+monto, r.totalFinal);
-    r.estado = r.pagadoParcial>=r.totalFinal ? 'pagado' : 'parcial';
-    // Actualizar CxC
-    const cxcItem = cxc.find(x=>x.resumenId===id);
-    if(cxcItem){
-      cxcItem.monto = r.totalFinal - r.pagadoParcial;
-      if(r.estado==='pagado') cxcItem.estado='cobrado';
-      save('cxc',cxc); renderCxC();
-    }
-    toast(`✅ Pago parcial de ${fmt(monto)} registrado`);
+    const pendiente = Math.max(0, r.totalFinal - (r.pagadoParcial||0));
+    document.getElementById('modal-content').innerHTML = `
+      <div class="modal-title">Pago parcial</div>
+      <div class="modal-sub">${r.cliente} | Total: ${fmt(r.totalFinal)}${r.pagadoParcial>0?' | Ya pagado: '+fmt(r.pagadoParcial):''}</div>
+      <div class="form-group"><label class="form-label">Monto que pagó ($)</label>
+        <input class="form-input" id="rp_monto" type="number" value="${pendiente}" min="1"/></div>
+      <div class="form-group"><label class="form-label">Fecha de pago</label>
+        <input class="form-input" id="rp_fecha" type="date" value="${today()}"/></div>
+      <div class="form-group"><label class="form-label">Notas (opcional)</label>
+        <input class="form-input" id="rp_notas" type="text" placeholder="Ej: transferencia parcial"/></div>
+      <div class="modal-btns">
+        <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="modal-btn modal-btn-primary" onclick="confirmarParcialResumen('${id}')">Confirmar pago</button>
+      </div>`;
+    document.getElementById('modal').classList.add('open');
+    return; // modal handles the rest
   } else if(tipo==='nopago'){
     r.estado='pendiente'; r.pagadoParcial=0;
     // Marcar CxC como vencida
@@ -2968,6 +3005,30 @@ function marcarPagoResumen(id, tipo){
   save('resumenes', resumenes);
   renderResumenes();
   updateDashboard();
+}
+
+function confirmarParcialResumen(id){
+  const r = resumenes.find(x=>x.id===id); if(!r) return;
+  const monto = parseFloat(document.getElementById('rp_monto').value)||0;
+  if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
+  const fecha = document.getElementById('rp_fecha').value||today();
+  const notas = document.getElementById('rp_notas').value.trim();
+  r.pagadoParcial = Math.min((r.pagadoParcial||0)+monto, r.totalFinal);
+  r.estado = r.pagadoParcial>=r.totalFinal ? 'pagado' : 'parcial';
+  r.fechaUltimoPago = fecha;
+  if(notas) r.notasPago = (r.notasPago?r.notasPago+' | ':'')+notas;
+  // Actualizar CxC vinculada
+  const cxcItem = cxc.find(x=>x.resumenId===id);
+  if(cxcItem){
+    cxcItem.monto = Math.max(0, r.totalFinal - r.pagadoParcial);
+    if(r.estado==='pagado') cxcItem.estado='cobrado';
+    save('cxc', cxc);
+  }
+  save('resumenes', resumenes);
+  closeModal();
+  renderResumenes();
+  updateDashboard();
+  toast('Pago parcial de '+fmt(monto)+' registrado');
 }
 
 function eliminarResumen(id){
