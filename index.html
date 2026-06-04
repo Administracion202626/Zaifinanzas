@@ -1864,7 +1864,7 @@ function renderGastos(){
         ${btnPagar}
         <div style="position:relative;display:inline-block;margin-left:4px;">
           <button title="Más acciones" onclick="toggleCtx(event,'gtx_${x.id}')" style="border:none;background:none;cursor:pointer;color:#888;font-size:16px;padding:2px 4px;line-height:1;">⋯</button>
-          <div id="gtx_${x.id}" style="display:none;position:fixed;background:white;border:1px solid #E8E4DC;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,0.15);z-index:99999;min-width:170px;padding:4px 0;">
+          <div id="gtx_${x.id}" style="display:none;position:absolute;right:0;top:28px;background:white;border:1px solid #E8E4DC;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.10);z-index:999;min-width:170px;padding:4px 0;">
             ${menuItems}
           </div>
         </div>
@@ -1905,6 +1905,9 @@ function confirmarPagoGasto(id){
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
   // Guardar en localStorage Y Supabase
+  // Sync linked cxp record if exists
+  const _linkedCxp = cxp.find(c=>String(c.gastoId)===String(id));
+  if(_linkedCxp){ _linkedCxp.montoPagado=x.montoPagado; _linkedCxp.estado=x.estado; save('cxp',cxp); }
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
   closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
@@ -2138,16 +2141,19 @@ function renderCxP(){
     return true;
   });
 
+  // Sincronizar cxp records que tienen gastoId con el montoPagado actual del gasto
+  cxp.forEach(c=>{
+    if(c.gastoId){
+      const g = gastos.find(gg=>String(gg.id)===String(c.gastoId));
+      if(g){ c.montoPagado = +(g.montoPagado)||0; c.estado = g.estado||c.estado; }
+    }
+  });
   // Incluir gastos y empleados no registrados en CxP
   let allCxp = [...f];
   gastos.forEach(g=>{
     if(!cxp.find(x=>x.gastoId===g.id)&&!f.find(x=>x.gastoId===g.id)){
-      // Leer montoPagado fresco del array gastos (en memoria, ya actualizado)
-      const gFresh = gastos.find(gg=>gg.id===g.id)||g;
       allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
-        monto:+gFresh.monto||0,montoPagado:+(gFresh.montoPagado)||0,estado:gFresh.estado||'pendiente',
-        fechaPago:gFresh.fechaPago||'',fecha:gFresh.fecha||hoy,vencimiento:gFresh.vencimiento||'',
-        gastoId:g.id,_readonly:true});
+        monto:g.monto,montoPagado:+g.montoPagado||0,estado:g.estado||'pendiente',fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
     }
   });
   empleados.forEach(e=>{
@@ -2206,7 +2212,7 @@ function renderCxP(){
       ${btnPagar}
       <div style="position:relative;display:inline-block;">
         <button title="Más acciones" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="toggleCtx(event,'ctx_${x.id}')">⋯</button>
-        <div id="ctx_${x.id}" style="display:none;position:fixed;background:white;border:1px solid #E8E4DC;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,0.15);z-index:99999;min-width:170px;padding:4px 0;">
+        <div id="ctx_${x.id}" style="display:none;position:absolute;right:0;top:28px;background:white;border:1px solid #DDD9D0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:999;min-width:160px;padding:4px 0;">
           ${menuItems}
         </div>
       </div>
@@ -2628,17 +2634,10 @@ function closeModal(e){if(!e||e.target.id==='modal')document.getElementById('mod
 
 function toggleCtx(e, id){
   e.stopPropagation();
-  document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>{ if(el.id!==id) el.style.display='none'; });
+  // Close any open menus first
+  document.querySelectorAll('[id^="ctx_"]').forEach(el=>{ if(el.id!==id) el.style.display='none'; });
   const el = document.getElementById(id);
-  if(!el) return;
-  if(el.style.display==='none'||el.style.display===''){
-    const rect = e.currentTarget.getBoundingClientRect();
-    el.style.display='block';
-    el.style.top = (rect.bottom+4)+'px';
-    el.style.right = (window.innerWidth - rect.right)+'px';
-  } else {
-    el.style.display='none';
-  }
+  if(el) el.style.display = el.style.display==='none'?'block':'none';
 }
 function closeCtx(){
   document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>el.style.display='none');
