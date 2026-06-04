@@ -1831,7 +1831,7 @@ function renderGastos(){
     else                     { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Por pagar'; }
 
     const btnPagar = x.estado!=='pagado'
-      ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="pagarGasto('${x.id}')">💲</button>`
+      ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;padding:2px 6px;font-size:13px;font-weight:700;color:#1A7A52;background:#ECFDF5;border:1px solid #A8E0C4;border-radius:6px;" onclick="pagarGasto('${x.id}')">Pagar</button>`
       : '';
     const menuItems = [
       x.estado==='pagado' ? `<div class="ctx-item" style="color:#B83232" onclick="revertirPagoGasto('${x.id}');closeCtx()">↩ Revertir pago</div>` : '',
@@ -1864,7 +1864,7 @@ function renderGastos(){
 }
 
 function pagarGasto(id){
-  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   const total    = +x.monto||0;
   const yaPagado = +x.montoPagado||0;
   const porPagar = Math.max(0, total - yaPagado);
@@ -1885,7 +1885,8 @@ function pagarGasto(id){
   document.getElementById('modal').classList.add('open');
 }
 function confirmarPagoGasto(id){
-  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const x = gastos.find(g=>String(g.id)===String(id)); 
+  if(!x){ toast('⚠️ No se encontró el gasto'); return; }
   const monto = parseFloat(document.getElementById('gp_monto').value)||0;
   if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
   x.montoPagado = Math.min((+x.montoPagado||0)+monto, +x.monto||0);
@@ -1893,10 +1894,12 @@ function confirmarPagoGasto(id){
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
-  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago de '+fmt(monto)+' registrado');
+  save('gastos',gastos);
+  saveSupa('gastos',gastos).catch(e=>console.log('Supabase gastos error:',e));
+  closeModal(); renderGastos(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function revertirPagoGasto(id){
-  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Revertir pago</div>
     <div class="modal-sub">¿Confirmás que querés revertir el pago de <b>${x.descripcion}</b>?</div>
@@ -1907,9 +1910,11 @@ function revertirPagoGasto(id){
   document.getElementById('modal').classList.add('open');
 }
 function confirmarRevertirGasto(id){
-  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
-  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago revertido');
+  save('gastos',gastos);
+  saveSupa('gastos',gastos).catch(e=>console.log('Supabase gastos error:',e));
+  closeModal(); renderGastos(); updateDashboard(); toast('Pago revertido');
 }
 
 function renderEmpleados(){
