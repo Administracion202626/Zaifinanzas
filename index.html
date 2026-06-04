@@ -2238,7 +2238,8 @@ function confirmarPagoCxP(id){
   r.estado = r.montoPagado >= (+r.monto||0) ? 'pagado' : 'pendiente';
   save('cxp',cxp); closeModal(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
-function revertirPagoCxP(id){\n  const label = id.startsWith('emp_') ? (empleados.find(e=>e.id===id.replace('emp_',''))?.nombre||'empleado') : id.startsWith('gas_') ? (gastos.find(g=>g.id===id.replace('gas_',''))?.descripcion||'gasto') : (cxp.find(x=>x.id===id)?.proveedor||'proveedor');
+function revertirPagoCxP(id){
+  const label = id.startsWith('emp_') ? (empleados.find(e=>e.id===id.replace('emp_',''))?.nombre||'empleado') : id.startsWith('gas_') ? (gastos.find(g=>g.id===id.replace('gas_',''))?.descripcion||'gasto') : (cxp.find(x=>x.id===id)?.proveedor||'proveedor');
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Revertir pago</div>
     <div class="modal-sub">Confirmás que querés revertir el pago de <b>${label}</b>?</div>
