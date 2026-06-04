@@ -162,7 +162,8 @@ tr:hover td{background:#F5F2EC;}
 
 /* ── SUMMARY ── */
 .summary-banner{display:flex;gap:16px;margin-bottom:16px;}
-.sum-card{flex:1;border-radius:14px;padding:18px 22px;color:white;}
+.sum-card{flex:1;border-radius:14px;padding:18px 22px;color:white;transition:transform 0.15s,box-shadow 0.15s;}
+.sum-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.2);}
 .sum-card.green{background:linear-gradient(135deg,#2D9B6F,#1f7a57);}
 .sum-card.red{background:linear-gradient(135deg,#D64545,#b03535);}
 .sum-card.yellow{background:linear-gradient(135deg,#D4A017,#b08010);}
@@ -933,9 +934,9 @@ tr:hover td{background:#F5F2EC;}
     <!-- CxP -->
     <div class="page" id="page-cxp">
       <div class="summary-banner">
-        <div class="sum-card red"><div class="sum-label">Por pagar</div><div class="sum-val" id="cxp-total">$0</div><div class="sum-count" id="cxp-count">0 registros</div></div>
-        <div class="sum-card yellow"><div class="sum-label">Vence esta semana</div><div class="sum-val" id="cxp-semana">$0</div><div class="sum-count">Próximos 7 días</div></div>
-        <div class="sum-card green"><div class="sum-label">Ya pagado</div><div class="sum-val" id="cxp-pagado">$0</div><div class="sum-count">Este período</div></div>
+        <div class="sum-card red" onclick="filtrarCxP('pendiente')" style="cursor:pointer;" title="Ver pendientes"><div class="sum-label">Por pagar</div><div class="sum-val" id="cxp-total">$0</div><div class="sum-count" id="cxp-count">0 registros</div></div>
+        <div class="sum-card yellow" onclick="filtrarCxP('semana')" style="cursor:pointer;" title="Ver los que vencen esta semana"><div class="sum-label">Vence esta semana</div><div class="sum-val" id="cxp-semana">$0</div><div class="sum-count">Próximos 7 días</div></div>
+        <div class="sum-card green" onclick="filtrarCxP('pagado')" style="cursor:pointer;" title="Ver pagados"><div class="sum-label">Ya pagado</div><div class="sum-val" id="cxp-pagado">$0</div><div class="sum-count">Este período</div></div>
       </div>
       <div class="filter-bar">
         <label>Desde</label><input type="date" id="cxp-desde" onchange="renderCxP()">
@@ -2123,6 +2124,25 @@ function confirmarRevertirCxC(id){
   const r = cxc.find(x=>x.id===id); if(!r) return;
   r.estado='pendiente'; delete r.montoCobrado; delete r.fechaCobro; delete r.notasCobro;
   save('cxc',cxc); closeModal(); renderCxC(); toast('Cobro revertido');
+}
+
+function filtrarCxP(tipo){
+  const estadoEl = document.getElementById('cxp-estado');
+  const desdeEl  = document.getElementById('cxp-desde');
+  const hastaEl  = document.getElementById('cxp-hasta');
+  if(tipo==='pendiente'){
+    estadoEl.value='pendiente'; desdeEl.value=''; hastaEl.value='';
+  } else if(tipo==='pagado'){
+    estadoEl.value='pagado'; desdeEl.value=''; hastaEl.value='';
+  } else if(tipo==='semana'){
+    estadoEl.value='pendiente';
+    const hoy=new Date(); const en7=new Date(hoy.getTime()+7*86400000);
+    desdeEl.value=hoy.toISOString().split('T')[0];
+    hastaEl.value=en7.toISOString().split('T')[0];
+  }
+  renderCxP();
+  // Scroll to table
+  document.querySelector('#page-cxp .table-card')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function renderCxP(){
