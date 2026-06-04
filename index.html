@@ -20,6 +20,29 @@
   --border:#DDD9D0;--shadow:0 1px 12px rgba(13,13,13,0.06);
   --shadow-lg:0 6px 32px rgba(13,13,13,0.10);
   --radius:12px;--radius-lg:16px;
+  --sidebar-bg:#FDFCF9;--sidebar-border:#DDD9D0;
+  --topbar-bg:#F5F2EC;--topbar-border:#DDD9D0;
+  --nav-hover:#EDE9E1;--nav-active:#0D0D0D;--nav-active-text:#FDFCF9;
+  --card-bg:#FDFCF9;--page-bg:#F5F2EC;
+  --dark-mode:0;}
+
+[data-theme="dark"]{
+  --bg:#0D1929;--white:#132035;
+  --z1:#FFFFFF;--z2:#E0E8F4;
+  --accent:#00B4A0;--accent2:#4A7FD4;--accent-dark:#00D4BC;
+  --green:#00B4A0;--green-light:rgba(0,180,160,0.12);
+  --red:#E05555;--red-light:rgba(224,85,85,0.12);
+  --blue:#4A7FD4;--blue-light:rgba(74,127,212,0.12);
+  --yellow:#F5A623;--yellow-light:rgba(245,166,35,0.12);
+  --text:#F0F6FF;--text2:#C8D8EE;--text3:#7A9ABB;
+  --border:rgba(255,255,255,0.12);--shadow:0 1px 12px rgba(0,0,0,0.3);
+  --shadow-lg:0 6px 32px rgba(0,0,0,0.5);
+  --radius:12px;--radius-lg:16px;
+  --sidebar-bg:#0A1520;--sidebar-border:rgba(255,255,255,0.07);
+  --topbar-bg:#0D1929;--topbar-border:rgba(255,255,255,0.07);
+  --nav-hover:rgba(255,255,255,0.06);--nav-active:#00B4A0;--nav-active-text:#FFFFFF;
+  --card-bg:#132035;--page-bg:#0D1929;
+  --dark-mode:1;}
 }
 body{font-family:'Schibsted Grotesk',sans-serif;font-size:16px;background:#F5F2EC;color:#0D0D0D;min-height:100vh;}
 
@@ -75,27 +98,27 @@ body{font-family:'Schibsted Grotesk',sans-serif;font-size:16px;background:#F5F2E
 /* ── APP ── */
 .app-screen{display:none;min-height:100vh;}
 .app-screen.active{display:flex;}
-.sidebar{width:260px;min-height:100vh;background:#FDFCF9;border-right:1px solid #DDD9D0;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#C8C4BA transparent;}
+.sidebar{width:260px;min-height:100vh;background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#C8C4BA transparent;}
 .sidebar::-webkit-scrollbar{width:4px;}
 .sidebar::-webkit-scrollbar-thumb{background:#C8C4BA;border-radius:4px;}
 .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
-.sidebar-brand{padding:28px 22px 22px;border-bottom:1px solid #DDD9D0;}
+.sidebar-brand{padding:28px 22px 22px;border-bottom:1px solid var(--sidebar-border);}
 .empresa-badge{margin:14px 18px;background:#F0EDE6;border:1px solid #DDD9D0;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
 .empresa-dot{width:6px;height:6px;background:#0D0D0D;border-radius:50%;flex-shrink:0;}
 .empresa-name{font-size:14px;font-weight:700;color:#0D0D0D;letter-spacing:0.2px;}
 .nav-section{padding:6px 10px;}
 .nav-section-label{font-size:9px;font-weight:700;color:#B0AA9E;text-transform:uppercase;letter-spacing:2px;padding:14px 14px 4px;font-family:'Schibsted Grotesk',sans-serif;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;cursor:pointer;transition:all 0.15s;color:#5A5650;font-size:14px;font-weight:500;margin-bottom:1px;}
-.nav-item:hover{background:#EDE9E1;color:#0D0D0D;}
-.nav-item.active{background:#0D0D0D;color:#FDFCF9;font-weight:600;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;cursor:pointer;transition:all 0.15s;color:var(--text3);font-size:14px;font-weight:500;margin-bottom:1px;}
+.nav-item:hover{background:var(--nav-hover);color:var(--text);}
+.nav-item.active{background:var(--nav-active);color:var(--nav-active-text);font-weight:600;}
 .nav-item .ni{font-size:17px;width:22px;text-align:center;flex-shrink:0;line-height:1;}
-.sidebar-bottom{margin-top:auto;padding:18px 20px;border-top:1px solid #DDD9D0;}
+.sidebar-bottom{margin-top:auto;padding:18px 20px;border-top:1px solid var(--sidebar-border);}
 .user-row{display:flex;align-items:center;gap:10px;}
 .user-av{width:34px;height:34px;background:#0D0D0D;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#FDFCF9;flex-shrink:0;}
-.user-name{font-size:13px;font-weight:600;color:#0D0D0D;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
 .user-role{font-size:11px;color:#888880;}
-.topbar{background:#F5F2EC;border-bottom:1px solid #DDD9D0;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.topbar-title{font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700;color:#0D0D0D;letter-spacing:-0.2px;}
+.topbar{background:var(--topbar-bg);border-bottom:1px solid var(--topbar-border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.2px;}
 .topbar-right{display:flex;align-items:center;gap:12px;}
 .tb-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Schibsted Grotesk',sans-serif;transition:all 0.2s;}
 .tb-btn-primary{background:#0D0D0D;color:#FDFCF9;border-radius:7px;}
@@ -107,9 +130,9 @@ body{font-family:'Schibsted Grotesk',sans-serif;font-size:16px;background:#F5F2E
 .page.active{display:block;}
 
 /* ── FILTER BAR ── */
-.filter-bar{display:flex;align-items:center;gap:10px;background:#FDFCF9;border:1px solid #DDD9D0;border-radius:8px;padding:10px 16px;margin-bottom:16px;flex-wrap:wrap;}
-.filter-bar label{font-size:12px;font-weight:600;color:#888880;font-family:'Schibsted Grotesk',sans-serif;}
-.filter-bar input[type=date],.filter-bar select{border:1.5px solid #DDD9D0;border-radius:8px;padding:6px 10px;font-size:13px;font-family:'Schibsted Grotesk',sans-serif;color:#2A2A2A;outline:none;background:#F5F2EC;}
+.filter-bar{display:flex;align-items:center;gap:10px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar label{font-size:12px;font-weight:600;color:var(--text3);font-family:'Schibsted Grotesk',sans-serif;}
+.filter-bar input[type=date],.filter-bar select{border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;font-family:'Schibsted Grotesk',sans-serif;color:var(--text);outline:none;background:var(--bg);}
 .filter-bar input[type=date]:focus,.filter-bar select:focus{border-color:#0D0D0D;}
 .filter-clear{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #DDD9D0;font-family:'Schibsted Grotesk',sans-serif;background:#F0EDE6;color:#5A5650;}
 
@@ -122,7 +145,7 @@ body{font-family:'Schibsted Grotesk',sans-serif;font-size:16px;background:#F5F2E
 .up{color:var(--green);}.down{color:var(--red);}
 
 /* ── TABLE ── */
-.table-card{background:#FDFCF9;border-radius:10px;border:1px solid #DDD9D0;overflow:hidden;}
+.table-card{background:var(--card-bg);border-radius:10px;border:1px solid var(--border);overflow:hidden;}
 .table-head{padding:16px 22px;border-bottom:1px solid #DDD9D0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
 .th-title{font-family:'Schibsted Grotesk',sans-serif;font-size:15px;font-weight:700;color:#0D0D0D;letter-spacing:-0.1px;}
 .th-sub{font-size:12px;color:#888880;margin-top:1px;font-family:'Schibsted Grotesk',sans-serif;}
@@ -134,16 +157,16 @@ td{padding:13px 20px;font-size:14px;border-bottom:1px solid #F1F5F9;vertical-ali
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:#F5F2EC;}
 .td-main{font-weight:600;color:#0D0D0D;font-size:14px;}
-.td-sub{font-size:12px;color:#888880;margin-top:2px;}
+.td-sub{font-size:12px;color:var(--text3);margin-top:2px;}
 .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;gap:4px;font-family:'Schibsted Grotesk',sans-serif;letter-spacing:0.2px;}
 .badge-green{background:var(--green-light);color:var(--green);}
 .badge-red{background:var(--red-light);color:var(--red);}
 .badge-yellow{background:var(--yellow-light);color:var(--yellow);}
 .badge-blue{background:var(--blue-light);color:var(--blue);}
 .badge-gray{background:#F0F0F0;color:var(--text3);}
-.action-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #DDD9D0;font-family:'Schibsted Grotesk',sans-serif;background:#F5F2EC;color:#5A5650;transition:all 0.2s;}
-.ctx-item{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Schibsted Grotesk',sans-serif;color:#2A2A2A;white-space:nowrap;}
-.ctx-item:hover{background:#F5F2EC;}
+.action-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);font-family:'Schibsted Grotesk',sans-serif;background:var(--bg);color:var(--text2);transition:all 0.2s;}
+.ctx-item{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Schibsted Grotesk',sans-serif;color:var(--text);white-space:nowrap;}
+.ctx-item:hover{background:var(--bg);}
 .action-btn:hover{background:#0D0D0D;color:white;border-color:#0D0D0D;}
 .action-btns{display:flex;gap:6px;}
 .client-av{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white;flex-shrink:0;}
@@ -171,15 +194,15 @@ tr:hover td{background:#F5F2EC;}
 .sum-card .sum-count{font-size:13px;opacity:0.75;margin-top:4px;}
 
 /* ── MODAL ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
-.modal{background:#FAFAFA;border-radius:20px;padding:32px;max-width:520px;width:92%;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;box-shadow:0 20px 60px rgba(15,23,42,0.15);}
+.modal{background:var(--card-bg);border-radius:20px;padding:32px;max-width:520px;width:92%;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
 @keyframes popIn{from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);}}
 .modal-title{font-family:'Schibsted Grotesk',sans-serif;font-size:20px;font-weight:800;color:#0D0D0D;margin-bottom:4px;}
 .modal-sub{font-size:13px;color:#888880;margin-bottom:20px;font-family:'Schibsted Grotesk',sans-serif;}
 .form-group{margin-bottom:14px;}
 .form-label{font-size:11px;font-weight:700;color:#5A5650;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;display:block;font-family:'Schibsted Grotesk',sans-serif;}
-.form-input{width:100%;padding:10px 14px;border:1.5px solid #DDD9D0;border-radius:10px;font-size:14px;font-family:'Schibsted Grotesk',sans-serif;color:#0D0D0D;outline:none;transition:border-color 0.2s;background:#FAFAFA;}
+.form-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'Schibsted Grotesk',sans-serif;color:var(--text);outline:none;transition:border-color 0.2s;background:var(--bg);}
 .form-input:focus{border-color:#0D0D0D;box-shadow:0 0 0 3px rgba(108,92,231,0.1);}
 .form-select{width:100%;padding:10px 14px;border:1.5px solid #DDD9D0;border-radius:10px;font-size:14px;font-family:'Schibsted Grotesk',sans-serif;color:#0D0D0D;outline:none;background:#FAFAFA;cursor:pointer;}
 .modal-btns{display:flex;gap:10px;margin-top:22px;}
@@ -639,6 +662,7 @@ tr:hover td{background:#F5F2EC;}
   <div class="topbar">
     <div class="topbar-title" id="topbar-title">Home</div>
     <div class="topbar-right">
+        <button onclick="toggleDarkMode()" id="theme-btn" title="Cambiar tema" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;"><span id="theme-icon">🌙</span><span id="theme-label">Oscuro</span></button>
       <button class="tb-btn tb-btn-sec" onclick="openAddModal()">+ Agregar</button>
     </div>
   </div>
@@ -2235,10 +2259,12 @@ function renderCxP(){
     }
   });
 
-  // Stats
-  const totalPorPagar = allCxp.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
-  const totalPagado   = allCxp.reduce((a,x)=>a+(+x.montoPagado||0),0);
-  const totalSemana   = allCxp.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7).reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
+  // Stats: usar monto total y montoPagado
+  const totalPorPagar = rows.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
+  const totalPagado   = rows.reduce((a,x)=>a+x.pagado,0);
+  // totalSemana: misma logica que abrirDetalleCxP para que coincidan
+  const _rowsSemana = rows.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
+  const totalSemana = _rowsSemana.reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
   document.getElementById('cxp-total').textContent=fmt(totalPorPagar);
   document.getElementById('cxp-semana').textContent=fmt(totalSemana);
   document.getElementById('cxp-pagado').textContent=fmt(totalPagado);
@@ -2699,6 +2725,35 @@ function openAddModal(){
   const map={dashboard:'add-gasto',clientes:'add-cliente',catalogo:'add-servicio',facturacion:'nueva-factura',proveedores:'add-proveedor',empleados:'add-empleado',gastos:'add-gasto',cxc:'add-cxc',cxp:'add-cxp',bot:'add-gasto'};
   openModal(map[page]||'add-gasto');
 }
+
+function toggleDarkMode(){
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  if(isDark){
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('theme-icon').textContent='🌙';
+    document.getElementById('theme-label').textContent='Oscuro';
+    localStorage.setItem('zaifi-theme','light');
+  } else {
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('theme-icon').textContent='☀️';
+    document.getElementById('theme-label').textContent='Claro';
+    localStorage.setItem('zaifi-theme','dark');
+  }
+}
+// Apply saved theme on load
+(function(){
+  const saved = localStorage.getItem('zaifi-theme');
+  if(saved==='dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+    // Update button after DOM loads
+    window.addEventListener('DOMContentLoaded',()=>{
+      const icon=document.getElementById('theme-icon');
+      const label=document.getElementById('theme-label');
+      if(icon) icon.textContent='☀️';
+      if(label) label.textContent='Claro';
+    });
+  }
+})();
 
 function closeModal(e){if(!e||e.target.id==='modal')document.getElementById('modal').classList.remove('open');}
 
@@ -4885,169 +4940,91 @@ function renderCuentaCorriente(){
   if(!el) return;
   const filtroCliente = document.getElementById('cc-cliente').value;
   const anio = parseInt(document.getElementById('cc-anio').value) || new Date().getFullYear();
-
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const MESES_SHORT = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
   const hoy = today();
-  const mesHoyIdx = new Date().getMonth(); // 0-based
+  const mesHoyIdx = new Date().getMonth();
 
-  // Which clients to show
   let clientesShow = clientes.filter(c=>c.estado==='Activo'||c.estado==='activo');
   if(filtroCliente) clientesShow = clientesShow.filter(c=>c.nombre===filtroCliente);
 
   if(!clientesShow.length){
-    el.innerHTML = '<div style="text-align:center;color:#888880;padding:40px;">No hay clientes activos aún.</div>';
+    el.innerHTML = '<div style="text-align:center;color:var(--text3);padding:60px;">No hay clientes activos aún.</div>';
     return;
   }
 
   el.innerHTML = clientesShow.map(cl=>{
-    // Build 12 months
-    const filas = MESES.map((mes, idx)=>{
+    // Calcular totales anuales
+    const factsAnio = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(String(anio)));
+    const totalFacturado = factsAnio.reduce((a,f)=>a+(+f.monto||0),0);
+    const totalCobrado = factsAnio.reduce((a,f)=>a+(+f.montoCobrado||0),0);
+    const totalPendiente = totalFacturado - totalCobrado;
+
+    // Avatar initials
+    const initials = cl.nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    const avatarColors = ['linear-gradient(135deg,#1B3A6B,#00B4A0)','linear-gradient(135deg,#2558A8,#00D4BC)','linear-gradient(135deg,#8B5CF6,#06B6D4)','linear-gradient(135deg,#0EA5E9,#6366F1)'];
+    const avatarColor = avatarColors[cl.nombre.charCodeAt(0)%avatarColors.length];
+
+    // Monthly cards
+    const monthCards = MESES.map((mes, idx)=>{
       const mmStr = String(idx+1).padStart(2,'0');
       const periodoKey = `${anio}-${mmStr}`;
       const esFuturo = anio > new Date().getFullYear() || (anio === new Date().getFullYear() && idx > mesHoyIdx);
+      const esActual = periodoKey === hoy.substring(0,7);
 
-      // ── Factura
       const factsMes = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(periodoKey));
       const factTotal = factsMes.reduce((a,f)=>a+(+f.monto||0),0);
-      const factCobrado = factsMes.reduce((a,f)=>a+(f.montoCobrado||0),0);
+      const factCobrado = factsMes.reduce((a,f)=>a+(+f.montoCobrado||0),0);
       const factEstado = factsMes.length===0 ? (esFuturo?'futuro':'sin-factura') : factsMes.every(f=>f.estado==='cobrada') ? 'cobrada' : 'pendiente';
 
-      // ── Resumen
-      const resMes = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(periodoKey));
-      const resEstado = resMes.length===0 ? (esFuturo?'futuro':'sin-resumen') : resMes.some(r=>r.estado==='pagado'||r.estado==='enviado') ? 'enviado' : 'pendiente';
-      const resTotalFinal = resMes.reduce((a,r)=>a+(+r.totalFinal||0),0);
-
-      // ── Cobro CxC
       const cxcMes = cxc.filter(x=>(x.clienteId===cl.id||x.cliente===cl.nombre) && x.fecha && x.fecha.startsWith(periodoKey));
-      const cobradoCxC = cxcMes.filter(x=>x.estado==='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
       const pendCxC = cxcMes.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
+      const todoCobrado = factEstado==='cobrada' && pendCxC===0;
+      const hayVencida = !esFuturo && factsMes.some(f=>f.estado!=='cobrada' && f.vencimiento && f.vencimiento < hoy);
 
-      // ── Status pills
-      function pill(label, color, bg){
-        return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${bg};color:${color};">${label}</span>`;
-      }
+      let statusColor, statusBg, statusLabel, amountColor;
+      if(esFuturo){ statusColor='var(--text3)'; statusBg='transparent'; statusLabel='—'; amountColor='var(--text3)'; }
+      else if(factsMes.length===0){ statusColor='var(--text3)'; statusBg='rgba(255,255,255,0.05)'; statusLabel='Sin factura'; amountColor='var(--text3)'; }
+      else if(todoCobrado){ statusColor='#00D4A8'; statusBg='rgba(0,212,168,0.12)'; statusLabel='✓ Cobrado'; amountColor='#00D4A8'; }
+      else if(hayVencida){ statusColor='#FF6B6B'; statusBg='rgba(255,107,107,0.12)'; statusLabel='⚠️ Vencido'; amountColor='#FF6B6B'; }
+      else { statusColor='#F5A623'; statusBg='rgba(245,166,35,0.12)'; statusLabel='Pendiente'; amountColor='#F5A623'; }
 
-      let pillFact, pillRes, pillCobro;
+      const borderStyle = esActual ? 'border:1.5px solid rgba(0,180,160,0.5);' : 'border:1px solid var(--border);';
+      const bgStyle = esActual ? 'background:rgba(0,180,160,0.06);' : 'background:var(--bg);';
 
-      // ── Factura pill: muestra estado real con monto
-      if(factEstado==='futuro'){
-        pillFact = pill('—','#888880','#F1F5F9');
-      } else if(factEstado==='sin-factura'){
-        pillFact = pill('Sin factura','#B83232','#FEF2F2');
-      } else if(factEstado==='cobrada'){
-        pillFact = pill('✓ Cobrada','#1A7A52','#ECFDF5');
-      } else {
-        // Tiene facturas pero no están todas cobradas — mostrar cuánto falta
-        const pendFact = factTotal - factCobrado;
-        const hayVencida = factsMes.some(f=>f.estado!=='cobrada' && f.vencimiento && f.vencimiento < hoy);
-        if(hayVencida) pillFact = pill('⚠️ Vencida','#B83232','#FEF2F2');
-        else pillFact = pill('Pendiente cobro','#8A6A00','#FEFCE8');
-      }
+      return `<div style="${bgStyle}${borderStyle}border-radius:10px;padding:12px 10px;text-align:center;min-width:0;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;margin-bottom:8px;">${MESES_SHORT[idx]}</div>
+        <span style="font-size:9px;font-weight:700;padding:3px 7px;border-radius:20px;background:${statusBg};color:${statusColor};display:inline-block;margin-bottom:6px;">${statusLabel}</span>
+        <div style="font-size:12px;font-weight:800;color:${amountColor};">${factTotal>0?fmt(factTotal):'—'}</div>
+        ${esActual?'<div style="width:20px;height:2px;background:rgba(0,180,160,0.6);border-radius:2px;margin:6px auto 0;"></div>':''}
+      </div>`;
+    }).join('');
 
-      // ── Resumen pill
-      if(resEstado==='futuro') pillRes = pill('—','#888880','#F1F5F9');
-      else if(resEstado==='sin-resumen') pillRes = pill('No enviado','#B83232','#FEF2F2');
-      else if(resEstado==='enviado') pillRes = pill('✓ Enviado','#1A7A52','#ECFDF5');
-      else pillRes = pill('⏳ Pendiente','#8A6A00','#FEFCE8');
-
-      // ── Cobro pill: cobrado con fecha, no cobrado naranja, vencido rojo
-      if(esFuturo){
-        pillCobro = pill('—','#888880','#F1F5F9');
-      } else if(factsMes.length===0 && cxcMes.length===0){
-        pillCobro = pill('—','#888880','#F1F5F9');
-      } else {
-        // Buscar fecha de cobro real (la más reciente entre facturas cobradas y cxc cobradas)
-        const fechasCobro = [
-          ...factsMes.filter(f=>f.estado==='cobrada'&&f.fechaCobro).map(f=>f.fechaCobro),
-          ...cxcMes.filter(x=>x.estado==='cobrado'&&x.fechaCobro).map(x=>x.fechaCobro)
-        ].sort().reverse();
-        const fechaCobroMostrar = fechasCobro[0] || null;
-
-        const todoCobrado = factEstado==='cobrada' && pendCxC===0;
-        if(todoCobrado){
-          const fechaFmt = fechaCobroMostrar
-            ? new Date(fechaCobroMostrar+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})
-            : '';
-          pillCobro = pill('✓ Cobrado'+(fechaFmt?' · '+fechaFmt:''),'#1A7A52','#ECFDF5');
-        } else {
-          // Verificar si está vencido: buscar vencimiento de facturas o cxc
-          const vencimientos = [
-            ...factsMes.filter(f=>f.estado!=='cobrada'&&f.vencimiento).map(f=>f.vencimiento),
-            ...cxcMes.filter(x=>x.estado!=='cobrado'&&x.vencimiento).map(x=>x.vencimiento)
-          ];
-          const estaVencido = vencimientos.some(v=>v<hoy);
-          if(estaVencido){
-            const venc = vencimientos.filter(v=>v<hoy).sort()[0];
-            const vencFmt = new Date(venc+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
-            pillCobro = pill('⚠️ Vencido '+vencFmt,'#B83232','#FEF2F2');
-          } else {
-            pillCobro = pill('No cobrado','#C47E1A','#FFF7E6');
-          }
-        }
-      }
-
-      const esActual = !esFuturo && periodoKey === hoy.substring(0,7);
-      const rowBg = esActual ? 'background:#FAFAF8;border-left:3px solid #6C5CE7;' : '';
-
-      return `<tr style="${rowBg}">
-        <td style="padding:10px 16px;font-size:13px;font-weight:${esActual?'700':'500'};color:${esActual?'#0D0D0D':'#2A2A2A'};">${mes}</td>
-        <td style="padding:10px 16px;">${pillFact}${factsMes.length>0?` <span style="font-size:11px;color:#888880;">${fmt(factTotal)}</span>`:''}</td>
-        <td style="padding:10px 16px;">${pillRes}${resTotalFinal>0?` <span style="font-size:11px;color:#888880;">${fmt(resTotalFinal)}</span>`:''}</td>
-        <td style="padding:10px 16px;">${pillCobro}</td>
-        <td style="padding:10px 16px;font-size:12px;color:#888880;">
-          ${factsMes.map(f=>`<a href="#" onclick="goTo('facturacion',document.querySelector('.nav-item'));setTimeout(()=>document.getElementById('fact-estado').value=f.estado==='cobrada'?'cobrada':'pendiente',200);return false;" style="color:#0D0D0D;text-decoration:none;">${f.numero||'Factura'}</a>`).join(', ')||''}
-        </td>
-      </tr>`;
-    });
-
-    // Summary row
-    const factsAnio = facturas.filter(f=>f.cliente===cl.nombre && f.fecha && f.fecha.startsWith(String(anio)));
-    const totalAnio = factsAnio.reduce((a,f)=>a+(+f.monto||0),0);
-    const cobradoAnio = factsAnio.filter(f=>f.estado==='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
-    const pendienteAnio = totalAnio - cobradoAnio;
-    const resEnviados = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(String(anio)) && (r.estado==='enviado'||r.estado==='pagado')).length;
-    const resMeses = resumenes.filter(r=>r.cliente===cl.nombre && r.fecha && r.fecha.startsWith(String(anio))).length;
-
-    return `
-    <div class="table-card" style="margin-bottom:20px;">
-      <div class="table-head" style="background:#F5F2EC;">
+    return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:16px;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:40px;height:40px;background:#F0EDE6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>
+          <div style="width:50px;height:50px;border-radius:14px;background:${avatarColor};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:white;flex-shrink:0;">${initials}</div>
           <div>
-            <div style="font-family:'Schibsted Grotesk',sans-serif;font-size:17px;font-weight:800;color:#0D0D0D;">${cl.nombre}</div>
-            <div style="font-size:12px;color:#888880;">${cl.servicio||''}</div>
+            <div style="font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.3px;">${cl.nombre}</div>
+            <div style="font-size:13px;color:var(--text3);margin-top:2px;">${cl.categoria||cl.tipo||'Cliente'}</div>
           </div>
         </div>
-        <div style="display:flex;gap:20px;align-items:center;">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
           <div style="text-align:right;">
-            <div style="font-size:11px;color:#888880;">Facturado ${anio}</div>
-            <div style="font-size:16px;font-weight:800;color:#0D0D0D;">${fmt(totalAnio)}</div>
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Facturado ${anio}</div>
+            <div style="font-size:18px;font-weight:900;color:var(--text);margin-top:2px;">${fmt(totalFacturado)}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:11px;color:#888880;">Cobrado</div>
-            <div style="font-size:16px;font-weight:800;color:#1A7A52;">${fmt(cobradoAnio)}</div>
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Cobrado</div>
+            <div style="font-size:18px;font-weight:900;color:#00B4A0;margin-top:2px;">${fmt(totalCobrado)}</div>
           </div>
-          ${pendienteAnio>0?`<div style="text-align:right;"><div style="font-size:11px;color:#888880;">Pendiente</div><div style="font-size:16px;font-weight:800;color:#B83232;">${fmt(pendienteAnio)}</div></div>`:''}
           <div style="text-align:right;">
-            <div style="font-size:11px;color:#888880;">Resúmenes</div>
-            <div style="font-size:15px;font-weight:800;color:#0D0D0D;">${resEnviados}/${resMeses}</div>
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Pendiente</div>
+            <div style="font-size:18px;font-weight:900;color:${totalPendiente>0?'#E05555':'#00B4A0'};margin-top:2px;">${fmt(totalPendiente)}</div>
           </div>
         </div>
       </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr style="background:#F5F2EC;">
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Mes</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Factura</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Resumen enviado</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Cobro</th>
-              <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666660;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid #DDD9D0;">Referencia</th>
-            </tr>
-          </thead>
-          <tbody>${filas.join('')}</tbody>
-        </table>
-      </div>
+      <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:6px;">${monthCards}</div>
     </div>`;
   }).join('');
 }
