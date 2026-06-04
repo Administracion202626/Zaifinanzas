@@ -2128,59 +2128,72 @@ function confirmarRevertirCxC(id){
 function abrirDetalleCxP(tipo){
   const hoy=today();
   const en7=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+  let titulo, items;
+
+  // Construir lista igual que renderCxP
   const todasLasRows = [];
   gastos.forEach(g=>{
     const pagado=+(g.montoPagado)||0;
     const porPagar=Math.max(0,(+g.monto||0)-pagado);
-    todasLasRows.push({proveedor:g.descripcion,concepto:g.categoria||'',monto:+g.monto||0,pagado,porPagar,estado:g.estado||'pendiente',fecha:g.fecha||hoy,vencimiento:g.vencimiento||''});
+    todasLasRows.push({proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
+      monto:+g.monto||0,pagado,porPagar,estado:g.estado||'pendiente',
+      fecha:g.fecha||hoy,vencimiento:g.vencimiento||''});
   });
   empleados.forEach(e=>{
     const pagado=+(e.montoPagado)||0;
     const porPagar=Math.max(0,(+e.sueldo||0)-pagado);
-    todasLasRows.push({proveedor:e.nombre,concepto:e.rol||'Empleado',monto:+e.sueldo||0,pagado,porPagar,estado:e.estado==='pagado'?'pagado':'pendiente',fecha:hoy,vencimiento:''});
+    todasLasRows.push({proveedor:e.nombre,concepto:'Sueldo: '+(e.rol||''),
+      monto:+e.sueldo||0,pagado,porPagar,estado:e.estado==='pagado'?'pagado':'pendiente',
+      fecha:hoy,vencimiento:''});
   });
   cxp.filter(c=>!c.gastoId&&!c.empleadoId).forEach(c=>{
     const pagado=+(c.montoPagado)||0;
     const porPagar=Math.max(0,(+c.monto||0)-pagado);
-    todasLasRows.push({proveedor:c.proveedor,concepto:c.concepto||'',monto:+c.monto||0,pagado,porPagar,estado:c.estado||'pendiente',fecha:c.fecha||hoy,vencimiento:c.vencimiento||''});
+    todasLasRows.push({proveedor:c.proveedor,concepto:c.concepto||'',
+      monto:+c.monto||0,pagado,porPagar,estado:c.estado||'pendiente',
+      fecha:c.fecha||hoy,vencimiento:c.vencimiento||''});
   });
 
-  let titulo,colorAcc,items;
-  if(tipo==='pendiente'){titulo='Por pagar';colorAcc='#B83232';items=todasLasRows.filter(x=>x.estado!=='pagado'&&x.porPagar>0);}
-  else if(tipo==='semana'){titulo='Vence esta semana';colorAcc='#C47E1A';items=todasLasRows.filter(x=>x.estado!=='pagado'&&x.vencimiento>=hoy&&x.vencimiento<=en7);}
-  else{titulo='Ya pagado';colorAcc='#1A7A52';items=todasLasRows.filter(x=>x.estado==='pagado'||x.pagado>0);}
+  if(tipo==='pendiente'){
+    titulo='Por pagar';
+    items=todasLasRows.filter(x=>x.estado!=='pagado'&&x.porPagar>0);
+  } else if(tipo==='semana'){
+    titulo='Vence esta semana';
+    items=todasLasRows.filter(x=>x.estado!=='pagado'&&x.vencimiento>=hoy&&x.vencimiento<=en7);
+  } else {
+    titulo='Ya pagado';
+    items=todasLasRows.filter(x=>x.estado==='pagado'||x.pagado>0);
+  }
 
-  const totalMostrado=items.reduce((a,x)=>a+(tipo==='pagado'?x.pagado:x.porPagar),0);
+  const totalMostrado = items.reduce((a,x)=>a+(tipo==='pagado'?x.pagado:x.porPagar),0);
 
-  const cards=items.length?items.map(x=>{
-    const vencido=x.vencimiento&&x.vencimiento<hoy&&x.estado!=='pagado';
-    const montoMostrado=tipo==='pagado'?x.pagado:x.porPagar;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:10px;background:#FAFAF8;border:1px solid #EDE9E1;margin-bottom:8px;">
-      <div style="flex:1;">
-        <div style="font-weight:700;font-size:15px;color:#0D0D0D;">${x.proveedor}</div>
-        <div style="font-size:12px;color:#888880;margin-top:2px;">${x.concepto}</div>
-        <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;">
-          ${x.fecha?`<span style="font-size:12px;color:#888880;">Emisión: ${x.fecha}</span>`:''}
-          ${x.vencimiento?`<span style="font-size:12px;color:${vencido?'#B83232':'#888880'};font-weight:${vencido?700:400};">Vence: ${x.vencimiento}${vencido?' ⚠️':''}</span>`:''}
-          ${x.pagado>0&&tipo!=='pagado'?`<span style="font-size:12px;color:#1A7A52;font-weight:600;">Ya pagado: ${fmt(x.pagado)}</span>`:''}
-        </div>
-      </div>
-      <div style="text-align:right;margin-left:20px;min-width:110px;">
-        <div style="font-size:11px;color:#888880;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px;">${tipo==='pagado'?'Pagado':'Por pagar'}</div>
-        <div style="font-size:22px;font-weight:900;color:${colorAcc};letter-spacing:-0.5px;">${fmt(montoMostrado)}</div>
-        ${tipo!=='pagado'&&x.monto!==montoMostrado?`<div style="font-size:11px;color:#BBB9B5;">Total: ${fmt(x.monto)}</div>`:''}
-      </div>
-    </div>`;
-  }).join(''):`<div style="padding:32px;text-align:center;color:#888880;">No hay registros</div>`;
+  const filas = items.length ? items.map(x=>`
+    <tr style="border-bottom:1px solid #F0EDE6;">
+      <td style="padding:12px 16px;"><div style="font-weight:700;font-size:14px;color:#0D0D0D;">${x.proveedor}</div><div style="font-size:12px;color:#888880;">${x.concepto}</div></td>
+      <td style="padding:12px 16px;font-size:13px;color:#666660;">${x.fecha||'—'}</td>
+      <td style="padding:12px 16px;font-size:13px;color:${x.vencimiento<hoy&&x.estado!=='pagado'?'#B83232':'#666660'};font-weight:${x.vencimiento<hoy&&x.estado!=='pagado'?700:400};">${x.vencimiento||'—'}</td>
+      <td style="padding:12px 16px;font-weight:700;color:#0D0D0D;">${fmt(x.monto)}</td>
+      <td style="padding:12px 16px;font-weight:800;color:${tipo==='pagado'?'#1A7A52':'#B83232'};">${fmt(tipo==='pagado'?x.pagado:x.porPagar)}</td>
+    </tr>`).join('') : `<tr><td colspan="5" style="padding:32px;text-align:center;color:#888880;">No hay registros</td></tr>`;
 
-  document.getElementById('modal-content').innerHTML=`
+  document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">${titulo}</div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <div class="modal-sub" style="margin:0;">${items.length} registro${items.length!==1?'s':''}</div>
-      <div style="font-size:20px;font-weight:900;color:${colorAcc};">Total: ${fmt(totalMostrado)}</div>
+    <div class="modal-sub">${items.length} registro${items.length!==1?'s':''} — Total: ${fmt(totalMostrado)}</div>
+    <div style="overflow-x:auto;margin-top:16px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:#F5F2EC;">
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666;text-align:left;text-transform:uppercase;">Proveedor / Concepto</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666;text-align:left;text-transform:uppercase;">Emisión</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666;text-align:left;text-transform:uppercase;">Vencimiento</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666;text-align:left;text-transform:uppercase;">Total</th>
+          <th style="padding:10px 16px;font-size:11px;font-weight:700;color:#666;text-align:left;text-transform:uppercase;">${tipo==='pagado'?'Pagado':'Por pagar'}</th>
+        </tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
     </div>
-    <div style="max-height:60vh;overflow-y:auto;padding-right:4px;">${cards}</div>
-    <div style="margin-top:16px;text-align:right;"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cerrar</button></div>`;
+    <div style="margin-top:16px;text-align:right;">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cerrar</button>
+    </div>`;
   document.getElementById('modal').classList.add('open');
 }
 
@@ -2223,9 +2236,11 @@ function renderCxP(){
   });
 
   // Stats: usar monto total y montoPagado
-  const totalPorPagar = allCxp.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+(+x.monto||0)-(+x.montoPagado||0),0);
-  const totalPagado   = allCxp.reduce((a,x)=>a+(+x.montoPagado||0),0);
-  const totalSemana   = allCxp.filter(x=>x.estado!=='pagado'&&x.vencimiento>=hoy&&x.vencimiento<=en7).reduce((a,x)=>a+(+x.monto||0)-(+x.montoPagado||0),0);
+  const totalPorPagar = rows.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
+  const totalPagado   = rows.reduce((a,x)=>a+x.pagado,0);
+  // totalSemana: misma logica que abrirDetalleCxP para que coincidan
+  const _rowsSemana = rows.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
+  const totalSemana = _rowsSemana.reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
   document.getElementById('cxp-total').textContent=fmt(totalPorPagar);
   document.getElementById('cxp-semana').textContent=fmt(totalSemana);
   document.getElementById('cxp-pagado').textContent=fmt(totalPagado);
