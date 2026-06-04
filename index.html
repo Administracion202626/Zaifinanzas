@@ -1905,9 +1905,6 @@ function confirmarPagoGasto(id){
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
   // Guardar en localStorage Y Supabase
-  // Sync linked cxp record if exists
-  const _linkedCxp = cxp.find(c=>String(c.gastoId)===String(id));
-  if(_linkedCxp){ _linkedCxp.montoPagado=x.montoPagado; _linkedCxp.estado=x.estado; save('cxp',cxp); }
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
   closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
@@ -2141,13 +2138,14 @@ function renderCxP(){
     return true;
   });
 
-  // Sincronizar cxp records que tienen gastoId con el montoPagado actual del gasto
-  cxp.forEach(c=>{
+  // Sincronizar registros reales de cxp que tienen gastoId con montoPagado del gasto
+  f.forEach(c=>{
     if(c.gastoId){
       const g = gastos.find(gg=>String(gg.id)===String(c.gastoId));
-      if(g){ c.montoPagado = +(g.montoPagado)||0; c.estado = g.estado||c.estado; }
+      if(g){ c.montoPagado=+(g.montoPagado)||0; c.estado=g.estado||c.estado; }
     }
   });
+
   // Incluir gastos y empleados no registrados en CxP
   let allCxp = [...f];
   gastos.forEach(g=>{
