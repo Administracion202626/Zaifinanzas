@@ -998,7 +998,7 @@ tr:hover td{background:#F5F2EC;}
               <button class="tb-btn tb-btn-primary" onclick="openModal('add-gasto')">+ Factura proveedor</button>
             </div></div>
         </div>
-        <table><thead><tr><th>Descripción</th><th>Proveedor</th><th>Categoría</th><th>Fecha</th><th>Vencimiento</th><th>Monto</th><th>Acciones</th></tr></thead>
+        <table><thead><tr><th>Descripción</th><th>Proveedor</th><th>Categoría</th><th>Fecha</th><th>Vencimiento</th><th>Total</th><th>Pagado</th><th>Por pagar</th><th>Estado</th><th style="width:72px;"></th></tr></thead>
         <tbody id="gastos-tbody"></tbody></table>
       </div>
     </div>
@@ -1807,6 +1807,7 @@ function renderGastos(){
   const desde=document.getElementById('gasto-desde').value;
   const hasta=document.getElementById('gasto-hasta').value;
   const cat=document.getElementById('gasto-cat').value;
+  const hoy=today();
   let g=gastos.filter(x=>{
     if(desde&&x.fecha<desde)return false;
     if(hasta&&x.fecha>hasta)return false;
@@ -1816,20 +1817,99 @@ function renderGastos(){
   const total=g.reduce((a,x)=>a+(+x.monto||0),0);
   document.getElementById('gastos-total-label').textContent='Total: '+fmt(total);
   const tb=document.getElementById('gastos-tbody');
-  tb.innerHTML=g.length?g.map(x=>`
-    <tr>
+  tb.innerHTML=g.length?g.map(x=>{
+    const total   = +x.monto||0;
+    const pagado  = +x.montoPagado||0;
+    const porPagar= Math.max(0, total - pagado);
+    const vencido = x.vencimiento && x.vencimiento<hoy && x.estado!=='pagado';
+    const esParcial = pagado>0 && x.estado!=='pagado';
+
+    let badgeColor, badgeBg, label;
+    if(x.estado==='pagado')  { badgeColor='#1A7A52'; badgeBg='#ECFDF5'; label='✓ Pagado'; }
+    else if(esParcial)       { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Parcial'; }
+    else if(vencido)         { badgeColor='#B83232'; badgeBg='#FEF2F2'; label='Vencido'; }
+    else                     { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Por pagar'; }
+
+    const btnPagar = x.estado!=='pagado'
+      ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="pagarGasto('${x.id}')">💲</button>`
+      : '';
+    const menuItems = [
+      x.estado==='pagado' ? `<div class="ctx-item" style="color:#B83232" onclick="revertirPagoGasto('${x.id}');closeCtx()">↩ Revertir pago</div>` : '',
+      `<div class="ctx-item" onclick="editarItem('gastos','${x.id}');closeCtx()">✏️ Editar</div>`,
+      `<div class="ctx-item" style="color:#B83232" onclick="eliminar('gastos','${x.id}');closeCtx()">🗑 Eliminar</div>`
+    ].filter(Boolean).join('');
+
+    return `<tr>
       <td><div class="td-main">${x.descripcion}</div>${x.notas?`<div class="td-sub">${x.notas}</div>`:''}</td>
       <td><span class="badge badge-gray">${x.proveedor||'—'}</span></td>
       <td><span class="badge badge-gray">${x.categoria||'—'}</span></td>
       <td style="color:var(--text3);font-size:12px;">${x.fecha||'—'}</td>
-      <td style="color:var(--text3);font-size:12px;">${x.vencimiento||'—'}</td>
-      <td style="font-weight:700;color:var(--red);">${fmt(x.monto)}</td>
-      <td><div class="action-btns">
-        <button class="action-btn" onclick="editarItem('gastos','${x.id}')">Editar</button>
-        <button class="action-btn" onclick="eliminar('gastos','${x.id}')">Eliminar</button>
-      </div></td>
-    </tr>`).join(''):empty('No hay gastos con esos filtros.');
+      <td style="font-size:12px;color:${vencido?'#B83232':'var(--text3)'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
+      <td style="font-weight:700;color:#0D0D0D;">${fmt(total)}</td>
+      <td style="font-weight:700;color:#1A7A52;">${pagado>0?fmt(pagado):'—'}</td>
+      <td style="font-weight:800;color:${porPagar>0?'#B83232':'#888880'};">${porPagar>0?fmt(porPagar):'—'}</td>
+      <td><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${badgeBg};color:${badgeColor};">${label}</span></td>
+      <td style="text-align:right;">
+        ${btnPagar}
+        <div style="position:relative;display:inline-block;">
+          <button title="Más acciones" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="toggleCtx(event,'gtx_${x.id}')">⋯</button>
+          <div id="gtx_${x.id}" style="display:none;position:absolute;right:0;top:28px;background:white;border:1px solid #DDD9D0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:999;min-width:160px;padding:4px 0;">
+            ${menuItems}
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }).join(''):empty('No hay gastos con esos filtros.');
   updateDashboard();
+}
+
+function pagarGasto(id){
+  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const total    = +x.monto||0;
+  const yaPagado = +x.montoPagado||0;
+  const porPagar = Math.max(0, total - yaPagado);
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Registrar pago</div>
+    <div class="modal-sub">${x.descripcion}${x.proveedor?' — '+x.proveedor:''}</div>
+    ${yaPagado>0?`<div style="font-size:12px;color:#8A6A00;background:#FEFCE8;padding:8px 12px;border-radius:8px;margin-bottom:12px;">Ya pagado: <b>${fmt(yaPagado)}</b> — Queda: <b>${fmt(porPagar)}</b></div>`:''}
+    <div class="form-group"><label class="form-label">Monto a pagar ahora ($)</label>
+      <input class="form-input" id="gp_monto" type="number" value="${porPagar}" min="1"/></div>
+    <div class="form-group"><label class="form-label">Fecha de pago</label>
+      <input class="form-input" id="gp_fecha" type="date" value="${today()}"/></div>
+    <div class="form-group"><label class="form-label">Notas (opcional)</label>
+      <input class="form-input" id="gp_notas" type="text" placeholder="Ej: transferencia, cheque..."/></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmarPagoGasto('${id}')">Confirmar pago</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarPagoGasto(id){
+  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const monto = parseFloat(document.getElementById('gp_monto').value)||0;
+  if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
+  x.montoPagado = Math.min((+x.montoPagado||0)+monto, +x.monto||0);
+  x.fechaPago   = document.getElementById('gp_fecha').value||today();
+  const notas   = document.getElementById('gp_notas').value.trim();
+  if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
+  x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
+  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago de '+fmt(monto)+' registrado');
+}
+function revertirPagoGasto(id){
+  const x = gastos.find(g=>g.id===id); if(!x) return;
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-title">Revertir pago</div>
+    <div class="modal-sub">¿Confirmás que querés revertir el pago de <b>${x.descripcion}</b>?</div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirGasto('${id}')">Revertir pago</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function confirmarRevertirGasto(id){
+  const x = gastos.find(g=>g.id===id); if(!x) return;
+  x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
+  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago revertido');
 }
 
 function renderEmpleados(){
@@ -2509,7 +2589,7 @@ function toggleCtx(e, id){
   if(el) el.style.display = el.style.display==='none'?'block':'none';
 }
 function closeCtx(){
-  document.querySelectorAll('[id^="ctx_"]').forEach(el=>el.style.display='none');
+  document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>el.style.display='none');
 }
 document.addEventListener('click', closeCtx);
 function goTo(page,el){
