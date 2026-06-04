@@ -2204,8 +2204,9 @@ function renderCxP(){
   const hoy=today();
   const en7=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
 
-  // Fuente única de verdad: leer directo de gastos, empleados, y cxp manuales
   const rows=[];
+
+  // Gastos: leer directo del array gastos
   gastos.forEach(g=>{
     if(desde&&g.fecha<desde)return;
     if(hasta&&g.fecha>hasta)return;
@@ -2217,6 +2218,8 @@ function renderCxP(){
       monto:+g.monto||0,pagado,estado:est,fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',
       gastoId:g.id,_readonly:true});
   });
+
+  // Empleados: leer directo del array empleados
   empleados.forEach(e=>{
     const pagado=+(e.montoPagado)||0;
     const est=e.estado==='pagado'?'pagado':'pendiente';
@@ -2226,16 +2229,26 @@ function renderCxP(){
       monto:+e.sueldo||0,pagado,estado:est,fecha:hoy,vencimiento:'',
       empleadoId:e.id,_readonly:true});
   });
-  cxp.filter(c=>!c.gastoId&&!c.empleadoId).forEach(c=>{
+
+  // CxP manuales (sin gastoId ni empleadoId) + CxP con gastoId si el gasto no existe en array
+  cxp.forEach(c=>{
     if(desde&&c.fecha<desde)return;
     if(hasta&&c.fecha>hasta)return;
-    const pagado=+(c.montoPagado)||0;
-    const est=c.estado||'pendiente';
+    // Si tiene gastoId y ese gasto ya está en rows, saltear (evitar duplicado)
+    if(c.gastoId && rows.find(r=>r.gastoId===c.gastoId)) return;
+    // Si tiene empleadoId y ese empleado ya está en rows, saltear
+    if(c.empleadoId && rows.find(r=>r.empleadoId===c.empleadoId)) return;
+    // Para cxp con gastoId sin gasto en array, leer montoPagado del gasto si existe
+    const gVinculado = c.gastoId ? gastos.find(g=>String(g.id)===String(c.gastoId)) : null;
+    const pagado = gVinculado ? +(gVinculado.montoPagado)||0 : +(c.montoPagado)||0;
+    const est = gVinculado ? (gVinculado.estado||'pendiente') : (c.estado||'pendiente');
     if(estado==='pagado'&&est!=='pagado')return;
     if(estado==='pendiente'&&est==='pagado')return;
-    rows.push({id:c.id,proveedor:c.proveedor,concepto:c.concepto||'',
-      monto:+c.monto||0,pagado,estado:est,fecha:c.fecha||hoy,vencimiento:c.vencimiento||'',
-      _readonly:false});
+    rows.push({id:c.id,proveedor:c.proveedor||'',concepto:c.concepto||'',
+      monto:+(gVinculado?gVinculado.monto:c.monto)||0,pagado,estado:est,
+      fecha:c.fecha||hoy,vencimiento:c.vencimiento||'',
+      gastoId:c.gastoId||'',empleadoId:c.empleadoId||'',
+      _readonly:!!(c.gastoId||c.empleadoId)});
   });
 
   // Stats
@@ -2258,7 +2271,7 @@ function renderCxP(){
     else if(vencido){badgeColor='#B83232';badgeBg='#FEF2F2';label='Vencido';}
     else{badgeColor='#8A6A00';badgeBg='#FEFCE8';label='Por pagar';}
     const tipoBadge=x.gastoId?'<span class="badge badge-gray" style="margin-right:4px;">Gasto</span>':x.empleadoId?'<span class="badge badge-blue" style="margin-right:4px;">Sueldo</span>':'';
-    const btnPagar=x.estado!=='pagado'?`<button onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')" style="border:1px solid #C8E6D4;background:#F0FAF4;color:#1A7A52;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;">Pagar</button>`:'';
+    const btnPagar=x.estado!=='pagado'?`<button onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')" style="border:1px solid #C8E6D4;background:#F0FAF4;color:#1A7A52;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Pagar</button>`:'';
     const menuItems=[
       x.estado==='pagado'?`<div class="ctx-item" style="color:#B83232" onclick="revertirPagoCxP('${x.id}');closeCtx()">↩ Revertir pago</div>`:'',
       !x._readonly?`<div class="ctx-item" onclick="editarCxCxP('cxp','${x.id}','','');closeCtx()">✏️ Editar</div>`:'',
