@@ -2235,12 +2235,10 @@ function renderCxP(){
     }
   });
 
-  // Stats: usar monto total y montoPagado
-  const totalPorPagar = rows.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
-  const totalPagado   = rows.reduce((a,x)=>a+x.pagado,0);
-  // totalSemana: misma logica que abrirDetalleCxP para que coincidan
-  const _rowsSemana = rows.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
-  const totalSemana = _rowsSemana.reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
+  // Stats
+  const totalPorPagar = allCxp.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
+  const totalPagado   = allCxp.reduce((a,x)=>a+(+x.montoPagado||0),0);
+  const totalSemana   = allCxp.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7).reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
   document.getElementById('cxp-total').textContent=fmt(totalPorPagar);
   document.getElementById('cxp-semana').textContent=fmt(totalSemana);
   document.getElementById('cxp-pagado').textContent=fmt(totalPagado);
