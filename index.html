@@ -1831,7 +1831,7 @@ function renderGastos(){
     else                     { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Por pagar'; }
 
     const btnPagar = x.estado!=='pagado'
-      ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;padding:2px 6px;font-size:13px;font-weight:700;color:#1A7A52;background:#ECFDF5;border:1px solid #A8E0C4;border-radius:6px;" onclick="pagarGasto('${x.id}')">Pagar</button>`
+      ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="pagarGasto('${x.id}')">💲</button>`
       : '';
     const menuItems = [
       x.estado==='pagado' ? `<div class="ctx-item" style="color:#B83232" onclick="revertirPagoGasto('${x.id}');closeCtx()">↩ Revertir pago</div>` : '',
@@ -1880,22 +1880,24 @@ function pagarGasto(id){
       <input class="form-input" id="gp_notas" type="text" placeholder="Ej: transferencia, cheque..."/></div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="modal-btn modal-btn-primary" onclick="confirmarPagoGasto('${id}')">Confirmar pago</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmarPagoGasto('${String(id)}')">Confirmar pago</button>
     </div>`;
   document.getElementById('modal').classList.add('open');
 }
 function confirmarPagoGasto(id){
-  const x = gastos.find(g=>String(g.id)===String(id)); 
+  const x = gastos.find(g=>String(g.id)===String(id));
   if(!x){ toast('⚠️ No se encontró el gasto'); return; }
   const monto = parseFloat(document.getElementById('gp_monto').value)||0;
   if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
-  x.montoPagado = Math.min((+x.montoPagado||0)+monto, +x.monto||0);
+  // Acumular montoPagado y recalcular porPagar
+  x.montoPagado = Math.min((+x.montoPagado||0) + monto, +x.monto||0);
   x.fechaPago   = document.getElementById('gp_fecha').value||today();
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
-  save('gastos',gastos);
-  saveSupa('gastos',gastos).catch(e=>console.log('Supabase gastos error:',e));
+  // Guardar en localStorage Y Supabase
+  localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
+  saveSupa('gastos', gastos).catch(e=>console.log('Supabase gastos error:',e));
   closeModal(); renderGastos(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function revertirPagoGasto(id){
@@ -1905,15 +1907,15 @@ function revertirPagoGasto(id){
     <div class="modal-sub">¿Confirmás que querés revertir el pago de <b>${x.descripcion}</b>?</div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirGasto('${id}')">Revertir pago</button>
+      <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirGasto('${String(id)}')">Revertir pago</button>
     </div>`;
   document.getElementById('modal').classList.add('open');
 }
 function confirmarRevertirGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
-  save('gastos',gastos);
-  saveSupa('gastos',gastos).catch(e=>console.log('Supabase gastos error:',e));
+  localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
+  saveSupa('gastos', gastos).catch(e=>console.log('Supabase gastos error:',e));
   closeModal(); renderGastos(); updateDashboard(); toast('Pago revertido');
 }
 
