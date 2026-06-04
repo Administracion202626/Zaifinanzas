@@ -2131,94 +2131,89 @@ function renderCxP(){
   const estado=document.getElementById('cxp-estado').value;
   const hoy=today();
   const en7=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+  let f=cxp.filter(x=>{
+    if(desde&&x.fecha<desde)return false;
+    if(hasta&&x.fecha>hasta)return false;
+    if(estado&&x.estado!==estado)return false;
+    return true;
+  });
 
-  // Construir lista unificada: gastos + empleados + cxp sin gastoId/empleadoId
-  const rows = [];
+  // Sincronizar registros reales de cxp que tienen gastoId con montoPagado del gasto
+  f.forEach(c=>{
+    if(c.gastoId){
+      const g = gastos.find(gg=>String(gg.id)===String(c.gastoId));
+      if(g){ c.montoPagado=+(g.montoPagado)||0; c.estado=g.estado||c.estado; }
+    }
+  });
 
-  // Todos los gastos
+  // Incluir gastos y empleados no registrados en CxP
+  let allCxp = [...f];
   gastos.forEach(g=>{
-    if(desde&&g.fecha<desde)return;
-    if(hasta&&g.fecha>hasta)return;
-    const pagado = +(g.montoPagado)||0;
-    const est = g.estado||'pendiente';
-    if(estado==='pagado'&&est!=='pagado')return;
-    if(estado==='pendiente'&&est==='pagado')return;
-    rows.push({_src:'gasto',id:'gas_'+g.id,proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
-      monto:+g.monto||0,pagado,estado:est,fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',
-      gastoId:g.id,_readonly:true});
+    if(!cxp.find(x=>x.gastoId===g.id)&&!f.find(x=>x.gastoId===g.id)){
+      allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
+        monto:g.monto,montoPagado:+g.montoPagado||0,estado:g.estado||'pendiente',fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
+    }
   });
-
-  // Todos los empleados
   empleados.forEach(e=>{
-    const pagado = +(e.montoPagado)||0;
-    const est = e.estado==='pagado'?'pagado':'pendiente';
-    if(estado==='pagado'&&est!=='pagado')return;
-    if(estado==='pendiente'&&est==='pagado')return;
-    rows.push({_src:'empleado',id:'emp_'+e.id,proveedor:e.nombre,concepto:'Sueldo: '+(e.rol||''),
-      monto:+e.sueldo||0,pagado,estado:est,fecha:hoy,vencimiento:'',
-      empleadoId:e.id,_readonly:true});
+    if(!cxp.find(x=>x.empleadoId===e.id)&&!f.find(x=>x.empleadoId===e.id)){
+      allCxp.push({id:'emp_'+e.id,proveedor:e.nombre,concepto:'Sueldo: '+(e.rol||''),
+        monto:e.sueldo,montoPagado:e.montoPagado||0,fechaPago:e.fechaPago||'',
+        estado:e.estado==='pagado'?'pagado':'pendiente',
+        fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
+    }
   });
 
-  // CxP manuales (sin gastoId ni empleadoId)
-  cxp.filter(c=>!c.gastoId&&!c.empleadoId).forEach(c=>{
-    if(desde&&c.fecha<desde)return;
-    if(hasta&&c.fecha>hasta)return;
-    const pagado = +(c.montoPagado)||0;
-    const est = c.estado||'pendiente';
-    if(estado==='pagado'&&est!=='pagado')return;
-    if(estado==='pendiente'&&est==='pagado')return;
-    rows.push({_src:'cxp',id:c.id,proveedor:c.proveedor,concepto:c.concepto||'',
-      monto:+c.monto||0,pagado,estado:est,fecha:c.fecha||hoy,vencimiento:c.vencimiento||'',
-      _readonly:false});
-  });
-
-  // Stats
-  const totalPorPagar = rows.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
-  const totalPagado   = rows.reduce((a,x)=>a+x.pagado,0);
-  const totalSemana   = rows.filter(x=>x.estado!=='pagado'&&x.vencimiento>=hoy&&x.vencimiento<=en7).reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
+  // Stats: usar monto total y montoPagado
+  const totalPorPagar = allCxp.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+(+x.monto||0)-(+x.montoPagado||0),0);
+  const totalPagado   = allCxp.reduce((a,x)=>a+(+x.montoPagado||0),0);
+  const totalSemana   = allCxp.filter(x=>x.estado!=='pagado'&&x.vencimiento>=hoy&&x.vencimiento<=en7).reduce((a,x)=>a+(+x.monto||0)-(+x.montoPagado||0),0);
   document.getElementById('cxp-total').textContent=fmt(totalPorPagar);
   document.getElementById('cxp-semana').textContent=fmt(totalSemana);
   document.getElementById('cxp-pagado').textContent=fmt(totalPagado);
-  document.getElementById('cxp-count').textContent=rows.length+' registros';
+  document.getElementById('cxp-count').textContent=allCxp.length+' registros';
 
   const tb=document.getElementById('cxp-tbody');
-  tb.innerHTML=rows.length?rows.map(x=>{
-    const porPagar = Math.max(0, x.monto - x.pagado);
+  tb.innerHTML=allCxp.length?allCxp.map(x=>{
+    const total    = +x.monto||0;
+    const pagado   = +x.montoPagado||0;
+    const porPagar = Math.max(0, total - pagado);
     const vencido  = x.vencimiento&&x.vencimiento<hoy&&x.estado!=='pagado';
-    const esParcial= x.pagado>0 && x.estado!=='pagado';
+    const esParcial= pagado>0 && x.estado!=='pagado';
 
-    let badgeColor,badgeBg,label;
-    if(x.estado==='pagado')  {badgeColor='#1A7A52';badgeBg='#ECFDF5';label='✓ Pagado';}
-    else if(esParcial)       {badgeColor='#8A6A00';badgeBg='#FEFCE8';label='Parcial';}
-    else if(vencido)         {badgeColor='#B83232';badgeBg='#FEF2F2';label='Vencido';}
-    else                     {badgeColor='#8A6A00';badgeBg='#FEFCE8';label='Por pagar';}
+    let badgeColor, badgeBg, label;
+    if(x.estado==='pagado'){ badgeColor='#1A7A52'; badgeBg='#ECFDF5'; label='✓ Pagado'; }
+    else if(esParcial)     { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Parcial'; }
+    else if(vencido)       { badgeColor='#B83232'; badgeBg='#FEF2F2'; label='Vencido'; }
+    else                   { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Por pagar'; }
 
-    const tipoBadge = x.gastoId?'<span class="badge badge-gray" style="margin-right:4px;">Gasto</span>':x.empleadoId?'<span class="badge badge-blue" style="margin-right:4px;">Sueldo</span>':'';
+    const tipoBadge=x.gastoId?'<span class="badge badge-gray" style="margin-right:4px;">Gasto</span>':x.empleadoId?'<span class="badge badge-blue" style="margin-right:4px;">Sueldo</span>':'';
 
+    // Botón 💲 y menú ⋯
     const btnPagar = x.estado!=='pagado'
-      ? `<button onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')" style="border:1px solid #C8E6D4;background:#F0FAF4;color:#1A7A52;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;">Pagar</button>`
+      ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">💲</button>`
       : '';
-
     const menuItems = [
-      x.estado==='pagado'?`<div class="ctx-item" style="color:#B83232" onclick="revertirPagoCxP('${x.id}');closeCtx()">↩ Revertir</div>`:'',
-      !x._readonly?`<div class="ctx-item" onclick="editarCxCxP('cxp','${x.id}','','');closeCtx()">✏️ Editar</div>`:'',
-      !x._readonly?`<div class="ctx-item" style="color:#B83232" onclick="eliminar('cxp','${x.id}');closeCtx()">🗑 Eliminar</div>`:''
+      x.estado==='pagado' ? `<div class="ctx-item" style="color:#B83232" onclick="revertirPagoCxP('${x.id}');closeCtx()">↩ Revertir pago</div>` : '',
+      `<div class="ctx-item" onclick="editarCxCxP('cxp','${x.id}','${x.gastoId||''}','${x.empleadoId||''}');closeCtx()">✏️ Editar</div>`,
+      !x._readonly ? `<div class="ctx-item" style="color:#B83232" onclick="eliminar('cxp','${x.id}');closeCtx()">🗑 Eliminar</div>` : ''
     ].filter(Boolean).join('');
 
     return`<tr>
-    <td style="padding:12px 14px;"><div class="td-main">${tipoBadge}${x.proveedor}</div><div class="td-sub">${x.concepto}</div></td>
-    <td style="padding:12px 14px;font-size:13px;color:#666660;">${x.fecha||'—'}</td>
-    <td style="padding:12px 14px;font-size:13px;color:${vencido?'#B83232':'#666660'};font-weight:${vencido?700:400};">${x.vencimiento||'—'}</td>
-    <td style="padding:12px 14px;font-weight:700;color:#0D0D0D;">${fmt(x.monto)}</td>
-    <td style="padding:12px 14px;font-weight:700;color:#1A7A52;">${x.pagado>0?fmt(x.pagado):'—'}</td>
-    <td style="padding:12px 14px;font-weight:800;color:${porPagar>0?'#B83232':'#888880'};">${porPagar>0?fmt(porPagar):'—'}</td>
-    <td style="padding:12px 14px;"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${badgeBg};color:${badgeColor};">${label}</span></td>
-    <td style="padding:12px 10px;text-align:right;white-space:nowrap;">
+    <td><div class="td-main">${tipoBadge}${x.proveedor}</div><div class="td-sub">${x.concepto||''}</div></td>
+    <td style="font-size:13px;color:#666660;">${x.fecha||'—'}</td>
+    <td style="font-size:13px;color:${vencido?'#B83232':'#666660'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
+    <td style="font-weight:700;color:#0D0D0D;">${fmt(total)}</td>
+    <td style="font-weight:700;color:#1A7A52;">${pagado>0?fmt(pagado):'—'}</td>
+    <td style="font-weight:800;color:${porPagar>0?'#B83232':'#888880'};">${porPagar>0?fmt(porPagar):'—'}</td>
+    <td><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${badgeBg};color:${badgeColor};">${label}</span></td>
+    <td style="text-align:right;">
       ${btnPagar}
-      ${menuItems?`<div style="position:relative;display:inline-block;margin-left:4px;">
-        <button onclick="toggleCtx(event,'ctx_${x.id}')" style="border:none;background:none;cursor:pointer;font-size:18px;color:#888;padding:2px 6px;">⋯</button>
-        <div id="ctx_${x.id}" style="display:none;position:fixed;background:white;border:1px solid #E8E4DC;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;min-width:160px;padding:4px 0;">${menuItems}</div>
-      </div>`:''}
+      <div style="position:relative;display:inline-block;">
+        <button title="Más acciones" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="toggleCtx(event,'ctx_${x.id}')">⋯</button>
+        <div id="ctx_${x.id}" style="display:none;position:absolute;right:0;top:28px;background:white;border:1px solid #DDD9D0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:999;min-width:160px;padding:4px 0;">
+          ${menuItems}
+        </div>
+      </div>
     </td></tr>`;
   }).join(''):empty('No hay cuentas por pagar.');
 }
@@ -2642,9 +2637,12 @@ function toggleCtx(e, id){
   if(!el) return;
   if(el.style.display==='block'){ el.style.display='none'; return; }
   const rect = e.currentTarget.getBoundingClientRect();
-  el.style.top  = (rect.bottom+2)+'px';
-  el.style.right = (window.innerWidth-rect.right)+'px';
-  el.style.display = 'block';
+  el.style.position='fixed';
+  el.style.top=(rect.bottom+2)+'px';
+  el.style.right=(window.innerWidth-rect.right)+'px';
+  el.style.left='auto';
+  el.style.zIndex='99999';
+  el.style.display='block';
 }
 function closeCtx(){
   document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>el.style.display='none');
