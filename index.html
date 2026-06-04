@@ -1904,9 +1904,18 @@ function confirmarPagoGasto(id){
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
-  // Guardar en localStorage Y Supabase
+  // Actualizar registro vinculado en cxp (en memoria Y en Supabase)
+  const cxpVinculado = cxp.find(c=>String(c.gastoId)===String(id));
+  if(cxpVinculado){
+    cxpVinculado.montoPagado = x.montoPagado;
+    cxpVinculado.estado = x.estado;
+    cxpVinculado.fechaPago = x.fechaPago;
+    localStorage.setItem(dbKey('cxp'), JSON.stringify(cxp));
+    saveSupa('cxp', cxp).catch(e=>console.log('err cxp:',e));
+  }
+  // Guardar gastos
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
-  saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
+  saveSupa('gastos', gastos).catch(e=>console.log('err gastos:',e));
   closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function eliminarPagoGasto(id){
@@ -1923,6 +1932,8 @@ function eliminarPagoGasto(id){
 function confirmarEliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   x.montoPagado=0; x.estado='pendiente'; delete x.fechaPago; delete x.notasPago;
+  const cxpVinculado = cxp.find(c=>String(c.gastoId)===String(id));
+  if(cxpVinculado){ cxpVinculado.montoPagado=0; cxpVinculado.estado='pendiente'; localStorage.setItem(dbKey('cxp'),JSON.stringify(cxp)); saveSupa('cxp',cxp).catch(()=>{}); }
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('Supabase error:',e));
   closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago eliminado');
@@ -1942,6 +1953,8 @@ function revertirPagoGasto(id){
 function confirmarRevertirGasto(id){
   const x = gastos.find(g=>g.id===id); if(!x) return;
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
+  const cxpVinculado = cxp.find(c=>String(c.gastoId)===String(id));
+  if(cxpVinculado){ cxpVinculado.montoPagado=0; cxpVinculado.estado='pendiente'; localStorage.setItem(dbKey('cxp'),JSON.stringify(cxp)); saveSupa('cxp',cxp).catch(()=>{}); }
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
   closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago revertido');
@@ -2084,13 +2097,11 @@ function cobrarCxC(id, facturaId, resumenId){
     marcarPagoResumen(rid,'total'); renderCxC(); return;
   }
   const r = cxc.find(x=>x.id===id); if(!r) return;
-  const _pendienteCxC = Math.max(0,(+r.monto||0)-(+r.montoCobrado||0));
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar cobro</div>
     <div class="modal-sub">${r.cliente}${r.concepto?' — '+r.concepto:''}</div>
-    ${r.montoCobrado>0?`<div style="font-size:12px;color:#8A6A00;background:#FEFCE8;padding:8px 12px;border-radius:8px;margin-bottom:12px;">Ya cobrado: <b>${fmt(r.montoCobrado)}</b> — Pendiente: <b>${fmt(_pendienteCxC)}</b></div>`:''}
-    <div class="form-group"><label class="form-label">Monto a cobrar ($)</label>
-      <input class="form-input" id="cc_monto" type="number" value="${_pendienteCxC}"/></div>
+    <div class="form-group"><label class="form-label">Monto cobrado ($)</label>
+      <input class="form-input" id="cc_monto" type="number" value="${r.monto||0}"/></div>
     <div class="form-group"><label class="form-label">Fecha de cobro</label>
       <input class="form-input" id="cc_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
@@ -2148,13 +2159,6 @@ function renderCxP(){
     }
   });
 
-  // Sincronizar registros cxp que tienen gastoId con montoPagado del gasto real
-  f.forEach(c=>{
-    if(c.gastoId){
-      const g = gastos.find(gg=>String(gg.id)===String(c.gastoId));
-      if(g){ c.montoPagado=+(g.montoPagado)||0; c.estado=g.estado||c.estado; }
-    }
-  });
   // Incluir gastos y empleados no registrados en CxP
   let allCxp = [...f];
   gastos.forEach(g=>{
@@ -2219,7 +2223,7 @@ function renderCxP(){
       ${btnPagar}
       <div style="position:relative;display:inline-block;">
         <button title="Más acciones" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="toggleCtx(event,'ctx_${x.id}')">⋯</button>
-        <div id="ctx_${x.id}" style="display:none;position:fixed;background:white;border:1px solid #E8E4DC;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;min-width:170px;padding:4px 0;">
+        <div id="ctx_${x.id}" style="display:none;position:absolute;right:0;top:28px;background:white;border:1px solid #DDD9D0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:999;min-width:160px;padding:4px 0;">
           ${menuItems}
         </div>
       </div>
@@ -2641,18 +2645,10 @@ function closeModal(e){if(!e||e.target.id==='modal')document.getElementById('mod
 
 function toggleCtx(e, id){
   e.stopPropagation();
-  document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>{ if(el.id!==id) el.style.display='none'; });
+  // Close any open menus first
+  document.querySelectorAll('[id^="ctx_"]').forEach(el=>{ if(el.id!==id) el.style.display='none'; });
   const el = document.getElementById(id);
-  if(!el) return;
-  if(el.style.display==='block'){
-    el.style.display='none'; return;
-  }
-  const rect = e.currentTarget.getBoundingClientRect();
-  el.style.position='fixed';
-  el.style.top=(rect.bottom+2)+'px';
-  el.style.right=(window.innerWidth-rect.right)+'px';
-  el.style.left='auto';
-  el.style.display='block';
+  if(el) el.style.display = el.style.display==='none'?'block':'none';
 }
 function closeCtx(){
   document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>el.style.display='none');
