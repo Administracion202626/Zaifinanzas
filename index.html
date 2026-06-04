@@ -122,13 +122,15 @@ body{font-family:'Schibsted Grotesk',sans-serif;font-size:16px;background:#F5F2E
 .up{color:var(--green);}.down{color:var(--red);}
 
 /* ── TABLE ── */
-.table-card{background:#FDFCF9;border-radius:10px;border:1px solid #DDD9D0;overflow:hidden;}
+.table-card{background:#FDFCF9;border-radius:10px;border:1px solid #DDD9D0;overflow:visible;}
 .table-head{padding:16px 22px;border-bottom:1px solid #DDD9D0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
 .th-title{font-family:'Schibsted Grotesk',sans-serif;font-size:15px;font-weight:700;color:#0D0D0D;letter-spacing:-0.1px;}
 .th-sub{font-size:12px;color:#888880;margin-top:1px;font-family:'Schibsted Grotesk',sans-serif;}
 .search-box{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid #DDD9D0;border-radius:10px;background:#F5F2EC;}
 .search-box input{border:none;outline:none;background:none;font-size:13px;font-family:'Schibsted Grotesk',sans-serif;color:#2A2A2A;width:170px;}
 table{width:100%;border-collapse:collapse;}
+.table-wrap{overflow:visible!important;}
+td{position:relative;}
 th{font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;padding:11px 20px;text-align:left;border-bottom:1px solid #DDD9D0;background:#F5F2EC;font-family:'Schibsted Grotesk',sans-serif;}
 td{padding:13px 20px;font-size:14px;border-bottom:1px solid #F1F5F9;vertical-align:middle;font-family:'Schibsted Grotesk',sans-serif;color:#2A2A2A;}
 tr:last-child td{border-bottom:none;}
@@ -1904,7 +1906,7 @@ function confirmarPagoGasto(id){
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
-  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago de '+fmt(monto)+' registrado');
+  save('gastos',gastos); closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function eliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
@@ -1922,7 +1924,7 @@ function confirmarEliminarPagoGasto(id){
   x.montoPagado=0; x.estado='pendiente'; delete x.fechaPago; delete x.notasPago;
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('Supabase error:',e));
-  closeModal(); renderGastos(); updateDashboard(); toast('Pago eliminado');
+  closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago eliminado');
 }
 
 function revertirPagoGasto(id){
@@ -1939,7 +1941,7 @@ function revertirPagoGasto(id){
 function confirmarRevertirGasto(id){
   const x = gastos.find(g=>g.id===id); if(!x) return;
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
-  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago revertido');
+  save('gastos',gastos); closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago revertido');
 }
 
 function renderEmpleados(){
