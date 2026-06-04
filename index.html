@@ -1896,7 +1896,8 @@ function pagarGasto(id){
   document.getElementById('modal').classList.add('open');
 }
 function confirmarPagoGasto(id){
-  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const x = gastos.find(g=>String(g.id)===String(id));
+  if(!x){ toast('⚠️ No se encontró el gasto'); return; }
   const monto = parseFloat(document.getElementById('gp_monto').value)||0;
   if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
   x.montoPagado = Math.min((+x.montoPagado||0)+monto, +x.monto||0);
@@ -1904,7 +1905,12 @@ function confirmarPagoGasto(id){
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
-  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago de '+fmt(monto)+' registrado');
+  // Sincronizar con CxP si existe registro vinculado
+  const cxpItem = cxp.find(c=>String(c.gastoId)===String(id));
+  if(cxpItem){ cxpItem.montoPagado=x.montoPagado; cxpItem.estado=x.estado; cxpItem.fechaPago=x.fechaPago; save('cxp',cxp); }
+  localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
+  saveSupa('gastos', gastos).catch(e=>console.log('Supabase gastos error:',e));
+  closeModal(); renderGastos(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function eliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
@@ -1920,6 +1926,8 @@ function eliminarPagoGasto(id){
 function confirmarEliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   x.montoPagado=0; x.estado='pendiente'; delete x.fechaPago; delete x.notasPago;
+  const cxpItem = cxp.find(c=>String(c.gastoId)===String(id));
+  if(cxpItem){ cxpItem.montoPagado=0; cxpItem.estado='pendiente'; save('cxp',cxp); }
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('Supabase error:',e));
   closeModal(); renderGastos(); updateDashboard(); toast('Pago eliminado');
@@ -1937,9 +1945,13 @@ function revertirPagoGasto(id){
   document.getElementById('modal').classList.add('open');
 }
 function confirmarRevertirGasto(id){
-  const x = gastos.find(g=>g.id===id); if(!x) return;
+  const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
-  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago revertido');
+  const cxpItem = cxp.find(c=>String(c.gastoId)===String(id));
+  if(cxpItem){ cxpItem.montoPagado=0; cxpItem.estado='pendiente'; save('cxp',cxp); }
+  localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
+  saveSupa('gastos', gastos).catch(e=>console.log('Supabase gastos error:',e));
+  closeModal(); renderGastos(); updateDashboard(); toast('Pago revertido');
 }
 
 function renderEmpleados(){
@@ -2138,7 +2150,9 @@ function renderCxP(){
   gastos.forEach(g=>{
     if(!cxp.find(x=>x.gastoId===g.id)&&!f.find(x=>x.gastoId===g.id)){
       allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
-        monto:g.monto,montoPagado:0,fecha:g.fecha||hoy,vencimiento:'',estado:'pendiente',gastoId:g.id,_readonly:true});
+        monto:g.monto,montoPagado:g.montoPagado||0,fechaPago:g.fechaPago||'',
+        estado:g.estado||'pendiente',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',
+        gastoId:g.id,_readonly:true});
     }
   });
   empleados.forEach(e=>{
@@ -2255,16 +2269,9 @@ function confirmarRevertirCxP(id){
 
 function pagarCxPItem(id, gastoId, empleadoId){
   if(gastoId){
-    const g = gastos.find(x=>x.id===gastoId);
-    // Buscar si ya existe un registro CxP para este gasto, si no crearlo
-    let existing = cxp.find(x=>x.gastoId===gastoId);
-    if(!existing){
-      existing = {id:uid(), proveedor:g?g.descripcion:'Gasto', concepto:g?g.categoria:'', monto:g?g.monto:0, montoPagado:0, fecha:today(), estado:'pendiente', gastoId};
-      cxp.push(existing);
-      save('cxp',cxp);
-    }
-    pagarCxP(existing.id, undefined, g?g.descripcion:'Gasto');
-    return;
+    // Pagar directamente desde el gasto (fuente de verdad)
+    const g = gastos.find(x=>String(x.id)===String(gastoId));
+    if(g){ pagarGasto(g.id); return; }
   }
   if(empleadoId){
     marcarPagoEmp(empleadoId); return;
