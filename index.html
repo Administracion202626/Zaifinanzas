@@ -1896,8 +1896,7 @@ function pagarGasto(id){
   document.getElementById('modal').classList.add('open');
 }
 function confirmarPagoGasto(id){
-  const x = gastos.find(g=>String(g.id)===String(id));
-  if(!x){ toast('⚠️ No se encontró el gasto'); return; }
+  const x = gastos.find(g=>g.id===id); if(!x) return;
   const monto = parseFloat(document.getElementById('gp_monto').value)||0;
   if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
   x.montoPagado = Math.min((+x.montoPagado||0)+monto, +x.monto||0);
@@ -1905,12 +1904,7 @@ function confirmarPagoGasto(id){
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
-  // Sincronizar con CxP si existe registro vinculado
-  const cxpItem = cxp.find(c=>String(c.gastoId)===String(id));
-  if(cxpItem){ cxpItem.montoPagado=x.montoPagado; cxpItem.estado=x.estado; cxpItem.fechaPago=x.fechaPago; save('cxp',cxp); }
-  localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
-  saveSupa('gastos', gastos).catch(e=>console.log('Supabase gastos error:',e));
-  closeModal(); renderGastos(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
+  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function eliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
@@ -1926,8 +1920,6 @@ function eliminarPagoGasto(id){
 function confirmarEliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   x.montoPagado=0; x.estado='pendiente'; delete x.fechaPago; delete x.notasPago;
-  const cxpItem = cxp.find(c=>String(c.gastoId)===String(id));
-  if(cxpItem){ cxpItem.montoPagado=0; cxpItem.estado='pendiente'; save('cxp',cxp); }
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('Supabase error:',e));
   closeModal(); renderGastos(); updateDashboard(); toast('Pago eliminado');
@@ -1945,13 +1937,9 @@ function revertirPagoGasto(id){
   document.getElementById('modal').classList.add('open');
 }
 function confirmarRevertirGasto(id){
-  const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
+  const x = gastos.find(g=>g.id===id); if(!x) return;
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
-  const cxpItem = cxp.find(c=>String(c.gastoId)===String(id));
-  if(cxpItem){ cxpItem.montoPagado=0; cxpItem.estado='pendiente'; save('cxp',cxp); }
-  localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
-  saveSupa('gastos', gastos).catch(e=>console.log('Supabase gastos error:',e));
-  closeModal(); renderGastos(); updateDashboard(); toast('Pago revertido');
+  save('gastos',gastos); closeModal(); renderGastos(); toast('Pago revertido');
 }
 
 function renderEmpleados(){
@@ -2150,15 +2138,15 @@ function renderCxP(){
   gastos.forEach(g=>{
     if(!cxp.find(x=>x.gastoId===g.id)&&!f.find(x=>x.gastoId===g.id)){
       allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
-        monto:g.monto,montoPagado:g.montoPagado||0,fechaPago:g.fechaPago||'',
-        estado:g.estado||'pendiente',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',
-        gastoId:g.id,_readonly:true});
+        monto:g.monto,montoPagado:0,fecha:g.fecha||hoy,vencimiento:'',estado:'pendiente',gastoId:g.id,_readonly:true});
     }
   });
   empleados.forEach(e=>{
-    if(e.estado!=='pagado'&&!cxp.find(x=>x.empleadoId===e.id)&&!f.find(x=>x.empleadoId===e.id)){
+    if(!cxp.find(x=>x.empleadoId===e.id)&&!f.find(x=>x.empleadoId===e.id)){
       allCxp.push({id:'emp_'+e.id,proveedor:e.nombre,concepto:'Sueldo: '+(e.rol||''),
-        monto:e.sueldo,montoPagado:0,fecha:hoy,vencimiento:'',estado:'pendiente',empleadoId:e.id,_readonly:true});
+        monto:e.sueldo,montoPagado:e.montoPagado||0,fechaPago:e.fechaPago||'',
+        estado:e.estado==='pagado'?'pagado':'pendiente',
+        fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
     }
   });
 
@@ -2250,11 +2238,10 @@ function confirmarPagoCxP(id){
   r.estado = r.montoPagado >= (+r.monto||0) ? 'pagado' : 'pendiente';
   save('cxp',cxp); closeModal(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
-function revertirPagoCxP(id){
-  const r = cxp.find(x=>x.id===id); if(!r) return;
+function revertirPagoCxP(id){\n  const label = id.startsWith('emp_') ? (empleados.find(e=>e.id===id.replace('emp_',''))?.nombre||'empleado') : id.startsWith('gas_') ? (gastos.find(g=>g.id===id.replace('gas_',''))?.descripcion||'gasto') : (cxp.find(x=>x.id===id)?.proveedor||'proveedor');
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Revertir pago</div>
-    <div class="modal-sub">Confirmas que queres revertir el pago de <b>${r.proveedor||'este proveedor'}</b>?</div>
+    <div class="modal-sub">Confirmás que querés revertir el pago de <b>${label}</b>?</div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirCxP('${id}')">Revertir pago</button>
@@ -2262,19 +2249,30 @@ function revertirPagoCxP(id){
   document.getElementById('modal').classList.add('open');
 }
 function confirmarRevertirCxP(id){
-  const r = cxp.find(x=>x.id===id); if(!r) return;
-  r.estado='pendiente'; r.montoPagado=0; delete r.fechaPago; delete r.notasPago;
-  save('cxp',cxp); closeModal(); renderCxP(); updateDashboard(); toast('Pago revertido');
+  if(id.startsWith('emp_')){
+    const e = empleados.find(x=>x.id===id.replace('emp_',''));
+    if(e){ e.estado='pendiente'; e.montoPagado=0; delete e.fechaPago; delete e.notasPago; save('empleados',empleados); }
+  } else if(id.startsWith('gas_')){
+    const g = gastos.find(x=>x.id===id.replace('gas_',''));
+    if(g){ g.estado='pendiente'; g.montoPagado=0; delete g.fechaPago; delete g.notasPago; localStorage.setItem(dbKey('gastos'),JSON.stringify(gastos)); saveSupa('gastos',gastos).catch(()=>{}); }
+  } else {
+    const r = cxp.find(x=>x.id===id);
+    if(r){ r.estado='pendiente'; r.montoPagado=0; delete r.fechaPago; delete r.notasPago; save('cxp',cxp); }
+  }
+  closeModal(); renderCxP(); updateDashboard(); toast('Pago revertido');
 }
 
 function pagarCxPItem(id, gastoId, empleadoId){
-  if(gastoId){
-    // Pagar directamente desde el gasto (fuente de verdad)
-    const g = gastos.find(x=>String(x.id)===String(gastoId));
+  // Para filas virtuales de gastos: pagar directamente en gastos (fuente de verdad)
+  if(gastoId || id.startsWith('gas_')){
+    const gid = gastoId || id.replace('gas_','');
+    const g = gastos.find(x=>String(x.id)===String(gid));
     if(g){ pagarGasto(g.id); return; }
   }
-  if(empleadoId){
-    marcarPagoEmp(empleadoId); return;
+  // Para filas virtuales de empleados: pagar directamente en empleados
+  if(empleadoId || id.startsWith('emp_')){
+    const eid = empleadoId || id.replace('emp_','');
+    marcarPagoEmp(eid); return;
   }
   pagarCxP(id);
 }
