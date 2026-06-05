@@ -2234,54 +2234,71 @@ function abrirDetalleCxP(tipo){
 function renderCxP(){
   const desde=document.getElementById('cxp-desde').value;
   const hasta=document.getElementById('cxp-hasta').value;
-  const estado=document.getElementById('cxp-estado').value;
+  const estadoFiltro=document.getElementById('cxp-estado').value;
   const hoy=today();
   const _hoyDate=new Date();const _diaSemana=_hoyDate.getDay()||7;const _finSemana=new Date(_hoyDate);_finSemana.setDate(_hoyDate.getDate()+(7-_diaSemana));const en7=_finSemana.toISOString().split('T')[0];
-  let f=cxp.filter(x=>{
-    if(desde&&x.fecha<desde)return false;
-    if(hasta&&x.fecha>hasta)return false;
-    if(estado&&x.estado!==estado)return false;
-    return true;
-  });
 
-  // Sincronizar registros reales de cxp que tienen gastoId con montoPagado del gasto
-  f.forEach(c=>{
+  // Construir lista completa: cxp manuales + gastos + empleados
+  let allCxp = [];
+
+  // 1. CxP manuales
+  cxp.forEach(c=>{
+    // sincronizar con gasto si tiene gastoId
     if(c.gastoId){
-      const g = gastos.find(gg=>String(gg.id)===String(c.gastoId));
-      if(g){ c.montoPagado=+(g.montoPagado)||0; c.estado=g.estado||c.estado; }
+      const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));
+      if(g){c.montoPagado=+(g.montoPagado)||0;c.estado=g.estado||c.estado;}
+    }
+    allCxp.push(c);
+  });
+
+  // 2. Gastos no duplicados
+  gastos.forEach(g=>{
+    if(!cxp.find(x=>String(x.gastoId)===String(g.id))){
+      allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion||'Sin nombre',concepto:'Gasto: '+(g.categoria||''),
+        monto:+g.monto||0,montoPagado:+g.montoPagado||0,
+        estado:g.estado==='pagado'?'pagado':'pendiente',
+        fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,
+        vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
     }
   });
 
-  // Incluir gastos y empleados no registrados en CxP
-  let allCxp = [...f];
-  gastos.forEach(g=>{
-    if(!cxp.find(x=>x.gastoId===g.id)&&!f.find(x=>x.gastoId===g.id)){
-      allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
-        monto:g.monto,montoPagado:+g.montoPagado||0,estado:g.estado||'pendiente',fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
-    }
-  });
+  // 3. Empleados no duplicados
   empleados.forEach(e=>{
-    if(!cxp.find(x=>x.empleadoId===e.id)&&!f.find(x=>x.empleadoId===e.id)){
-      allCxp.push({id:'emp_'+e.id,proveedor:e.nombre,concepto:'Sueldo: '+(e.rol||''),
-        monto:e.sueldo,montoPagado:e.montoPagado||0,fechaPago:e.fechaPago||'',
+    if(!cxp.find(x=>String(x.empleadoId)===String(e.id))){
+      allCxp.push({id:'emp_'+e.id,proveedor:e.nombre||'Sin nombre',concepto:'Sueldo: '+(e.rol||''),
+        monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,
+        fechaPago:e.fechaPago||'',
         estado:e.estado==='pagado'?'pagado':'pendiente',
         fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
     }
   });
 
-  // Stats: usar monto total y montoPagado
-  const totalPorPagar = allCxp.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
-  const totalPagado   = allCxp.reduce((a,x)=>a+(+x.montoPagado||0),0);
-  // totalSemana: misma logica que abrirDetalleCxP para que coincidan
-  const _rowsSemana = allCxp.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
-  const totalSemana = _rowsSemana.reduce((a,x)=>a+Math.max(0,x.monto-x.pagado),0);
+  // Aplicar filtros
+  let f=allCxp.filter(x=>{
+    if(desde&&x.fecha&&x.fecha<desde)return false;
+    if(hasta&&x.fecha&&x.fecha>hasta)return false;
+    if(estadoFiltro&&x.estado!==estadoFiltro)return false;
+    return true;
+  });
+
+  // Stats
+  const totalPorPagar=f.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
+  const totalPagado=f.reduce((a,x)=>a+(+x.montoPagado||0),0);
+  const _rowsSemana=f.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
+  const totalSemana=_rowsSemana.reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
   document.getElementById('cxp-total').textContent=fmt(totalPorPagar);
   document.getElementById('cxp-semana').textContent=fmt(totalSemana);
   document.getElementById('cxp-pagado').textContent=fmt(totalPagado);
-  document.getElementById('cxp-count').textContent=allCxp.length+' registros';
+  document.getElementById('cxp-count').textContent=f.length+' registros';
 
   const tb=document.getElementById('cxp-tbody');
-  tb.innerHTML=allCxp.length?allCxp.map(x=>{
+  tb.innerHTML=f.length?f.map(x=>{
+    const total    = +x.monto||0;
+    const pagado   = +x.montoPagado||0;
+    const porPagar = Math.max(0, total - pagado);
+    const vencido  = x.vencimiento&&x.vencimiento<hoy&&x.estado!=='pagado';
+    const esParcial= pagado>0 && x.estado!=='pagado';
+
     const total    = +x.monto||0;
     const pagado   = +x.montoPagado||0;
     const porPagar = Math.max(0, total - pagado);
