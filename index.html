@@ -313,8 +313,6 @@ tr:hover td{background:#F5F2EC;}
 
 /* ── MODO PRIVACIDAD ─────────────────────── */
 .privacy-blur .stat-val,
-.privacy-blur .privacy-num,
-.privacy-blur td .privacy-num,
 .privacy-blur [id^="dash-"],
 .privacy-blur [id^="fact-cobrado"],
 .privacy-blur [id^="fact-pendiente"],
@@ -326,25 +324,37 @@ tr:hover td{background:#F5F2EC;}
 .privacy-blur [id^="cxc-total"],
 .privacy-blur [id^="cxc-semana"],
 .privacy-blur [id^="cxc-cobrado"],
-.privacy-blur .td-num,
-.privacy-blur .gastos-total-label,
+.privacy-blur [id^="cxc-vencido"],
+.privacy-blur [id^="cxp-count"],
 .privacy-blur #gastos-total-label,
-.privacy-blur .catalog-price {
-  filter: blur(8px);
+.privacy-blur .catalog-price,
+.privacy-blur td:nth-child(n+4),
+.privacy-blur .sum-amount,
+.privacy-blur .modal-sub,
+.privacy-blur [id$="-total"],
+.privacy-blur [id$="-monto"],
+.privacy-blur [id$="-cobrado"],
+.privacy-blur [id$="-pagado"],
+.privacy-blur [id$="-ganancia"],
+.privacy-blur [id$="-margen"] {
+  filter: blur(7px);
   user-select: none;
-  transition: filter 0.2s;
-  cursor: pointer;
+  transition: filter 0.25s;
 }
 .privacy-blur .stat-val:hover,
-.privacy-blur .privacy-num:hover,
-.privacy-blur td:hover .privacy-num,
 .privacy-blur [id^="dash-"]:hover,
-.privacy-blur .td-num:hover,
-.privacy-blur .catalog-price:hover {
+.privacy-blur [id^="fact-"]:hover,
+.privacy-blur [id^="est-"]:hover,
+.privacy-blur [id^="cxp-"]:hover,
+.privacy-blur [id^="cxc-"]:hover,
+.privacy-blur td:nth-child(n+4):hover,
+.privacy-blur .catalog-price:hover,
+.privacy-blur #gastos-total-label:hover {
   filter: blur(0px);
+  cursor: pointer;
 }
 #privacy-btn { transition: all 0.2s; }
-#privacy-btn.active { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
+#privacy-btn.active { opacity: 0.5; }
 
 </style>
 </head>
@@ -1710,7 +1720,7 @@ function loadData(){
   bancosTerc  =load('bancosTerc');
 }
 
-function fmt(n){ const v='$'+(Number(n)||0).toLocaleString('es-AR'); return '<span class="privacy-num">'+v+'</span>'; }
+function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
 
 let _privacyOn = localStorage.getItem('zaifi_privacy')==='1';
 function togglePrivacy(){
@@ -1815,8 +1825,8 @@ function renderFacturas(){
     if(tipoF&&x.tipo!==tipoF)return false;
     return true;
   });
-  document.getElementById('fact-cobrado').innerHTML=fmt(f.filter(x=>x.estado==='cobrada').reduce((a,x)=>a+(+x.monto||0),0));
-  document.getElementById('fact-pendiente').innerHTML=fmt(f.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+(+x.monto||0),0));
+  document.getElementById('fact-cobrado').textContent=fmt(f.filter(x=>x.estado==='cobrada').reduce((a,x)=>a+(+x.monto||0),0));
+  document.getElementById('fact-pendiente').textContent=fmt(f.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+(+x.monto||0),0));
   document.getElementById('fact-total').textContent=f.length;
   const el=document.getElementById('facturas-list');
   const tipoColors={'A':'#003087','B':'#1A7A52','C':'#8A6A00','presupuesto':'#0D0D0D','interna':'#666660'};
@@ -2181,9 +2191,9 @@ function renderCxC(){
     if(+x.monto===0&&x.estado==='cobrado')return false; // hide fully paid
     return true;
   });
-  document.getElementById('cxc-total').innerHTML=fmt(f.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0));
-  document.getElementById('cxc-semana').innerHTML=fmt(f.filter(x=>x.estado==='pendiente'&&x.vencimiento>=hoy&&x.vencimiento<=en7).reduce((a,x)=>a+(+x.monto||0),0));
-  document.getElementById('cxc-vencido').innerHTML=fmt(f.filter(x=>x.estado==='pendiente'&&x.vencimiento&&x.vencimiento<hoy).reduce((a,x)=>a+(+x.monto||0),0));
+  document.getElementById('cxc-total').textContent=fmt(f.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0));
+  document.getElementById('cxc-semana').textContent=fmt(f.filter(x=>x.estado==='pendiente'&&x.vencimiento>=hoy&&x.vencimiento<=en7).reduce((a,x)=>a+(+x.monto||0),0));
+  document.getElementById('cxc-vencido').textContent=fmt(f.filter(x=>x.estado==='pendiente'&&x.vencimiento&&x.vencimiento<hoy).reduce((a,x)=>a+(+x.monto||0),0));
   document.getElementById('cxc-count').textContent=f.length+' registros';
   const tb=document.getElementById('cxc-tbody');
   tb.innerHTML=f.length?f.map(x=>{
@@ -2363,9 +2373,9 @@ function renderCxP(){
   const totalPagado=f.reduce((a,x)=>a+(+x.montoPagado||0),0);
   const _rowsSemana=f.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
   const totalSemana=_rowsSemana.reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
-  document.getElementById('cxp-total').innerHTML=fmt(totalPorPagar);
-  document.getElementById('cxp-semana').innerHTML=fmt(totalSemana);
-  document.getElementById('cxp-pagado').innerHTML=fmt(totalPagado);
+  document.getElementById('cxp-total').textContent=fmt(totalPorPagar);
+  document.getElementById('cxp-semana').textContent=fmt(totalSemana);
+  document.getElementById('cxp-pagado').textContent=fmt(totalPagado);
   document.getElementById('cxp-count').textContent=f.length+' registros';
   const tb=document.getElementById('cxp-tbody');
   tb.innerHTML=f.length?f.map(x=>{
@@ -2490,17 +2500,17 @@ function updateDashboard(){
   const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
   const tg=gastos.reduce((a,x)=>a+(+x.monto||0),0);
   const tp=facturas.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+(+x.monto||0),0);
-  document.getElementById('dash-facturacion').innerHTML=fmt(tf);
-  document.getElementById('dash-gastos').innerHTML=fmt(tg);
-  document.getElementById('dash-pendientes').innerHTML=fmt(tp);
+  document.getElementById('dash-facturacion').textContent=fmt(tf);
+  document.getElementById('dash-gastos').textContent=fmt(tg);
+  document.getElementById('dash-pendientes').textContent=fmt(tp);
   const _cxpAll=[...gastos.map(g=>({monto:+g.monto||0,montoPagado:+g.montoPagado||0,estado:g.estado||'pendiente'})),...empleados.map(e=>({monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,estado:e.estado==='pagado'?'pagado':'pendiente'})),...cxp.map(c=>({monto:+c.monto||0,montoPagado:+c.montoPagado||0,estado:c.estado||'pendiente'}))];
   const _tpp=_cxpAll.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,x.monto-x.montoPagado),0);
-  const _elPP=document.getElementById('dash-porpagar');if(_elPP)_elPP.innerHTML=fmt(_tpp);
-  document.getElementById('r-total-fact').innerHTML=fmt(tf);
-  document.getElementById('r-total-gast').innerHTML=fmt(tg);
+  const _elPP=document.getElementById('dash-porpagar');if(_elPP)_elPP.textContent=fmt(_tpp);
+  document.getElementById('r-total-fact').textContent=fmt(tf);
+  document.getElementById('r-total-gast').textContent=fmt(tg);
   const gan=tf-tg;
   const rg=document.getElementById('r-ganancia');
-  rg.innerHTML=fmt(gan);
+  rg.textContent=fmt(gan);
   rg.style.color=gan>=0?'#1A7A52':'#B83232';
 
   // ── Estado del mes ──
@@ -3331,14 +3341,14 @@ function recalcTotalesRes(){
   const ivaPct = parseFloat(document.getElementById('res-iva').value)||21;
   const ivaMonto = subtotal * (ivaPct/100);
   const total = subtotal + ivaMonto;
-  document.getElementById('res-subtotal-srv').innerHTML = fmt(totalSrv);
-  document.getElementById('res-subtotal-log').innerHTML = fmt(totalLog);
-  document.getElementById('res-tot-srv').innerHTML = fmt(totalSrv);
-  document.getElementById('res-tot-log').innerHTML = fmt(totalLog);
-  document.getElementById('res-subtotal').innerHTML = fmt(subtotal);
+  document.getElementById('res-subtotal-srv').textContent = fmt(totalSrv);
+  document.getElementById('res-subtotal-log').textContent = fmt(totalLog);
+  document.getElementById('res-tot-srv').textContent = fmt(totalSrv);
+  document.getElementById('res-tot-log').textContent = fmt(totalLog);
+  document.getElementById('res-subtotal').textContent = fmt(subtotal);
   document.getElementById('res-iva-pct').textContent = ivaPct;
-  document.getElementById('res-iva-monto').innerHTML = fmt(ivaMonto);
-  document.getElementById('res-total-final').innerHTML = fmt(total);
+  document.getElementById('res-iva-monto').textContent = fmt(ivaMonto);
+  document.getElementById('res-total-final').textContent = fmt(total);
 }
 
 function guardarResumen(){
@@ -3868,9 +3878,9 @@ function renderProyeccion(){
   const promUlt = ultMeses.length ? ultMeses.reduce((a,m)=>a+(facMes[m]||0),0)/ultMeses.length : proyMes;
   const proyTrim = Math.round((promUlt*2) + proyMes);
 
-  document.getElementById('proy-actual').innerHTML = fmt(facActual);
-  document.getElementById('proy-mes').innerHTML = fmt(proyMes);
-  document.getElementById('proy-trim').innerHTML = fmt(proyTrim);
+  document.getElementById('proy-actual').textContent = fmt(facActual);
+  document.getElementById('proy-mes').textContent = fmt(proyMes);
+  document.getElementById('proy-trim').textContent = fmt(proyTrim);
   const vsEl = document.getElementById('proy-vs');
   vsEl.textContent = (varPct>=0?'+':'')+varPct+'%';
   vsEl.style.color = varPct>=0?'#1A7A52':'#B83232';
@@ -4132,12 +4142,12 @@ function recalcTotalesFac(){
     total = subtotal; // sin IVA
   }
 
-  ['fac-subtotal-srv','fac-tot-srv'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=fmt(totalSrv);});
-  ['fac-subtotal-log','fac-tot-log'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=fmt(totalLog);});
-  const subEl=document.getElementById('fac-subtotal');if(subEl)subEl.innerHTML=fmt(subtotal);
-  const netoEl=document.getElementById('fac-neto');if(netoEl)netoEl.innerHTML=fmt(neto);
-  const ivaEl=document.getElementById('fac-iva');if(ivaEl)ivaEl.innerHTML=fmt(iva);
-  const totEl=document.getElementById('fac-total-final');if(totEl)totEl.innerHTML=fmt(total);
+  ['fac-subtotal-srv','fac-tot-srv'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt(totalSrv);});
+  ['fac-subtotal-log','fac-tot-log'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt(totalLog);});
+  const subEl=document.getElementById('fac-subtotal');if(subEl)subEl.textContent=fmt(subtotal);
+  const netoEl=document.getElementById('fac-neto');if(netoEl)netoEl.textContent=fmt(neto);
+  const ivaEl=document.getElementById('fac-iva');if(ivaEl)ivaEl.textContent=fmt(iva);
+  const totEl=document.getElementById('fac-total-final');if(totEl)totEl.textContent=fmt(total);
 }
 
 function guardarFacturaFull(){
@@ -4525,12 +4535,12 @@ function renderEstadisticas(){
   const tg = gastos.reduce((a,x)=>a+(+x.monto||0),0);
   const gan = tf - tg;
   const margen = tf ? Math.round((gan/tf)*100) : 0;
-  document.getElementById('est-facturacion').innerHTML = fmt(tf);
-  document.getElementById('est-gastos').innerHTML = fmt(tg);
+  document.getElementById('est-facturacion').textContent = fmt(tf);
+  document.getElementById('est-gastos').textContent = fmt(tg);
   const eg = document.getElementById('est-ganancia');
-  eg.innerHTML = fmt(gan);
+  eg.textContent = fmt(gan);
   eg.style.color = gan >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('est-margen').innerHTML = '<span class="privacy-num">'+margen+'%</span>';
+  document.getElementById('est-margen').textContent = margen + '%';
 
   // Paleta
   const paleta = ['#0D0D0D','#1A7A52','#B83232','#8A6A00','#3B82F6','#E63946','#F4A261','#2A9D8F','#E9C46A','#264653'];
