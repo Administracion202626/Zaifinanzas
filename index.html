@@ -310,6 +310,40 @@ tr:hover td{background:#F5F2EC;}
 .landing-glow{animation:glow-pulse 4s ease-in-out infinite;}
 
 * { font-family: 'Poppins', sans-serif !important; }
+
+/* ── MODO PRIVACIDAD ─────────────────────── */
+.privacy-blur .stat-val,
+.privacy-blur .privacy-num,
+.privacy-blur [id^="dash-"],
+.privacy-blur [id^="fact-cobrado"],
+.privacy-blur [id^="fact-pendiente"],
+.privacy-blur [id^="fact-total"],
+.privacy-blur [id^="est-"],
+.privacy-blur [id^="cxp-total"],
+.privacy-blur [id^="cxp-semana"],
+.privacy-blur [id^="cxp-pagado"],
+.privacy-blur [id^="cxc-total"],
+.privacy-blur [id^="cxc-semana"],
+.privacy-blur [id^="cxc-cobrado"],
+.privacy-blur .td-num,
+.privacy-blur .gastos-total-label,
+.privacy-blur #gastos-total-label,
+.privacy-blur .catalog-price {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.2s;
+  cursor: pointer;
+}
+.privacy-blur .stat-val:hover,
+.privacy-blur .privacy-num:hover,
+.privacy-blur [id^="dash-"]:hover,
+.privacy-blur .td-num:hover,
+.privacy-blur .catalog-price:hover {
+  filter: blur(0px);
+}
+#privacy-btn { transition: all 0.2s; }
+#privacy-btn.active { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
+
 </style>
 </head>
 <body>
@@ -680,6 +714,7 @@ tr:hover td{background:#F5F2EC;}
     <div class="topbar-title" id="topbar-title">Home</div>
     <div class="topbar-right">
         <button onclick="toggleDarkMode()" id="theme-btn" title="Cambiar tema" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;"><span id="theme-icon">🌙</span><span id="theme-label">Oscuro</span></button>
+      <button id="privacy-btn" onclick="togglePrivacy()" title="Ocultar montos" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;">👁</button>
       <button class="tb-btn tb-btn-sec" onclick="openAddModal()">+ Agregar</button>
     </div>
   </div>
@@ -1674,6 +1709,29 @@ function loadData(){
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
+
+let _privacyOn = localStorage.getItem('zaifi_privacy')==='1';
+function togglePrivacy(){
+  _privacyOn = !_privacyOn;
+  localStorage.setItem('zaifi_privacy', _privacyOn?'1':'0');
+  applyPrivacy();
+}
+function applyPrivacy(){
+  const app = document.getElementById('screen-app');
+  const btn = document.getElementById('privacy-btn');
+  if(!app||!btn) return;
+  if(_privacyOn){
+    app.classList.add('privacy-blur');
+    btn.classList.add('active');
+    btn.textContent = '🙈';
+    btn.title = 'Mostrar montos';
+  } else {
+    app.classList.remove('privacy-blur');
+    btn.classList.remove('active');
+    btn.textContent = '👁';
+    btn.title = 'Ocultar montos';
+  }
+}
 function today(){ return new Date().toISOString().split('T')[0]; }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
 function nowTime(){ return new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}); }
@@ -1707,6 +1765,7 @@ async function loadApp(user){
   showScreen('app');
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
+  setTimeout(applyPrivacy, 100);
 }
 
 function renderAll(){
