@@ -522,7 +522,7 @@ tr:hover td{background:#F5F2EC;}
       <button type="button" onclick="togglePass('login-pass',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888880;font-size:18px;line-height:1;">👁</button>
     </div>
 
-    <button class="auth-btn" style="margin-top:16px;" onclick="doLogin()">Ingresar →</button>
+    <button class="auth-btn" style="margin-top:16px;" id="login-btn" onclick="this.textContent='Ingresando...';this.disabled=true;doLogin().finally(()=>{this.textContent='Ingresar →';this.disabled=false;})">Ingresar →</button>
     <div style="text-align:right;margin-top:10px;"><a onclick="showScreen('forgot')" style="font-size:13px;color:#0D0D0D;cursor:pointer;font-weight:600;">¿Olvidaste tu contraseña?</a></div>
     <div class="auth-switch" style="margin-top:10px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:#0D0D0D;font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
   </div>
@@ -1552,28 +1552,30 @@ async function doLogin(){
 
   if(!email||!pass){ err.textContent='Completá email y contraseña'; err.style.display='block'; return; }
 
-  // 1. Admin siempre funciona
-  if(email==='administracion@nigrum.com.ar' && pass==='administracion2026'){
+  // 1. Admin siempre funciona — sin tocar red
+  if(email===ADMIN_EMAIL && pass===ADMIN_PASS){
     setSession(ADMIN_ACCOUNT); await loadApp(ADMIN_ACCOUNT); return;
   }
 
-  // 2. Buscar en todos los stores de usuarios
+  // 2. Buscar en localStorage primero
   const allUsers = [...getUsersCache(), ...getSharedUsers()];
   const deduped = allUsers.filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
   let user = deduped.find(u=>u.email.toLowerCase()===email && u.pass===pass);
 
+  // 3. Si no está en local, intentar Supabase con timeout de 3s
   if(!user){
-    // 3. Intentar Supabase como último recurso
     try{
-      const res = await supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*');
-      if(res&&res.length){ if(res[0].pass===pass){ user=res[0]; } }
-    }catch(e){}
+      const res = await Promise.race([
+        supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*'),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+      ]);
+      if(res&&res.length&&res[0].pass===pass){ user=res[0]; }
+    }catch(e){ console.log('Supabase login timeout'); }
   }
 
   if(!user){ err.textContent='Email o contraseña incorrectos'; err.style.display='block'; return; }
   if(user.role==='pendiente'){ err.textContent='Tu cuenta está pendiente de aprobación del administrador'; err.style.display='block'; return; }
 
-  // Guardar en ambos stores
   const cache = getUsersCache();
   if(!cache.find(u=>u.email===email)){ cache.push(user); saveUsersCache(cache); }
   const shared = getSharedUsers();
