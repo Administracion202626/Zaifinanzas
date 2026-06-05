@@ -9,21 +9,21 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#F5F2EC;--white:#FDFCF9;
-  --z1:#0D0D0D;--z2:#2A2A2A;
-  --accent:#0D0D0D;--accent2:#444444;--accent-dark:#000000;
-  --green:#1A7A52;--green-light:#EAF4EE;
-  --red:#B83232;--red-light:#FBF0F0;
+  --bg:#F7F5F0;--white:#FFFFFF;
+  --z1:#111111;--z2:#2A2A2A;
+  --accent:#5B4FE9;--accent2:#7C71F0;--accent-dark:#3D33C4;
+  --green:#1A7A52;--green-light:#E8F5EE;
+  --red:#C0392B;--red-light:#FDF0EF;
   --blue:#1A4A7A;--blue-light:#EEF3FA;
   --yellow:#8A6A00;--yellow-light:#FBF6E6;
-  --text:#0D0D0D;--text2:#3A3A3A;--text3:#888880;
-  --border:#DDD9D0;--shadow:0 1px 12px rgba(13,13,13,0.06);
-  --shadow-lg:0 6px 32px rgba(13,13,13,0.10);
-  --radius:12px;--radius-lg:16px;
-  --sidebar-bg:#FDFCF9;--sidebar-border:#DDD9D0;
-  --topbar-bg:#F5F2EC;--topbar-border:#DDD9D0;
-  --nav-hover:#EDE9E1;--nav-active:#0D0D0D;--nav-active-text:#FDFCF9;
-  --card-bg:#FDFCF9;--page-bg:#F5F2EC;
+  --text:#111111;--text2:#3A3A3A;--text3:#9A9590;
+  --border:#E2DDD5;--shadow:0 1px 8px rgba(13,13,13,0.05);
+  --shadow-lg:0 8px 32px rgba(13,13,13,0.10);
+  --radius:12px;--radius-lg:18px;
+  --sidebar-bg:#FFFFFF;--sidebar-border:#E8E4DC;
+  --topbar-bg:#FFFFFF;--topbar-border:#E8E4DC;
+  --nav-hover:#F2EFE8;--nav-active:#5B4FE9;--nav-active-text:#FFFFFF;
+  --card-bg:#FFFFFF;--page-bg:#F7F5F0;
   --dark-mode:0;}
 
 [data-theme="dark"]{
@@ -53,7 +53,7 @@
 [data-theme="dark"] .form-label{font-weight:700;}
 [data-theme="dark"] .filter-bar label{font-weight:700;color:var(--text2);}
 }
-body{font-family:'Poppins',sans-serif;font-size:14px;background:#F5F2EC;color:#0D0D0D;min-height:100vh;-webkit-font-smoothing:antialiased;font-weight:500;}
+body{font-family:'Poppins',sans-serif;font-size:14px;background:#F7F5F0;color:#111111;min-height:100vh;-webkit-font-smoothing:antialiased;font-weight:500;}
 
 
 /* ── LANDING ── */
@@ -97,8 +97,8 @@ body{font-family:'Poppins',sans-serif;font-size:14px;background:#F5F2EC;color:#0
 .auth-sub{font-size:14px;color:var(--text3);text-align:center;margin-bottom:28px;}
 .auth-input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-family:'Poppins',sans-serif;color:var(--text);outline:none;margin-bottom:14px;transition:border-color 0.2s;}
 .auth-input:focus{border-color:#0D0D0D;}
-.auth-btn{width:100%;padding:14px;background:var(--z1);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;margin-top:6px;transition:background 0.2s;}
-.auth-btn:hover{background:#333;}
+.auth-btn{width:100%;padding:14px;background:#5B4FE9;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;margin-top:6px;transition:background 0.2s;}
+.auth-btn:hover{background:#3D33C4;}
 .auth-switch{text-align:center;margin-top:20px;font-size:14px;color:var(--text3);}
 .auth-switch a{color:#0D0D0D;font-weight:700;cursor:pointer;text-decoration:none;}
 .auth-error{background:var(--red-light);color:var(--red);padding:10px 14px;border-radius:10px;font-size:14px;margin-bottom:14px;display:none;}
@@ -146,8 +146,15 @@ body{font-family:'Poppins',sans-serif;font-size:14px;background:#F5F2EC;color:#0
 .filter-clear{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #DDD9D0;font-family:'Poppins',sans-serif;background:#F0EDE6;color:#5A5650;}
 
 /* ── STATS ── */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
-.stat-card{background:#FDFCF9;border-radius:10px;padding:20px;border:1px solid #DDD9D0;}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:#FFFFFF;border-radius:18px;padding:22px 24px;border:1px solid #E8E4DC;position:relative;overflow:hidden;transition:transform 0.18s,box-shadow 0.18s;cursor:default;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(13,13,13,0.09);}
+.stat-card::after{content:'';position:absolute;bottom:-30px;right:-30px;width:100px;height:100px;border-radius:50%;opacity:0.06;}
+.stat-card.card-fact::after{background:#5B4FE9;}
+.stat-card.card-clientes::after{background:#1A7A52;}
+.stat-card.card-cobrar::after{background:#8A6A00;}
+.stat-card.card-pagar::after{background:#C0392B;}
+.stat-card.card-gastos::after{background:#1A4A7A;}
 .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;}
 .stat-val{font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;color:#0D0D0D;margin-bottom:4px;letter-spacing:-0.5px;}
 .stat-label{font-size:12px;color:#888880;font-weight:500;font-family:'Poppins',sans-serif;letter-spacing:0.1px;}
@@ -681,10 +688,31 @@ tr:hover td{background:#F5F2EC;}
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-icon" style="background:#EDEDEA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="stat-val" id="dash-facturacion">$0</div><div class="stat-label">Facturación total</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#EAF4EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-val" id="dash-clientes">0</div><div class="stat-label">Clientes activos</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#FBF6E6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A6A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="stat-val" id="dash-pendientes">$0</div><div class="stat-label">Por cobrar</div></div>
-        <div class="stat-card"><div class="stat-icon" style="background:#FBF0F0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B83232" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-val" id="dash-gastos">$0</div><div class="stat-label">Gastos totales</div></div>
+        <div class="stat-card card-fact">
+          <div class="stat-icon" style="background:#EEEDF8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B4FE9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <div class="stat-val" id="dash-facturacion">$0</div>
+          <div class="stat-label">Facturación total</div>
+        </div>
+        <div class="stat-card card-clientes">
+          <div class="stat-icon" style="background:#E8F5EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="stat-val" id="dash-clientes">0</div>
+          <div class="stat-label">Clientes activos</div>
+        </div>
+        <div class="stat-card card-cobrar" onclick="goTo('cxc',document.querySelector('[onclick*=cxc]'))" style="cursor:pointer;">
+          <div class="stat-icon" style="background:#FBF6E6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A6A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+          <div class="stat-val" style="color:#8A6A00;" id="dash-pendientes">$0</div>
+          <div class="stat-label">Por cobrar <span style="font-size:10px;color:#B8A060;margin-left:4px;">→</span></div>
+        </div>
+        <div class="stat-card card-pagar" onclick="goTo('cxp',document.querySelector('[onclick*=cxp]'))" style="cursor:pointer;">
+          <div class="stat-icon" style="background:#FDF0EF;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="stat-val" style="color:#C0392B;" id="dash-porpagar">$0</div>
+          <div class="stat-label">Por pagar <span style="font-size:10px;color:#C07070;margin-left:4px;">→</span></div>
+        </div>
+        <div class="stat-card card-gastos">
+          <div class="stat-icon" style="background:#EEF3FA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A4A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+          <div class="stat-val" style="color:#1A4A7A;" id="dash-gastos">$0</div>
+          <div class="stat-label">Gastos totales</div>
+        </div>
       </div>
       <!-- Estado del mes + últimos movimientos -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;">
@@ -1655,8 +1683,13 @@ async function loadApp(user){
   const overlay = document.getElementById('loading-overlay');
   if(overlay) overlay.style.display='flex';
 
-  // Wait for Supabase data before showing the app
-  try{ await loadDataFromSupa(); }catch(e){ console.log('Supabase error:',e); }
+  // Intentar Supabase con timeout de 4 segundos, si falla usa localStorage
+  try{
+    await Promise.race([
+      loadDataFromSupa(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))
+    ]);
+  }catch(e){ console.log('Supabase no disponible, usando datos locales:', e.message); }
 
   loadData();
 
@@ -2238,50 +2271,31 @@ function renderCxP(){
   const hoy=today();
   const _hoyDate=new Date();const _diaSemana=_hoyDate.getDay()||7;const _finSemana=new Date(_hoyDate);_finSemana.setDate(_hoyDate.getDate()+(7-_diaSemana));const en7=_finSemana.toISOString().split('T')[0];
 
-  // Construir lista completa: cxp manuales + gastos + empleados
-  let allCxp = [];
-
-  // 1. CxP manuales
+  let allCxp=[];
   cxp.forEach(c=>{
-    // sincronizar con gasto si tiene gastoId
-    if(c.gastoId){
-      const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));
-      if(g){c.montoPagado=+(g.montoPagado)||0;c.estado=g.estado||c.estado;}
-    }
+    if(c.gastoId){const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));if(g){c.montoPagado=+(g.montoPagado)||0;c.estado=g.estado||c.estado;}}
     allCxp.push(c);
   });
-
-  // 2. Gastos no duplicados
   gastos.forEach(g=>{
     if(!cxp.find(x=>String(x.gastoId)===String(g.id))){
       allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion||'Sin nombre',concepto:'Gasto: '+(g.categoria||''),
-        monto:+g.monto||0,montoPagado:+g.montoPagado||0,
-        estado:g.estado==='pagado'?'pagado':'pendiente',
-        fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,
-        vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
+        monto:+g.monto||0,montoPagado:+g.montoPagado||0,estado:g.estado==='pagado'?'pagado':'pendiente',
+        fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
     }
   });
-
-  // 3. Empleados no duplicados
   empleados.forEach(e=>{
     if(!cxp.find(x=>String(x.empleadoId)===String(e.id))){
       allCxp.push({id:'emp_'+e.id,proveedor:e.nombre||'Sin nombre',concepto:'Sueldo: '+(e.rol||''),
-        monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,
-        fechaPago:e.fechaPago||'',
-        estado:e.estado==='pagado'?'pagado':'pendiente',
-        fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
+        monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,fechaPago:e.fechaPago||'',
+        estado:e.estado==='pagado'?'pagado':'pendiente',fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
     }
   });
-
-  // Aplicar filtros
   let f=allCxp.filter(x=>{
     if(desde&&x.fecha&&x.fecha<desde)return false;
     if(hasta&&x.fecha&&x.fecha>hasta)return false;
     if(estadoFiltro&&x.estado!==estadoFiltro)return false;
     return true;
   });
-
-  // Stats
   const totalPorPagar=f.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
   const totalPagado=f.reduce((a,x)=>a+(+x.montoPagado||0),0);
   const _rowsSemana=f.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
@@ -2290,16 +2304,9 @@ function renderCxP(){
   document.getElementById('cxp-semana').textContent=fmt(totalSemana);
   document.getElementById('cxp-pagado').textContent=fmt(totalPagado);
   document.getElementById('cxp-count').textContent=f.length+' registros';
-
   const tb=document.getElementById('cxp-tbody');
   tb.innerHTML=f.length?f.map(x=>{
-    const total    = +x.monto||0;
-    const pagado   = +x.montoPagado||0;
-    const porPagar = Math.max(0, total - pagado);
-    const vencido  = x.vencimiento&&x.vencimiento<hoy&&x.estado!=='pagado';
-    const esParcial= pagado>0 && x.estado!=='pagado';
-
-    const total    = +x.monto||0;
+        const total    = +x.monto||0;
     const pagado   = +x.montoPagado||0;
     const porPagar = Math.max(0, total - pagado);
     const vencido  = x.vencimiento&&x.vencimiento<hoy&&x.estado!=='pagado';
@@ -2423,6 +2430,9 @@ function updateDashboard(){
   document.getElementById('dash-facturacion').textContent=fmt(tf);
   document.getElementById('dash-gastos').textContent=fmt(tg);
   document.getElementById('dash-pendientes').textContent=fmt(tp);
+  const _cxpAll=[...gastos.map(g=>({monto:+g.monto||0,montoPagado:+g.montoPagado||0,estado:g.estado||'pendiente'})),...empleados.map(e=>({monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,estado:e.estado==='pagado'?'pagado':'pendiente'})),...cxp.map(c=>({monto:+c.monto||0,montoPagado:+c.montoPagado||0,estado:c.estado||'pendiente'}))];
+  const _tpp=_cxpAll.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,x.monto-x.montoPagado),0);
+  const _elPP=document.getElementById('dash-porpagar');if(_elPP)_elPP.textContent=fmt(_tpp);
   document.getElementById('r-total-fact').textContent=fmt(tf);
   document.getElementById('r-total-gast').textContent=fmt(tg);
   const gan=tf-tg;
