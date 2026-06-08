@@ -27,21 +27,21 @@
   --dark-mode:0;}
 
 [data-theme="dark"]{
-  --bg:#0D1929;--white:#132035;
+  --bg:#2E3038;--white:#383B45;
   --z1:#FFFFFF;--z2:#E0E8F4;
   --accent:#00B4A0;--accent2:#4A7FD4;--accent-dark:#00D4BC;
   --green:#00B4A0;--green-light:rgba(0,180,160,0.12);
   --red:#E05555;--red-light:rgba(224,85,85,0.12);
   --blue:#4A7FD4;--blue-light:rgba(74,127,212,0.12);
   --yellow:#F5A623;--yellow-light:rgba(245,166,35,0.12);
-  --text:#FFFFFF;--text2:#D8E8F8;--text3:#90AECB;
-  --border:rgba(255,255,255,0.14);--shadow:0 1px 12px rgba(0,0,0,0.3);
-  --shadow-lg:0 6px 32px rgba(0,0,0,0.5);
+  --text:#F0F2F5;--text2:#C8D0DC;--text3:#9AA0AA;
+  --border:rgba(0,0,0,0.12);--shadow:0 1px 12px rgba(0,0,0,0.15);
+  --shadow-lg:0 6px 32px rgba(0,0,0,0.25);
   --radius:12px;--radius-lg:16px;
-  --sidebar-bg:#0A1520;--sidebar-border:rgba(255,255,255,0.07);
-  --topbar-bg:#0D1929;--topbar-border:rgba(255,255,255,0.07);
-  --nav-hover:rgba(255,255,255,0.06);--nav-active:#00B4A0;--nav-active-text:#FFFFFF;
-  --card-bg:#132035;--page-bg:#0D1929;
+  --sidebar-bg:#272A32;--sidebar-border:rgba(0,0,0,0.12);
+  --topbar-bg:#2E3038;--topbar-border:rgba(0,0,0,0.10);
+  --nav-hover:rgba(0,0,0,0.10);--nav-active:#00B4A0;--nav-active-text:#FFFFFF;
+  --card-bg:#383B45;--page-bg:#2E3038;
   --dark-mode:1;}
 
 [data-theme="dark"] .nav-item{font-weight:700;color:var(--text2) !important;}
@@ -412,6 +412,22 @@ tr:hover td{background:#F5F2EC;}
   color: var(--text) !important;
 }
 
+
+/* ── DARK: filas inline del dashboard ── */
+[data-theme="dark"] #dash-clientes-estado span[style*="color:#0D0D0D"],
+[data-theme="dark"] #dash-clientes-estado span[style*="color:#111"] {
+  color: var(--text) !important;
+}
+[data-theme="dark"] #dash-activity span[style*="color:#0D0D0D"],
+[data-theme="dark"] #dash-activity span[style*="color:#111"],
+[data-theme="dark"] #dash-activity div[style*="color:#0D0D0D"] {
+  color: var(--text) !important;
+}
+[data-theme="dark"] #dash-clientes-estado div,
+[data-theme="dark"] #dash-activity div {
+  border-color: var(--border) !important;
+}
+
 </style>
 </head>
 <body>
@@ -626,7 +642,7 @@ tr:hover td{background:#F5F2EC;}
 
     <button class="auth-btn" style="margin-top:16px;" id="login-btn" onclick="this.textContent='Ingresando...';this.disabled=true;doLogin().finally(()=>{this.textContent='Ingresar →';this.disabled=false;})">Ingresar →</button>
     <div style="text-align:right;margin-top:10px;"><a onclick="showScreen('forgot')" style="font-size:13px;color:#0D0D0D;cursor:pointer;font-weight:600;">¿Olvidaste tu contraseña?</a></div>
-    <div class="auth-switch" style="margin-top:10px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:#0D0D0D;font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
+    <div class="auth-switch" style="margin-top:10px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:var(--text);font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
   </div>
 </div>
 
@@ -693,7 +709,7 @@ tr:hover td{background:#F5F2EC;}
     <label class="auth-label">Email</label>
     <input class="auth-input" id="forgot-email" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doForgot()"/>
     <button class="auth-btn" style="margin-top:14px;" onclick="doForgot()">Recuperar acceso →</button>
-    <div class="auth-switch" style="margin-top:14px;"><a onclick="showScreen('login')" style="color:#0D0D0D;font-weight:700;cursor:pointer;">← Volver al login</a></div>
+    <div class="auth-switch" style="margin-top:14px;"><a onclick="showScreen('login')" style="color:var(--text);font-weight:700;cursor:pointer;">← Volver al login</a></div>
   </div>
 </div>
 
@@ -1925,7 +1941,7 @@ function renderFacturas(){
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#1A7A52;border-color:#1A7A52;" onclick="marcarCobrada('${x.id}')">$ Registrar cobro</button>`:''}
         ${x.estado==='cobrada'?`<button class="action-btn" style="color:#B83232;" onclick="revertirCobroFactura('${x.id}')">↩ Quitar cobro</button>`:cobrado>0?`<button class="action-btn" onclick="revertirCobroFactura('${x.id}')">↩ Revertir</button>`:''}
-        <button class="action-btn" style="color:#0D0D0D;" onclick="verDocFactura('${x.id}')">📄 Ver</button>
+        <button class="action-btn" style="color:var(--text);" onclick="verDocFactura('${x.id}')">📄 Ver</button>
         <button class="action-btn" onclick="editarItem('facturas','${x.id}')">Editar</button>
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
       </div>
@@ -2555,7 +2571,7 @@ function pagarCxPItem(id, gastoId, empleadoId){
 function updateDashboard(){
   const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
   const tg=gastos.reduce((a,x)=>a+(+x.monto||0),0);
-  const tp=facturas.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+(+x.monto||0),0);
+  const tp=facturas.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoCobrado||0)),0);
   document.getElementById('dash-facturacion').textContent=fmt(tf);
   document.getElementById('dash-gastos').textContent=fmt(tg);
   document.getElementById('dash-pendientes').textContent=fmt(tp);
@@ -2607,10 +2623,10 @@ function updateDashboard(){
         if(!tieneFactura){dot='○';label='Sin factura';color='#B0AA9E';}
         else if(cobrada){dot='●';label='Al día';color='#1A7A52';}
         else{dot='◉';label=fmt(pendCl)+' pendiente';color='#B83232';}
-        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EDE9E1;">
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:10px;color:${color};">${dot}</span>
-            <span style="font-size:13px;font-weight:500;color:#0D0D0D;">${cl.nombre}</span>
+            <span style="font-size:13px;font-weight:500;color:var(--text);">${cl.nombre}</span>
           </div>
           <span style="font-size:11px;font-weight:600;color:${color};">${label}</span>
         </div>`;
@@ -2644,7 +2660,7 @@ function updateDashboard(){
         const tipoLabel=esCobro?`<span style="font-size:10px;font-weight:700;background:#EAF4EE;color:#1A7A52;padding:1px 6px;border-radius:4px;">COBRO</span>`
           :m.estado==='cobrada'?`<span style="font-size:10px;font-weight:700;background:#EDEDEA;color:#444;padding:1px 6px;border-radius:4px;">FACTURA</span>`
           :`<span style="font-size:10px;font-weight:700;background:#FBF0F0;color:#B83232;padding:1px 6px;border-radius:4px;">PENDIENTE</span>`;
-        return `<div style="display:flex;align-items:center;gap:12px;padding:11px 22px;border-bottom:1px solid #EDE9E1;">
+        return `<div style="display:flex;align-items:center;gap:12px;padding:11px 22px;border-bottom:1px solid var(--border);">
           <span style="font-size:14px;color:${dotColor};width:14px;text-align:center;">${dotChar}</span>
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:600;color:#0D0D0D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.label}</div>
@@ -4940,7 +4956,7 @@ async function doForgot(){
     }
     const u = users[0];
     if(u.pass==='google_oauth'){
-      ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen(\"login\")" style="color:#0D0D0D;cursor:pointer;font-weight:700;">Ir al login →</a>';
+      ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen(\"login\")" style="color:var(--text);cursor:pointer;font-weight:700;">Ir al login →</a>';
     } else {
       ok.innerHTML='\u2705 Hola <b>'+u.nombre+'</b>, tu contrase\u00f1a es:<br><br><div style="background:#F5F2EC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">'+u.pass+'</div><br><button onclick="showScreen(\"login\")" style="background:#0D0D0D;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login \u2192</button>';
     }
