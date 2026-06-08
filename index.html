@@ -44,16 +44,49 @@
   --card-bg:#132035;--page-bg:#0D1929;
   --dark-mode:1;}
 
-[data-theme="dark"] .nav-item{font-weight:700;}
-[data-theme="dark"] .td-main{font-weight:700;}
-[data-theme="dark"] .td-sub{font-weight:600;}
-[data-theme="dark"] .topbar-title{font-weight:900;}
-[data-theme="dark"] th{font-weight:800;color:var(--text2);}
-[data-theme="dark"] .nav-section-label{font-weight:700;color:var(--text3);letter-spacing:1.5px;}
-[data-theme="dark"] .form-label{font-weight:700;}
-[data-theme="dark"] .filter-bar label{font-weight:700;color:var(--text2);}
+[data-theme="dark"] .nav-item{font-weight:700;color:var(--text2) !important;}
+[data-theme="dark"] .nav-item.active{color:var(--nav-active-text) !important;}
+[data-theme="dark"] .nav-item:hover{color:var(--text) !important;}
+[data-theme="dark"] .nav-section-label{font-weight:700;color:var(--text3) !important;letter-spacing:1.5px;}
+[data-theme="dark"] .td-main{font-weight:700;color:var(--text) !important;}
+[data-theme="dark"] .td-sub{font-weight:600;color:var(--text3) !important;}
+[data-theme="dark"] .topbar-title{font-weight:900;color:var(--text) !important;}
+[data-theme="dark"] th{font-weight:800;color:var(--text2) !important;}
+[data-theme="dark"] .form-label{font-weight:700;color:var(--text2) !important;}
+[data-theme="dark"] .filter-bar label{font-weight:700;color:var(--text2) !important;}
+[data-theme="dark"] .stat-label{color:var(--text3) !important;}
+[data-theme="dark"] .stat-val{color:var(--text) !important;}
+[data-theme="dark"] td{color:var(--text2) !important;}
+[data-theme="dark"] .table-card{background:var(--card-bg) !important;border-color:var(--border) !important;}
+[data-theme="dark"] .tb-btn{background:var(--card-bg) !important;color:var(--text) !important;border-color:var(--border) !important;}
+[data-theme="dark"] .tb-btn-primary{background:var(--accent) !important;color:#fff !important;border-color:var(--accent) !important;}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:#1A2F48 !important;color:var(--text) !important;border-color:var(--border) !important;}
+[data-theme="dark"] input::placeholder{color:var(--text3) !important;}
+[data-theme="dark"] .search-box input{background:#1A2F48 !important;color:var(--text) !important;}
+[data-theme="dark"] .search-box span{color:var(--text3) !important;}
+[data-theme="dark"] .sum-card{background:var(--card-bg) !important;border-color:var(--border) !important;}
+[data-theme="dark"] .sum-label{color:var(--text3) !important;}
+[data-theme="dark"] .sum-amount{color:var(--text) !important;}
+[data-theme="dark"] .modal-box{background:var(--card-bg) !important;color:var(--text) !important;}
+[data-theme="dark"] .modal-title{color:var(--text) !important;}
+[data-theme="dark"] .modal-sub{color:var(--text3) !important;}
+[data-theme="dark"] .form-input{background:#1A2F48 !important;color:var(--text) !important;border-color:var(--border) !important;}
+[data-theme="dark"] .topbar-right button{color:var(--text) !important;border-color:var(--border) !important;}
+[data-theme="dark"] tr:hover td{background:rgba(255,255,255,0.04) !important;}
+[data-theme="dark"] .empty-state{color:var(--text3) !important;}
+[data-theme="dark"] .stat-card{background:var(--card-bg) !important;border-color:var(--border) !important;}
+[data-theme="dark"] .th-title{color:var(--text) !important;}
+[data-theme="dark"] .th-sub{color:var(--text3) !important;}
+[data-theme="dark"] .filter-bar{background:var(--card-bg) !important;border-color:var(--border) !important;}
+[data-theme="dark"] .badge-pen{background:rgba(224,85,85,0.2) !important;color:#F08080 !important;}
+[data-theme="dark"] .badge-cob{background:rgba(0,180,160,0.2) !important;color:#00D4BC !important;}
+[data-theme="dark"] .badge-fac{background:rgba(74,127,212,0.2) !important;color:#7AABF0 !important;}
+[data-theme="dark"] #privacy-btn{color:var(--text) !important;border-color:var(--border) !important;}
+[data-theme="dark"] #company-selector{background:#1A2F48 !important;color:var(--text) !important;border-color:var(--border) !important;}
+[data-theme="dark"] .sidebar-brand *:not(svg):not(path):not(ellipse):not(circle):not(rect){color:var(--text) !important;}
+[data-theme="dark"] .sidebar-brand .nav-section-label, [data-theme="dark"] .sidebar-brand span[style*="color:#52"]{color:var(--text3) !important;}
 }
-body{font-family:'Poppins',sans-serif;font-size:14px;background:#F7F5F0;color:#111111;min-height:100vh;-webkit-font-smoothing:antialiased;font-weight:500;}
+body{font-family:'Poppins',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;font-weight:500;}
 
 
 /* ── LANDING ── */
@@ -356,6 +389,29 @@ tr:hover td{background:#F5F2EC;}
 #privacy-btn { transition: all 0.2s; }
 #privacy-btn.active { opacity: 0.5; }
 
+
+/* ── DARK MODE SIDEBAR FIX ── */
+[data-theme="dark"] .sidebar *:not(svg):not(path):not(ellipse):not(circle):not(rect):not(text) {
+  color: var(--text);
+}
+[data-theme="dark"] .nav-section-label,
+[data-theme="dark"] .logo-sub,
+[data-theme="dark"] span[style*="color:#52"],
+[data-theme="dark"] span[style*="color:#88"],
+[data-theme="dark"] span[style*="color:#71"] {
+  color: var(--text3) !important;
+}
+[data-theme="dark"] .sidebar .nav-item {
+  color: var(--text2) !important;
+}
+[data-theme="dark"] .sidebar .nav-item.active {
+  color: var(--nav-active-text) !important;
+}
+[data-theme="dark"] span[style*="color:#FAFAFA"],
+[data-theme="dark"] span[style*="color:#fafafa"] {
+  color: var(--text) !important;
+}
+
 </style>
 </head>
 <body>
@@ -430,8 +486,8 @@ tr:hover td{background:#F5F2EC;}
         </svg>
       </div>
       <div style="display:flex;flex-direction:column;line-height:1;">
-        <span style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#FAFAFA;letter-spacing:-0.5px;">Zaifi</span>
-        <span style="font-size:10px;font-weight:600;color:#52525B;letter-spacing:1.5px;text-transform:uppercase;">Gestión</span>
+        <span style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.5px;">Zaifi</span>
+        <span style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;">Gestión</span>
       </div>
     </div>
     <div style="display:flex;gap:10px;">
@@ -652,7 +708,7 @@ tr:hover td{background:#F5F2EC;}
     <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <!-- Gallinita grande -->
-        <div style="width:58px;height:58px;background:#0D0D0D;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(108,92,231,0.3);">
+        <div style="width:58px;height:58px;background:#5B4FE9;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(108,92,231,0.3);">
           <svg width="38" height="38" viewBox="0 0 88 104" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="43" cy="72" rx="19" ry="15" fill="white"/>
             <rect x="49" y="50" width="8" height="16" rx="4" fill="white"/>
