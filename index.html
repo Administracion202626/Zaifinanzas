@@ -2575,22 +2575,11 @@ function updateDashboard(){
   document.getElementById('dash-facturacion').textContent=fmt(tf);
   document.getElementById('dash-gastos').textContent=fmt(tg);
   document.getElementById('dash-pendientes').textContent=fmt(tp);
-  // Por pagar: misma lógica que renderCxP, sin duplicar gastos que ya están en cxp
-  let _dashCxp=[];
-  cxp.forEach(c=>{
-    const g=c.gastoId?gastos.find(gg=>String(gg.id)===String(c.gastoId)):null;
-    _dashCxp.push({monto:+c.monto||0, montoPagado:g?+(g.montoPagado)||0:+(c.montoPagado)||0, estado:g?g.estado||c.estado:c.estado||'pendiente'});
-  });
-  gastos.forEach(g=>{
-    if(!cxp.find(x=>String(x.gastoId)===String(g.id)))
-      _dashCxp.push({monto:+g.monto||0, montoPagado:+(g.montoPagado)||0, estado:g.estado==='pagado'?'pagado':'pendiente'});
-  });
-  empleados.forEach(e=>{
-    if(!cxp.find(x=>String(x.empleadoId)===String(e.id)))
-      _dashCxp.push({monto:+e.sueldo||0, montoPagado:+(e.montoPagado)||0, estado:e.estado==='pagado'?'pagado':'pendiente'});
-  });
-  const _tpp=_dashCxp.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,x.monto-x.montoPagado),0);
-  const _elPP=document.getElementById('dash-porpagar');if(_elPP)_elPP.textContent=fmt(_tpp);
+  // Por pagar: llamar renderCxP y copiar su resultado
+  renderCxP();
+  const _elPP=document.getElementById('dash-porpagar');
+  const _cxpTotalEl=document.getElementById('cxp-total');
+  if(_elPP&&_cxpTotalEl) _elPP.textContent=_cxpTotalEl.textContent;
   document.getElementById('r-total-fact').textContent=fmt(tf);
   document.getElementById('r-total-gast').textContent=fmt(tg);
   const gan=tf-tg;
