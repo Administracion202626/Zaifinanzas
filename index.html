@@ -1575,7 +1575,7 @@ tr:hover td{background:#F5F2EC;}
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════
 const SUPA_URL = 'https://idvzrkadkqhxuboyctsa.supabase.co';
-const SUPA_KEY = 'sb_publishable_lL8DFHYjcLpyrsngup4i5g_TQhROJWL';
+const SUPA_KEY = 'sb_publishable_NvTG8MMuxyotB5pWuD7PQg_GVWi7S75';
 // Users are stored in a shared localStorage key for cross-device support
 // Admin is always available hardcoded
 const SHARED_USERS_KEY = 'zaifi_shared_users_v2';
@@ -1634,7 +1634,7 @@ async function saveSupa(tabla, arr){
 }
 
 const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
-const ADMIN_PASS  = 'administracion2026';
+const ADMIN_PASS  = 'Administracion2026.';
 
 // Cuenta admin siempre disponible aunque se borren los datos del navegador
 const ADMIN_ACCOUNT = {id:'admin_nigrum',nombre:'Zaira Velez',empresa:'ODSA SRL',email:ADMIN_EMAIL,pass:ADMIN_PASS,role:'admin'};
@@ -4868,7 +4868,7 @@ function enviarResumenMail(id){
   descargarPDFResumen(r, ()=>{ window.open(mailUrl,'_blank'); toast('📧 Adjuntá el PDF descargado al email'); });
 }
 // Ensure admin exists in Supabase
-upsertUsuarioSupa({...ADMIN_ACCOUNT, pass:'administracion2026'}).catch(()=>{});
+upsertUsuarioSupa({...ADMIN_ACCOUNT, pass:'Administracion2026.'}).catch(()=>{});
 
 function editarCxCxP(tipo, id, gastoId, empleadoId){
   // If it's a linked item, find the real one or create editable version
@@ -4945,7 +4945,7 @@ async function doForgot(){
 
   // Admin hardcoded
   if(email===ADMIN_EMAIL.toLowerCase()){
-    ok.innerHTML='\u2705 <b>Contrase\u00f1a del administrador:</b><br><br><div style="background:#F5F2EC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">administracion2026</div><br><button onclick="showScreen(\"login\")" style="background:#0D0D0D;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login →</button>';
+    ok.innerHTML='\u2705 <b>Email de recuperación enviado.</b><br>Revisá tu casilla <b>administracion@nigrum.com.ar</b><br><br><button onclick="showScreen(\"login\")" style="background:#0D0D0D;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login →</button>';
     ok.style.display='block';
     return;
   }
