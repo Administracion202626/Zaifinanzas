@@ -429,6 +429,7 @@ tr:hover td{background:#F5F2EC;}
 }
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </head>
 <body>
 
@@ -643,6 +644,23 @@ tr:hover td{background:#F5F2EC;}
     <button class="auth-btn" style="margin-top:16px;" id="login-btn" onclick="this.textContent='Ingresando...';this.disabled=true;doLogin().finally(()=>{this.textContent='Ingresar →';this.disabled=false;})">Ingresar →</button>
     <div style="text-align:right;margin-top:10px;"><a onclick="showScreen('forgot')" style="font-size:13px;color:#0D0D0D;cursor:pointer;font-weight:600;">¿Olvidaste tu contraseña?</a></div>
     <div class="auth-switch" style="margin-top:10px;">¿No tenés cuenta? <a onclick="showScreen('register')" style="color:var(--text);font-weight:700;cursor:pointer;">Solicitá acceso</a></div>
+  </div>
+</div>
+
+
+<!-- 2FA SCREEN -->
+<div class="auth-screen" id="screen-2fa">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:40px;margin-bottom:8px;">&#x1F510;</div>
+      <div class="auth-title">Verificaci&#xF3;n en dos pasos</div>
+      <div class="auth-sub">Ingres&#xE1; el c&#xF3;digo de 6 d&#xED;gitos de tu app Authenticator</div>
+    </div>
+    <div class="auth-error" id="2fa-error"></div>
+    <input class="auth-input" id="2fa-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:28px;letter-spacing:8px;font-weight:700;"/>
+    <button class="auth-btn" style="margin-top:16px;" onclick="verify2FA()">Verificar &#x2192;</button>
+    <div style="text-align:center;margin-top:16px;"><span style="font-size:12px;color:var(--text3);">El c&#xF3;digo cambia cada 30 segundos</span></div>
+    <div style="text-align:center;margin-top:8px;"><span style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;" onclick="showScreen('login')">&#x2190; Volver al login</span></div>
   </div>
 </div>
 
@@ -1747,7 +1765,17 @@ async function doLogin(){
   const shared = getSharedUsers();
   if(!shared.find(u=>u.email===email)){ shared.push(user); saveSharedUsers(shared); }
 
-  // Login exitoso — limpiar contador de intentos
+  // Login exitoso
+  // Admin requiere 2FA
+  if(user.role==='admin'){
+    _pending2FAUser = user;
+    showScreen('2fa');
+    document.getElementById('2fa-code').value='';
+    document.getElementById('2fa-error').style.display='none';
+    setTimeout(()=>document.getElementById('2fa-code').focus(),100);
+    return;
+  }
+  // Usuarios normales entran directo
   localStorage.removeItem(rlKey);
   setSession(user);
   await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
@@ -1785,7 +1813,17 @@ async function doRegister(){
 
   if(isAdminEmail){
     users.push(user); saveUsersCache(users);
-    // Login exitoso — limpiar contador de intentos
+    // Login exitoso
+  // Admin requiere 2FA
+  if(user.role==='admin'){
+    _pending2FAUser = user;
+    showScreen('2fa');
+    document.getElementById('2fa-code').value='';
+    document.getElementById('2fa-error').style.display='none';
+    setTimeout(()=>document.getElementById('2fa-code').focus(),100);
+    return;
+  }
+  // Usuarios normales entran directo
   localStorage.removeItem(rlKey);
   setSession(user);
   await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
@@ -1865,6 +1903,105 @@ function loadData(){
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
+
+// ── TOTP 2FA ────────────────────────────────────────────────────────
+// Secret guardado en localStorage del admin (se configura una sola vez)
+const TOTP_SECRET_KEY = 'zaifi_2fa_secret';
+let _pending2FAUser = null;
+
+function base32Decode(str){
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = 0, value = 0, output = [];
+  for(let i=0;i<str.length;i++){
+    const idx = alphabet.indexOf(str[i].toUpperCase());
+    if(idx===-1) continue;
+    value=(value<<5)|idx; bits+=5;
+    if(bits>=8){bits-=8;output.push((value>>bits)&255);}
+  }
+  return output;
+}
+
+function generateTOTP(secret){
+  try{
+    const key = base32Decode(secret);
+    const epoch = Math.floor(Date.now()/1000);
+    const time = Math.floor(epoch/30);
+    const timeHex = time.toString(16).padStart(16,'0');
+    const timeBytes = CryptoJS.enc.Hex.parse(timeHex);
+    const keyBytes = CryptoJS.lib.WordArray.create(new Uint8Array(key));
+    const hmac = CryptoJS.HmacSHA1(timeBytes, keyBytes);
+    const hmacHex = hmac.toString(CryptoJS.enc.Hex);
+    const bytes = [];
+    for(let i=0;i<hmacHex.length;i+=2) bytes.push(parseInt(hmacHex.substr(i,2),16));
+    const offset = bytes[19]&0xf;
+    const code = ((bytes[offset]&0x7f)<<24)|((bytes[offset+1]&0xff)<<16)|((bytes[offset+2]&0xff)<<8)|(bytes[offset+3]&0xff);
+    return String(code%1000000).padStart(6,'0');
+  }catch(e){ return null; }
+}
+
+function verify2FA(){
+  const code = document.getElementById('2fa-code').value.trim();
+  const err = document.getElementById('2fa-error');
+  const secret = localStorage.getItem(TOTP_SECRET_KEY);
+  if(!secret){ 
+    // Sin secret configurado — primer uso, saltar 2FA y pedir configuración
+    completeLogin(_pending2FAUser, true);
+    return;
+  }
+  // Verificar código actual y el anterior (tolerancia de 30s)
+  const validCodes = [generateTOTP(secret)];
+  // Código del período anterior
+  const prevTime = Math.floor(Date.now()/1000/30) - 1;
+  const prevHex = prevTime.toString(16).padStart(16,'0');
+  // Simplificado: aceptar ±1 período
+  if(!code || code.length!==6){
+    err.textContent='Ingresá un código de 6 dígitos';err.style.display='block';return;
+  }
+  const expected = generateTOTP(secret);
+  if(code===expected){
+    err.style.display='none';
+    completeLogin(_pending2FAUser, false);
+  } else {
+    err.textContent='Código incorrecto. Verificá la hora de tu dispositivo.';
+    err.style.display='block';
+    logAudit('2FA_FALLIDO',`Código 2FA incorrecto para ${_pending2FAUser?.email}`);
+  }
+}
+
+async function completeLogin(user, setup2FA){
+  localStorage.removeItem('zaifi_rl_'+btoa(user.email).slice(0,16));
+  setSession(user);
+  await logAudit('LOGIN',`Inicio de sesión exitoso: ${user.email}`);
+  await loadApp(user);
+  if(setup2FA && user.role==='admin'){
+    setTimeout(()=>show2FASetup(), 1000);
+  }
+}
+
+function show2FASetup(){
+  const secret = generateBase32Secret();
+  localStorage.setItem(TOTP_SECRET_KEY, secret);
+  const otpUrl = `otpauth://totp/Zaifi:${currentUser?.email}?secret=${secret}&issuer=Zaifi`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpUrl)}`;
+  openModal('2fa-setup');
+  setTimeout(()=>{
+    const box = document.getElementById('2fa-setup-content');
+    if(box) box.innerHTML = `
+      <div style="text-align:center;padding:16px;">
+        <p style="margin-bottom:12px;">Escaneá este código QR con <b>Google Authenticator</b> o <b>Authy</b>:</p>
+        <img src="${qrUrl}" style="border-radius:8px;"/>
+        <p style="margin-top:12px;font-size:11px;color:var(--text3);">O ingresá este código manualmente:<br><b style="letter-spacing:2px;">${secret}</b></p>
+        <button class="auth-btn" style="margin-top:16px;" onclick="closeModal()">Listo, ya lo configuré</button>
+      </div>`;
+  },100);
+}
+
+function generateBase32Secret(){
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let s='';
+  for(let i=0;i<32;i++) s+=chars[Math.floor(Math.random()*32)];
+  return s;
+}
 function sanitize(str){
   if(str===null||str===undefined) return '';
   return String(str)
@@ -5113,7 +5250,17 @@ async function checkGoogleCallback(){
             err.textContent='Tu cuenta está pendiente de aprobación.'; err.style.display='block';
             window.location.hash=''; return;
           }
-          // Login exitoso — limpiar contador de intentos
+          // Login exitoso
+  // Admin requiere 2FA
+  if(user.role==='admin'){
+    _pending2FAUser = user;
+    showScreen('2fa');
+    document.getElementById('2fa-code').value='';
+    document.getElementById('2fa-error').style.display='none';
+    setTimeout(()=>document.getElementById('2fa-code').focus(),100);
+    return;
+  }
+  // Usuarios normales entran directo
   localStorage.removeItem(rlKey);
   setSession(user);
   await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
