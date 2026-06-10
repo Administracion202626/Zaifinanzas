@@ -1737,6 +1737,7 @@ async function doLogin(){
     }
     localStorage.setItem(rlKey, JSON.stringify(rl));
     err.style.display='block';
+    logAudit('LOGIN_FALLIDO', `Intento fallido para: ${email} (intento ${rl.attempts})`);
     return;
   }
   if(user.role==='pendiente'){ err.textContent='Tu cuenta está pendiente de aprobación del administrador'; err.style.display='block'; return; }
@@ -1748,7 +1749,9 @@ async function doLogin(){
 
   // Login exitoso — limpiar contador de intentos
   localStorage.removeItem(rlKey);
-  setSession(user); await loadApp(user);
+  setSession(user);
+  await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
+  await loadApp(user);
 }
 
 async function doRegister(){
@@ -1784,7 +1787,9 @@ async function doRegister(){
     users.push(user); saveUsersCache(users);
     // Login exitoso — limpiar contador de intentos
   localStorage.removeItem(rlKey);
-  setSession(user); await loadApp(user);
+  setSession(user);
+  await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
+  await loadApp(user);
   } else {
     if(ok) ok.style.display='block';
     ['reg-nombre','reg-empresa','reg-email','reg-pass','reg-mensaje'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -1792,6 +1797,7 @@ async function doRegister(){
 }
 
 function doLogout(){
+  logAudit('LOGOUT', 'Cierre de sesión');
   clearSession();
   showScreen('landing');
 }
@@ -1807,13 +1813,29 @@ function dbKey(table){
 }
 
 function load(table){ try{return JSON.parse(localStorage.getItem(dbKey(table)))||[];}catch(e){return[];} }
-function save(table,data){ 
+function save(table,data){
+  logAudit('MODIFICACION', `Tabla: ${table}`);
   localStorage.setItem(dbKey(table),JSON.stringify(data));
   // Async save to Supabase (fire and forget)
   saveSupa(table, data).catch(e=>console.log('Supabase save error:',e));
 }
 
 // Load all data from Supabase on login
+// ── AUDIT LOG ──────────────────────────────────
+async function logAudit(accion, detalle=''){
+  try{
+    const user = getSession();
+    const entry = {
+      usuario: user ? user.email : 'desconocido',
+      accion,
+      detalle: String(detalle).slice(0,500),
+      ip: 'client',
+      fecha: new Date().toISOString()
+    };
+    await supaFetch('audit_log', 'POST', entry);
+  }catch(e){ console.log('Audit log error:', e); }
+}
+
 async function loadDataFromSupa(){
   const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos'];
   const promises = tables.map(async t=>{
@@ -5093,7 +5115,9 @@ async function checkGoogleCallback(){
           }
           // Login exitoso — limpiar contador de intentos
   localStorage.removeItem(rlKey);
-  setSession(user); await loadApp(user);
+  setSession(user);
+  await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
+  await loadApp(user);
           window.location.hash='';
         }
       }catch(e){ console.log('Google OAuth error:',e); }
