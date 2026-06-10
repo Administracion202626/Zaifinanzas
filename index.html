@@ -1860,6 +1860,51 @@ async function doRegister(){
   }
 }
 
+function enviarFacturaEmail(id){
+  const f = facturas.find(x=>x.id===id);
+  if(!f){ toast('Factura no encontrada'); return; }
+  const cli = clientes.find(c=>c.nombre===f.cliente)||{};
+  const emailDest = cli.email || '';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="font-weight:700;font-size:16px;margin-bottom:16px;">✉️ Enviar factura por email</div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:4px;">Destinatario</label>
+      <input id="email-dest" class="auth-input" type="email" value="${emailDest}" placeholder="cliente@ejemplo.com" style="width:100%;"/>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:4px;">Asunto</label>
+      <input id="email-subject" class="auth-input" value="Factura ${f.numero||''} — ${f.cliente}" style="width:100%;"/>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeModal()" class="tb-btn">Cancelar</button>
+      <button onclick="confirmarEnvioEmail('${id}')" class="tb-btn tb-btn-primary">Enviar ✉️</button>
+    </div>`;
+  document.getElementById('modal-overlay').style.display='flex';
+}
+
+async function confirmarEnvioEmail(id){
+  const f = facturas.find(x=>x.id===id);
+  if(!f) return;
+  const to = document.getElementById('email-dest').value.trim();
+  const subject = document.getElementById('email-subject').value.trim();
+  if(!to||!subject){ toast('Completá todos los campos'); return; }
+
+  const html = buildFacturaHTML(f, f.tipo||'A');
+  const btn = document.querySelector('#modal-content .tb-btn-primary');
+  if(btn){ btn.textContent='Enviando...'; btn.disabled=true; }
+
+  try{
+    const res = await fetch(ZAIFI_API_URL+'/api/send-email', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ZAIFI_API_SECRET},
+      body: JSON.stringify({to, subject, html})
+    });
+    const data = await res.json();
+    if(data.ok){ closeModal(); toast('✅ Email enviado a '+to); logAudit('EMAIL_ENVIADO','Factura '+f.numero+' a '+to); }
+    else{ toast('❌ Error: '+(data.error||'Error desconocido')); if(btn){btn.textContent='Enviar ✉️';btn.disabled=false;} }
+  }catch(e){ toast('❌ No se pudo conectar con la API'); if(btn){btn.textContent='Enviar ✉️';btn.disabled=false;} }
+}
+
 function doLogout(){
   logAudit('LOGOUT', 'Cierre de sesión');
   clearSession();
@@ -2200,6 +2245,7 @@ function renderFacturas(){
         ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#1A7A52;border-color:#1A7A52;" onclick="marcarCobrada('${x.id}')">$ Registrar cobro</button>`:''}
         ${x.estado==='cobrada'?`<button class="action-btn" style="color:#B83232;" onclick="revertirCobroFactura('${x.id}')">↩ Quitar cobro</button>`:cobrado>0?`<button class="action-btn" onclick="revertirCobroFactura('${x.id}')">↩ Revertir</button>`:''}
         <button class="action-btn" style="color:var(--text);" onclick="verDocFactura('${x.id}')">📄 Ver</button>
+        <button class="action-btn" style="color:#5B4FE9;" onclick="enviarFacturaEmail('${x.id}')">✉️ Email</button>
         <button class="action-btn" onclick="editarItem('facturas','${x.id}')">Editar</button>
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
       </div>
@@ -2261,7 +2307,25 @@ function _aplicarCobroFactura(f, monto){
 
 function verDocFactura(id){
   var f=facturas.find(function(x){return x.id===id;});
-  if(f) generarDocFactura(f, f.tipo||'A');
+  if(!f) return;
+  const html = buildFacturaHTML(f, f.tipo||'A');
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  // Intentar abrir en nueva pestaña
+  const win = window.open(url, '_blank');
+  if(!win){
+    // Si está bloqueado, mostrar en modal iframe
+    document.getElementById('modal-content').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:16px;">📄 Factura ${f.numero||''}</div>
+        <div style="display:flex;gap:8px;">
+          <a href="${url}" download="factura_${f.numero||f.id}.html" class="tb-btn tb-btn-primary" style="text-decoration:none;padding:6px 14px;font-size:13px;">⬇ Descargar</a>
+          <button onclick="closeModal()" style="border:none;background:none;cursor:pointer;font-size:18px;">✕</button>
+        </div>
+      </div>
+      <iframe src="${url}" style="width:100%;height:70vh;border:1px solid var(--border);border-radius:8px;"></iframe>`;
+    document.getElementById('modal-overlay').style.display='flex';
+  }
 }
 function revertirCobroFactura(id){
   const f=facturas.find(x=>x.id===id);
@@ -4542,7 +4606,8 @@ function emitirDocFac(tipoDoc){
   generarDocFactura(f, tipoDoc);
 }
 
-function generarDocFactura(f, tipoOverride){
+function generarDocFactura(f, tipoOverride){ return buildFacturaHTML(f, tipoOverride); }
+function buildFacturaHTML(f, tipoOverride){
   const cli = clientes.find(c=>c.nombre===f.cliente)||{};
   const esFacA = (tipoOverride||f.tipo)==='A';
   const tipoLabel = esFacA?'FACTURA A':f.tipo==='B'?'FACTURA B':f.tipo==='C'?'FACTURA C':f.tipo==='presupuesto'?'PRESUPUESTO':'RECIBO INTERNO';
@@ -4555,8 +4620,7 @@ function generarDocFactura(f, tipoOverride){
   let logRows='';
   (f.envios_data||[]).forEach(e=>{ logRows+=`<tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">${e.fecha}</td><td style="padding:7px 10px;font-size:11px;color:#666;border-bottom:1px solid #f0f0f0;">${e.tracking}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.calle}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.localidad}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.zona}</td><td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:700;border-bottom:1px solid #f0f0f0;">${fmtN(e.tarifa)}</td></tr>`; });
 
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${tipoLabel} — ${f.cliente}</title>
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${tipoLabel} — ${f.cliente}</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:#f0f0f0;padding:30px;color:#111;}.doc{background:white;max-width:870px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.12);}.header{padding:26px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid ${colorPrimary};}.logo{height:64px;object-fit:contain;}.fac-badge{text-align:right;}.fac-tipo{font-size:24px;font-weight:900;color:${colorPrimary};}.fac-nro{font-size:13px;color:#555;margin-top:4px;}.fac-fecha{font-size:12px;color:#999;margin-top:2px;}.fac-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:5px;background:${colorPrimary}18;color:${colorPrimary};}.info-row{display:flex;border-bottom:1px solid #eee;}.info-box{flex:1;padding:18px 28px;}.info-box:first-child{border-right:1px solid #eee;}.info-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:14px;font-weight:700;margin-bottom:3px;}.info-sub{font-size:12px;color:#555;margin-top:2px;}.sec-title{padding:10px 28px;background:#f8f8f8;font-size:11px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:1px;border-top:1px solid #eee;border-bottom:1px solid #eee;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#1A1A2E;color:white;font-size:11px;text-align:left;}.totales{padding:18px 28px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.tot-final .amt{color:${colorPrimary};}.footer{padding:16px 28px;background:#f8f8f8;border-top:2px solid #eee;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#999;}.fiscal-badge{background:${colorPrimary};color:white;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;}@media print{body{background:white;padding:0;}.doc{box-shadow:none;max-width:100%;}}</style></head><body><div class="doc">
 <div class="header"><img src="${typeof NIGRUM_LOGO!=='undefined'?NIGRUM_LOGO:''}" class="logo" alt="ODSA SRL" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><div style="display:none;font-family:Arial;font-size:22px;font-weight:900;color:#0D0D0D;">Nigrum<span style="color:${colorPrimary}">.</span></div>
 <div class="fac-badge"><div class="fac-tipo">${tipoLabel}</div><div class="fac-nro">N° ${f.numero||'—'}</div><div class="fac-fecha">Fecha: ${fechaHoy}</div><span class="fac-tag">${esFacA?'Responsable Inscripto':f.tipo==='presupuesto'?'Presupuesto':'Uso interno'}</span></div></div>
@@ -4572,7 +4636,7 @@ ${f.envios_data&&f.envios_data.length?`<div class="sec-title">Logística — ${f
   <div class="tot-final"><span>TOTAL${esFacA?' (con IVA)':''}</span><span class="amt">${fmtN(f.monto)}</span></div>
 </div>
 <div class="footer"><span>ODSA SRL · CUIT: 30-71887849-3 · ${fechaHoy}${esFacA?' · Documento con validez fiscal':' · Sin validez fiscal'}</span><span class="fiscal-badge">${tipoLabel}</span></div>
-</div><script>setTimeout(function(){window.print();},400);<\/script></body></html>`);
+</div><script>setTimeout(function(){window.print();},400);<\/script></body></html>`;
 }
 
 // Keep abrirModalFactura for backward compatibility
