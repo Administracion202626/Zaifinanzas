@@ -2260,8 +2260,95 @@ function _aplicarCobroFactura(f, monto){
 }
 
 function verDocFactura(id){
-  var f=facturas.find(function(x){return x.id===id;});
-  if(f) generarDocFactura(f, f.tipo||'A');
+  const f = facturas.find(x=>x.id===id);
+  if(!f) return;
+  const cli = clientes.find(c=>c.nombre===f.cliente)||{};
+  const esFacA = (f.tipo||'A')==='A';
+  const tipoLabel = f.tipo==='A'?'FACTURA A':f.tipo==='B'?'FACTURA B':f.tipo==='C'?'FACTURA C':f.tipo==='presupuesto'?'PRESUPUESTO':'RECIBO INTERNO';
+  const colorPrimary = esFacA?'#003087':f.tipo==='B'?'#1A7A52':f.tipo==='C'?'#8A6A00':f.tipo==='presupuesto'?'#0D0D0D':'#5A5650';
+  const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
+  const fechaHoy = new Date().toLocaleDateString('es-AR');
+  let srvRows='';
+  (f.servicios||[]).forEach(s=>{ srvRows+=`<tr><td style="padding:10px 14px;border-bottom:1px solid #f0f0f0;">${sanitize(s.desc)}</td><td style="padding:10px 14px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:700;">${fmtN(s.monto)}</td></tr>`; });
+  const existing = document.getElementById('factura-preview-modal');
+  if(existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'factura-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;';
+  const fid = f.id;
+  modal.innerHTML = `<div style="background:white;border-radius:16px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="padding:16px 20px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:white;z-index:1;">
+      <div style="font-weight:700;font-size:15px;">${tipoLabel} — ${sanitize(f.cliente)}</div>
+      <div style="display:flex;gap:8px;">
+        <button id="btn-imprimir-fac" style="padding:8px 16px;background:#0D0D0D;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir</button>
+        <button id="btn-email-fac" style="padding:8px 16px;background:#5B4FE9;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">📧 Enviar email</button>
+        <button id="btn-cerrar-fac" style="padding:8px 12px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button>
+      </div>
+    </div>
+    <div style="padding:24px;">
+      <div style="border-top:4px solid ${colorPrimary};padding-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+          <div style="font-size:20px;font-weight:900;">${sanitize(_prf.razon||_prf.nombre||'Mi empresa')}</div>
+          <div style="text-align:right;">
+            <div style="font-size:18px;font-weight:900;color:${colorPrimary};">${tipoLabel}</div>
+            <div style="font-size:13px;color:#555;">N° ${sanitize(f.numero||'—')}</div>
+            <div style="font-size:12px;color:#999;">${fechaHoy}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;border-top:1px solid #eee;padding-top:16px;margin-bottom:16px;">
+          <div style="flex:1;"><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Emisor</div>
+            <div style="font-weight:700;">${sanitize(_prf.razon||_prf.nombre||'Mi empresa')}</div>
+            ${esFacA?`<div style="font-size:12px;color:#555;">CUIT: ${sanitize(_prf.cuit||'—')}</div>`:''}
+          </div>
+          <div style="flex:1;"><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Cliente</div>
+            <div style="font-weight:700;">${sanitize(f.cliente)}</div>
+            ${cli.email?`<div style="font-size:12px;color:#555;">${sanitize(cli.email)}</div>`:'<div style="font-size:12px;color:#B83232;">Sin email registrado</div>'}
+          </div>
+        </div>
+        ${srvRows?`<table style="width:100%;border-collapse:collapse;margin-bottom:16px;"><thead><tr style="background:#1A1A2E;color:white;"><th style="padding:9px 14px;text-align:left;font-size:11px;">Descripción</th><th style="padding:9px 14px;text-align:right;font-size:11px;">Monto</th></tr></thead><tbody>${srvRows}</tbody></table>`:''}
+        <div style="border-top:2px solid #eee;padding-top:12px;">
+          ${esFacA?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#555;"><span>Neto gravado</span><span>${fmtN(f.neto)}</span></div><div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#555;"><span>IVA (21%)</span><span>${fmtN(f.ivaM)}</span></div>`:''}
+          <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:20px;font-weight:900;"><span>TOTAL</span><span style="color:${colorPrimary};">${fmtN(f.monto)}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.getElementById('btn-cerrar-fac').addEventListener('click', ()=>modal.remove());
+  document.getElementById('btn-imprimir-fac').addEventListener('click', ()=>generarDocFactura(f, f.tipo||'A'));
+  document.getElementById('btn-email-fac').addEventListener('click', ()=>enviarFacturaPorEmail(fid));
+}
+
+async function enviarFacturaPorEmail(facturaId){
+  const f = facturas.find(x=>x.id===facturaId);
+  if(!f){ toast('❌ Factura no encontrada'); return; }
+  const cli = clientes.find(c=>c.nombre===f.cliente)||{};
+  const emailDestino = cli.email;
+  if(!emailDestino){ toast('❌ El cliente no tiene email registrado'); return; }
+  const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
+  const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;">
+    <h2 style="color:#5B4FE9;">Factura de ${sanitize(_prf.razon||_prf.nombre||'ODSA SRL')}</h2>
+    <p>Estimado/a <b>${sanitize(f.cliente)}</b>, te enviamos el detalle de tu factura:</p>
+    <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+      <tr style="background:#f5f5f5;"><td style="padding:10px;font-weight:700;">Número</td><td style="padding:10px;">${sanitize(f.numero||'—')}</td></tr>
+      <tr><td style="padding:10px;font-weight:700;">Total</td><td style="padding:10px;font-weight:900;color:#5B4FE9;">${fmtN(f.monto)}</td></tr>
+      <tr style="background:#f5f5f5;"><td style="padding:10px;font-weight:700;">Estado</td><td style="padding:10px;">${f.estado==='cobrada'?'✅ Cobrada':'⏳ Pendiente'}</td></tr>
+    </table>
+    <p style="color:#888;font-size:12px;margin-top:24px;">${sanitize(_prf.razon||_prf.nombre||'ODSA SRL')} · Zaifi Gestión Empresarial</p>
+  </div>`;
+  toast('📧 Enviando email...');
+  try{
+    const secret = typeof ZAIFI_API_SECRET !== 'undefined' ? ZAIFI_API_SECRET : '';
+    const res = await fetch('https://zaifi-api.vercel.app/api/send-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+secret},
+      body: JSON.stringify({to:emailDestino, subject:`Factura ${sanitize(f.numero||'')} — ${sanitize(_prf.razon||_prf.nombre||'ODSA SRL')}`, html})
+    });
+    const data = await res.json();
+    if(data.ok) toast('✅ Email enviado a '+emailDestino);
+    else toast('❌ Error: '+(data.error||'desconocido'));
+  }catch(e){ toast('❌ No se pudo conectar con la API'); }
 }
 function revertirCobroFactura(id){
   const f=facturas.find(x=>x.id===id);
