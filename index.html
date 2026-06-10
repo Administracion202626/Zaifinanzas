@@ -1654,8 +1654,27 @@ function saveUsersCache(u){
 }
 function getUsers(){ return getUsersCache(); }
 function saveUsers(u){ saveUsersCache(u); }
-function getSession(){ try{return JSON.parse(localStorage.getItem('zaifi_session'));}catch(e){return null;} }
-function setSession(u){ localStorage.setItem('zaifi_session',JSON.stringify(u)); }
+const SESSION_TTL = 2 * 60 * 60 * 1000; // 2 horas en ms
+function getSession(){
+  try{
+    const raw = JSON.parse(localStorage.getItem('zaifi_session'));
+    if(!raw) return null;
+    // Verificar expiración
+    if(raw._expires && Date.now() > raw._expires){
+      localStorage.removeItem('zaifi_session');
+      return null;
+    }
+    return raw;
+  }catch(e){return null;}
+}
+function setSession(u){
+  const s = {...u, _expires: Date.now() + SESSION_TTL, _lastActivity: Date.now()};
+  localStorage.setItem('zaifi_session', JSON.stringify(s));
+}
+function refreshSession(){
+  const s = getSession();
+  if(s){ s._expires = Date.now() + SESSION_TTL; s._lastActivity = Date.now(); localStorage.setItem('zaifi_session', JSON.stringify(s)); }
+}
 function clearSession(){ localStorage.removeItem('zaifi_session'); }
 
 function showScreen(name){
@@ -1850,6 +1869,19 @@ async function loadApp(user){
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
   setTimeout(applyPrivacy, 100);
+  // Verificar sesión cada 60 segundos
+  setInterval(()=>{
+    if(!getSession()){
+      clearSession();
+      showScreen('login');
+      const err = document.getElementById('login-error');
+      if(err){ err.textContent='Tu sesión expiró. Iniciá sesión de nuevo.'; err.style.display='block'; }
+    }
+  }, 60000);
+  // Refrescar sesión en actividad del usuario
+  ['click','keydown','mousemove','touchstart'].forEach(ev=>
+    document.addEventListener(ev, ()=>refreshSession(), {passive:true})
+  );
 }
 
 function renderAll(){
