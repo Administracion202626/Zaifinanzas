@@ -1652,7 +1652,16 @@ async function saveSupa(tabla, arr){
 }
 
 const ZAIFI_API_URL = 'https://zaifi-api.vercel.app';
-const ZAIFI_API_SECRET = 'Zaifi2026$#!secreto';
+// Token de API — rotar periódicamente desde Vercel Environment Variables
+let ZAIFI_API_SECRET = '';
+(async ()=>{
+  try{
+    const r = await fetch(ZAIFI_API_URL+'/api/config', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ts: Date.now()})});
+    if(r.ok){ const d=await r.json(); ZAIFI_API_SECRET=d.token||''; }
+  }catch(e){ console.log('Config no disponible'); }
+})();
 const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
 const ADMIN_PASS  = 'Administracion2026.';
 
