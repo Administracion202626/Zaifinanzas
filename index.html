@@ -1762,11 +1762,12 @@ async function doLogin(){
       return;
     }
   }catch(e){
-    // Fallback a localStorage si la API no responde
-    console.log('API login no disponible, usando cache local');
-    const allUsers = [...getUsersCache(), ...getSharedUsers()];
-    const deduped = allUsers.filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
-    user = deduped.find(u=>u.email.toLowerCase()===email && u.pass===pass) || null;
+    // Si la API no responde, no permitir acceso
+    err.textContent = 'No se pudo conectar al servidor. Verificá tu conexión e intentá de nuevo.';
+    err.style.display='block';
+    const btn = document.getElementById('login-btn');
+    if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
+    return;
   }
 
   if(!user){
@@ -5213,7 +5214,7 @@ function enviarResumenMail(id){
   descargarPDFResumen(r, ()=>{ window.open(mailUrl,'_blank'); toast('📧 Adjuntá el PDF descargado al email'); });
 }
 // Ensure admin exists in Supabase
-upsertUsuarioSupa({...ADMIN_ACCOUNT, pass:'Administracion2026.'}).catch(()=>{});
+// Admin account sync removed — managed server-side
 
 function editarCxCxP(tipo, id, gastoId, empleadoId){
   // If it's a linked item, find the real one or create editable version
@@ -5305,7 +5306,7 @@ async function doForgot(){
     if(u.pass==='google_oauth'){
       ok.innerHTML='✅ Tu cuenta usa <b>Google</b> para ingresar. Usá el botón "Continuar con Google" en el login.<br><br><a onclick="showScreen(\"login\")" style="color:var(--text);cursor:pointer;font-weight:700;">Ir al login →</a>';
     } else {
-      ok.innerHTML='\u2705 Hola <b>'+u.nombre+'</b>, tu contrase\u00f1a es:<br><br><div style="background:#F5F2EC;padding:10px;border-radius:8px;text-align:center;font-size:18px;font-weight:900;">'+u.pass+'</div><br><button onclick="showScreen(\"login\")" style="background:#0D0D0D;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login \u2192</button>';
+      ok.innerHTML='\\u2705 Hola <b>'+sanitize(u.nombre)+'</b>, para recuperar tu contrase\\u00f1a contact\\u00e1 al administrador: <b>administracion@nigrum.com.ar</b><br><br><button onclick="showScreen(\\"login\\")" style="background:#0D0D0D;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;margin-top:8px;">Ir al login \\u2192</button>';
     }
     ok.style.display='block';
   }catch(e){
