@@ -1690,6 +1690,19 @@ async function doLogin(){
 
   if(!email||!pass){ err.textContent='Completá email y contraseña'; err.style.display='block'; return; }
 
+  // ── RATE LIMITING: máx 5 intentos, bloqueo progresivo ──
+  const rlKey = 'zaifi_rl_' + btoa(email).slice(0,16);
+  const rlRaw = localStorage.getItem(rlKey);
+  const rl = rlRaw ? JSON.parse(rlRaw) : {attempts:0, blockedUntil:0};
+  if(rl.blockedUntil && Date.now() < rl.blockedUntil){
+    const mins = Math.ceil((rl.blockedUntil - Date.now()) / 60000);
+    err.textContent = `Demasiados intentos fallidos. Esperá ${mins} minuto${mins>1?'s':''} antes de volver a intentar.`;
+    err.style.display='block';
+    const btn = document.getElementById('login-btn');
+    if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
+    return;
+  }
+
   // 1. Admin siempre funciona — sin tocar red
   if(email===ADMIN_EMAIL && pass===ADMIN_PASS){
     setSession(ADMIN_ACCOUNT); await loadApp(ADMIN_ACCOUNT); return;
@@ -1711,7 +1724,21 @@ async function doLogin(){
     }catch(e){ console.log('Supabase login timeout'); }
   }
 
-  if(!user){ err.textContent='Email o contraseña incorrectos'; err.style.display='block'; return; }
+  if(!user){
+    // Incrementar contador de intentos fallidos
+    rl.attempts = (rl.attempts||0) + 1;
+    if(rl.attempts >= 5){
+      const waitMins = Math.min(30, rl.attempts * 2); // 10min, 12min, ... hasta 30min
+      rl.blockedUntil = Date.now() + waitMins * 60000;
+      err.textContent = `Demasiados intentos fallidos. Tu acceso está bloqueado por ${waitMins} minutos.`;
+    } else {
+      const restantes = 5 - rl.attempts;
+      err.textContent = `Email o contraseña incorrectos. Te quedan ${restantes} intento${restantes>1?'s':''}.`;
+    }
+    localStorage.setItem(rlKey, JSON.stringify(rl));
+    err.style.display='block';
+    return;
+  }
   if(user.role==='pendiente'){ err.textContent='Tu cuenta está pendiente de aprobación del administrador'; err.style.display='block'; return; }
 
   const cache = getUsersCache();
@@ -1719,6 +1746,8 @@ async function doLogin(){
   const shared = getSharedUsers();
   if(!shared.find(u=>u.email===email)){ shared.push(user); saveSharedUsers(shared); }
 
+  // Login exitoso — limpiar contador de intentos
+  localStorage.removeItem(rlKey);
   setSession(user); await loadApp(user);
 }
 
@@ -1753,7 +1782,9 @@ async function doRegister(){
 
   if(isAdminEmail){
     users.push(user); saveUsersCache(users);
-    setSession(user); await loadApp(user);
+    // Login exitoso — limpiar contador de intentos
+  localStorage.removeItem(rlKey);
+  setSession(user); await loadApp(user);
   } else {
     if(ok) ok.style.display='block';
     ['reg-nombre','reg-empresa','reg-email','reg-pass','reg-mensaje'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -5050,7 +5081,9 @@ async function checkGoogleCallback(){
             err.textContent='Tu cuenta está pendiente de aprobación.'; err.style.display='block';
             window.location.hash=''; return;
           }
-          setSession(user); await loadApp(user);
+          // Login exitoso — limpiar contador de intentos
+  localStorage.removeItem(rlKey);
+  setSession(user); await loadApp(user);
           window.location.hash='';
         }
       }catch(e){ console.log('Google OAuth error:',e); }
