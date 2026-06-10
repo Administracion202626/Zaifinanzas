@@ -1651,6 +1651,8 @@ async function saveSupa(tabla, arr){
   localStorage.setItem(dbKey(tabla), JSON.stringify(arr));
 }
 
+const ZAIFI_API_URL = 'https://zaifi-api.vercel.app';
+const ZAIFI_API_SECRET = 'Zaifi2026$#!secreto';
 const ADMIN_EMAIL = 'administracion@nigrum.com.ar';
 const ADMIN_PASS  = 'Administracion2026.';
 
@@ -1721,32 +1723,47 @@ async function doLogin(){
     return;
   }
 
-  // 1. Admin siempre funciona — sin tocar red
-  if(email===ADMIN_EMAIL && pass===ADMIN_PASS){
-    setSession(ADMIN_ACCOUNT); await loadApp(ADMIN_ACCOUNT); return;
+  // Autenticación via API de Vercel (bcrypt server-side)
+  let user = null;
+  try{
+    const res = await Promise.race([
+      fetch('https://zaifi-api.vercel.app/api/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${ZAIFI_API_SECRET}`},
+        body: JSON.stringify({email, pass})
+      }),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
+    ]);
+    const data = await res.json();
+    if(res.ok && data.ok){ user = data.user; }
+    else if(res.status===401||res.status===403){
+      // Credenciales incorrectas — incrementar rate limiting
+      rl.attempts = (rl.attempts||0) + 1;
+      if(rl.attempts >= 5){
+        const waitMins = Math.min(30, rl.attempts * 2);
+        rl.blockedUntil = Date.now() + waitMins * 60000;
+        err.textContent = `Demasiados intentos fallidos. Tu acceso está bloqueado por ${waitMins} minutos.`;
+      } else {
+        const restantes = 5 - rl.attempts;
+        err.textContent = data.error || `Email o contraseña incorrectos. Te quedan ${restantes} intento${restantes>1?'s':''}.`;
+      }
+      localStorage.setItem(rlKey, JSON.stringify(rl));
+      err.style.display='block';
+      logAudit('LOGIN_FALLIDO', `Intento fallido para: ${email} (intento ${rl.attempts})`);
+      return;
+    }
+  }catch(e){
+    // Fallback a localStorage si la API no responde
+    console.log('API login no disponible, usando cache local');
+    const allUsers = [...getUsersCache(), ...getSharedUsers()];
+    const deduped = allUsers.filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
+    user = deduped.find(u=>u.email.toLowerCase()===email && u.pass===pass) || null;
   }
 
-  // 2. Buscar en localStorage primero
-  const allUsers = [...getUsersCache(), ...getSharedUsers()];
-  const deduped = allUsers.filter((u,i,arr)=>arr.findIndex(x=>x.email===u.email)===i);
-  let user = deduped.find(u=>u.email.toLowerCase()===email && u.pass===pass);
-
-  // 3. Si no está en local, intentar Supabase con timeout de 3s
   if(!user){
-    try{
-      const res = await Promise.race([
-        supaFetch('usuarios?email=eq.'+encodeURIComponent(email)+'&select=*'),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-      ]);
-      if(res&&res.length&&res[0].pass===pass){ user=res[0]; }
-    }catch(e){ console.log('Supabase login timeout'); }
-  }
-
-  if(!user){
-    // Incrementar contador de intentos fallidos
     rl.attempts = (rl.attempts||0) + 1;
     if(rl.attempts >= 5){
-      const waitMins = Math.min(30, rl.attempts * 2); // 10min, 12min, ... hasta 30min
+      const waitMins = Math.min(30, rl.attempts * 2);
       rl.blockedUntil = Date.now() + waitMins * 60000;
       err.textContent = `Demasiados intentos fallidos. Tu acceso está bloqueado por ${waitMins} minutos.`;
     } else {
