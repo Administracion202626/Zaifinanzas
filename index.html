@@ -1843,6 +1843,16 @@ function loadData(){
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
+function sanitize(str){
+  if(str===null||str===undefined) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#x27;')
+    .replace(/\//g,'&#x2F;');
+}
 
 let _privacyOn = localStorage.getItem('zaifi_privacy')==='1';
 function togglePrivacy(){
@@ -1930,7 +1940,7 @@ function empty(msg){ return `<tr><td colspan="9" style="text-align:center;color:
 function renderClientes(){
   const tb=document.getElementById('clients-tbody');
   tb.innerHTML=clientes.length?clientes.map(c=>`
-    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#0D0D0D;">${c.nombre[0].toUpperCase()}</div><div><div class="td-main">${c.nombre}</div><div class="td-sub">${c.email||''}</div></div></div></td>
+    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#0D0D0D;">${c.nombre[0].toUpperCase()}</div><div><div class="td-main">${sanitize(c.nombre)}</div><div class="td-sub">${c.email||''}</div></div></div></td>
     <td>${c.sector||'—'}</td><td><span class="badge badge-blue">${c.servicio||'—'}</span></td>
     <td><span class="badge ${c.estado==='Activo'?'badge-green':'badge-yellow'}">${c.estado==='Activo'?'✓ Activo':'⚠️ '+c.estado}</span></td>
     <td><div class="action-btns"><button class="action-btn" onclick="editarItem('clientes','${c.id}')">Editar</button><button class="action-btn" onclick="eliminar('clientes','${c.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay clientes. Agregá el primero →');
@@ -1942,7 +1952,7 @@ function renderCatalogo(){
   const g=document.getElementById('catalog-grid');
   g.innerHTML=catalogo.length?catalogo.map(s=>`
     <div class="catalog-card"><div style="font-size:28px;margin-bottom:8px;">${s.icono||'📦'}</div>
-    <div class="catalog-name">${s.nombre}</div><div class="catalog-desc">${s.descripcion||''}</div>
+    <div class="catalog-name">${sanitize(s.nombre)}</div><div class="catalog-desc">${s.descripcion||''}</div>
     <div class="catalog-price">${fmt(s.precio)}<span style="font-size:13px;font-weight:400;color:var(--text3);">/mes</span></div>
     <div style="margin-top:10px;display:flex;gap:6px;justify-content:flex-end;"><button class="action-btn" onclick="editarItem('catalogo','${s.id}')">Editar</button><button class="action-btn" onclick="eliminar('catalogo','${s.id}')">Eliminar</button></div></div>`).join(''):'<div style="grid-column:1/-1;text-align:center;color:var(--text3);padding:40px;">No hay servicios →</div>';
   document.getElementById('catalogo-count').textContent=catalogo.length+' servicio'+(catalogo.length!==1?'s':'');
@@ -1985,7 +1995,7 @@ function renderFacturas(){
             <span style="background:${tc}18;color:${tc};font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;">${tl}</span>
             <span style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;">${x.numero||'—'}</span>
           </div>
-          <div style="font-size:12px;color:#666660;">${x.cliente} · Emitida: ${x.fecha||'—'}${x.vencimiento?' · <span style="color:'+(vencida?'#B83232':'#8A6A00')+';font-weight:600;">'+venceLabel+'</span>':''}</div>
+          <div style="font-size:12px;color:#666660;">${sanitize(x.cliente)} · Emitida: ${x.fecha||'—'}${x.vencimiento?' · <span style="color:'+(vencida?'#B83232':'#8A6A00')+';font-weight:600;">'+venceLabel+'</span>':''}</div>
         </div>
         <div style="text-align:right;">
           <div style="font-family:'Poppins',sans-serif;font-size:20px;font-weight:900;">${fmt(x.monto)}</div>
@@ -2126,7 +2136,7 @@ function renderGastos(){
       : `<span style="color:#C0BDB8;font-size:12px;">—</span>`;
 
     return `<tr style="border-bottom:1px solid #F0EDE6;">
-      <td style="padding:12px 14px;"><div class="td-main">${x.descripcion}</div>${x.notas?`<div class="td-sub">${x.notas}</div>`:''}</td>
+      <td style="padding:12px 14px;"><div class="td-main">${sanitize(x.descripcion)}</div>${x.notas?`<div class="td-sub">${x.notas}</div>`:''}</td>
       <td style="padding:12px 14px;"><span class="badge badge-gray">${x.proveedor||'—'}</span></td>
       <td style="padding:12px 14px;"><span class="badge badge-gray">${x.categoria||'—'}</span></td>
       <td style="padding:12px 14px;color:var(--text3);font-size:12px;">${x.fecha||'—'}</td>
@@ -2156,7 +2166,7 @@ function pagarGasto(id){
   const porPagar = Math.max(0, total - yaPagado);
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar pago</div>
-    <div class="modal-sub">${x.descripcion}${x.proveedor?' — '+x.proveedor:''}</div>
+    <div class="modal-sub">${sanitize(x.descripcion)}${x.proveedor?' — '+x.proveedor:''}</div>
     ${yaPagado>0?`<div style="font-size:12px;color:#8A6A00;background:#FEFCE8;padding:8px 12px;border-radius:8px;margin-bottom:12px;">Ya pagado: <b>${fmt(yaPagado)}</b> — Queda: <b>${fmt(porPagar)}</b></div>`:''}
     <div class="form-group"><label class="form-label">Monto a pagar ahora ($)</label>
       <input class="form-input" id="gp_monto" type="number" value="${porPagar}" min="1"/></div>
@@ -2188,7 +2198,7 @@ function eliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Eliminar pago</div>
-    <div class="modal-sub">¿Confirmás que querés eliminar el pago registrado de <b>${fmt(+x.montoPagado||0)}</b> para <b>${x.descripcion}</b>? El saldo vuelve a quedar pendiente.</div>
+    <div class="modal-sub">¿Confirmás que querés eliminar el pago registrado de <b>${fmt(+x.montoPagado||0)}</b> para <b>${sanitize(x.descripcion)}</b>? El saldo vuelve a quedar pendiente.</div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarEliminarPagoGasto('${String(id)}')">Eliminar pago</button>
@@ -2207,7 +2217,7 @@ function revertirPagoGasto(id){
   const x = gastos.find(g=>g.id===id); if(!x) return;
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Revertir pago</div>
-    <div class="modal-sub">¿Confirmás que querés revertir el pago de <b>${x.descripcion}</b>?</div>
+    <div class="modal-sub">¿Confirmás que querés revertir el pago de <b>${sanitize(x.descripcion)}</b>?</div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirGasto('${id}')">Revertir pago</button>
@@ -2225,7 +2235,7 @@ function confirmarRevertirGasto(id){
 function renderEmpleados(){
   const tb=document.getElementById('empleados-tbody');
   tb.innerHTML=empleados.length?empleados.map(e=>`
-    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#5B7EBF;">${e.nombre[0].toUpperCase()}</div><div><div class="td-main">${e.nombre}</div><div class="td-sub">${e.email||''}</div></div></div></td>
+    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#5B7EBF;">${e.nombre[0].toUpperCase()}</div><div><div class="td-main">${sanitize(e.nombre)}</div><div class="td-sub">${e.email||''}</div></div></div></td>
     <td>${e.rol||'—'}</td><td><span class="badge badge-gray">${e.empresa||'—'}</span></td><td style="font-weight:800;">${fmt(e.sueldo)}</td>
     <td><span class="badge ${e.estado==='pagado'?'badge-green':'badge-yellow'}">${e.estado==='pagado'?'✓ Pagado':'⏳ Pendiente'}</span></td>
     <td><div class="action-btns">${e.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="marcarPagoEmp('${e.id}')">Pagar</button>`:`<button class="action-btn" style="color:#B83232" onclick="revertirPagoEmp('${e.id}')">Revertir</button>`}<button class="action-btn" onclick="editarItem('empleados','${e.id}')">Editar</button><button class="action-btn" onclick="eliminar('empleados','${e.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay empleados →');
@@ -2236,7 +2246,7 @@ function marcarPagoEmp(id){
   const e = empleados.find(x=>x.id===id); if(!e) return;
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar pago de sueldo</div>
-    <div class="modal-sub">${e.nombre} — ${fmt(e.sueldo)}</div>
+    <div class="modal-sub">${sanitize(e.nombre)} — ${fmt(e.sueldo)}</div>
     <div class="form-group"><label class="form-label">Monto pagado ($)</label>
       <input class="form-input" id="mp_monto" type="number" value="${e.sueldo||0}"/></div>
     <div class="form-group"><label class="form-label">Fecha de pago</label>
@@ -2261,7 +2271,7 @@ function revertirPagoEmp(id){
   const e = empleados.find(x=>x.id===id); if(!e) return;
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Revertir pago</div>
-    <div class="modal-sub">Confirmas que queres desmarcar el pago de <b>${e.nombre}</b>?</div>
+    <div class="modal-sub">Confirmas que queres desmarcar el pago de <b>${sanitize(e.nombre)}</b>?</div>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn" style="background:#B83232;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;" onclick="confirmarRevertirEmp('${id}')">Revertir pago</button>
@@ -2337,7 +2347,7 @@ function renderCxC(){
     const label=x.estado==='cobrado'?'✓ Cobrado':vencido?'Vencido':'Pendiente';
     const tipoBadge=x.tipo==='factura'?'<span class="badge badge-blue" style="margin-right:4px;">Factura</span>':x.tipo==='resumen'?'<span class="badge badge-gray" style="margin-right:4px;">Resumen</span>':'';
     return`<tr>
-    <td><div class="td-main">${tipoBadge}${x.cliente}</div><div class="td-sub">${x.concepto||''}</div></td>
+    <td><div class="td-main">${tipoBadge}${sanitize(x.cliente)}</div><div class="td-sub">${x.concepto||''}</div></td>
     <td style="font-size:13px;color:#666660;">${x.fecha||'—'}</td>
     <td style="font-size:13px;color:${vencido?'#B83232':'#666660'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
     <td style="font-weight:800;color:#1A7A52;">${fmt(x.monto)}</td>
@@ -2444,7 +2454,7 @@ function abrirDetalleCxP(tipo){
 
   const filas = items.length ? items.map(x=>`
     <tr style="border-bottom:1px solid #F0EDE6;">
-      <td style="padding:12px 16px;"><div style="font-weight:700;font-size:14px;color:#0D0D0D;">${x.proveedor}</div><div style="font-size:12px;color:#888880;">${x.concepto}</div></td>
+      <td style="padding:12px 16px;"><div style="font-weight:700;font-size:14px;color:#0D0D0D;">${sanitize(x.proveedor)}</div><div style="font-size:12px;color:#888880;">${sanitize(x.concepto)}</div></td>
       <td style="padding:12px 16px;font-size:13px;color:#666660;">${x.fecha||'—'}</td>
       <td style="padding:12px 16px;font-size:13px;color:${x.vencimiento<hoy&&x.estado!=='pagado'?'#B83232':'#666660'};font-weight:${x.vencimiento<hoy&&x.estado!=='pagado'?700:400};">${x.vencimiento||'—'}</td>
       <td style="padding:12px 16px;font-weight:700;color:#0D0D0D;">${fmt(x.monto)}</td>
@@ -2539,7 +2549,7 @@ function renderCxP(){
     ].filter(Boolean).join('');
 
     return`<tr>
-    <td><div class="td-main">${tipoBadge}${x.proveedor}</div><div class="td-sub">${x.concepto||''}</div></td>
+    <td><div class="td-main">${tipoBadge}${sanitize(x.proveedor)}</div><div class="td-sub">${x.concepto||''}</div></td>
     <td style="font-size:13px;color:#666660;">${x.fecha||'—'}</td>
     <td style="font-size:13px;color:${vencido?'#B83232':'#666660'};font-weight:${vencido?'700':'400'};">${x.vencimiento||'—'}</td>
     <td style="font-weight:700;color:#0D0D0D;">${fmt(total)}</td>
@@ -2691,7 +2701,7 @@ function updateDashboard(){
         return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:10px;color:${color};">${dot}</span>
-            <span style="font-size:13px;font-weight:500;color:var(--text);">${cl.nombre}</span>
+            <span style="font-size:13px;font-weight:500;color:var(--text);">${sanitize(cl.nombre)}</span>
           </div>
           <span style="font-size:11px;font-weight:600;color:${color};">${label}</span>
         </div>`;
@@ -2884,7 +2894,7 @@ function openModal(type){
   const isProvModal = type==='add-gasto'||type==='add-cxp';
   const provFieldId = type==='add-cxp'?'cxp-prov-sel':'gasto-prov-sel';
   const provOpts = isProvModal && proveedores.length
-    ? '<div class="form-group"><label class="form-label">Proveedor</label><select class="form-select" id="'+provFieldId+'"><option value="">Seleccioná un proveedor</option>'+proveedores.map(p=>`<option value="${p.nombre}">${p.nombre}</option>`).join('')+'</select></div>'
+    ? '<div class="form-group"><label class="form-label">Proveedor</label><select class="form-select" id="'+provFieldId+'"><option value="">Seleccioná un proveedor</option>'+proveedores.map(p=>`<option value="${sanitize(p.nombre)}">${sanitize(p.nombre)}</option>`).join('')+'</select></div>'
     : '';
 
   document.getElementById('modal-content').innerHTML=`
@@ -3151,7 +3161,7 @@ function zaifiResponde(msg){
     r+=`📊 Total pendiente: <b>${fmt(d.cxcPendTotal)}</b> (${d.cxcPend.length} cuenta${d.cxcPend.length!==1?'s':''})<br>`;
     if(d.vencCxC.length){
       r+=`<br>🔴 <b>Vencidas sin cobrar (${d.vencCxC.length}):</b><br>`;
-      d.vencCxC.slice(0,3).forEach(x=>{ r+=`• ${x.cliente}: ${fmt(x.monto)} — venció ${x.vencimiento}<br>`; });
+      d.vencCxC.slice(0,3).forEach(x=>{ r+=`• ${sanitize(x.cliente)}: ${fmt(x.monto)} — venció ${x.vencimiento}<br>`; });
       r+='<br>💡 Contactá a estos clientes lo antes posible.';
     } else {
       r+='<br>✅ No tenés cuentas vencidas. Bien!';
@@ -3166,7 +3176,7 @@ function zaifiResponde(msg){
     r+=`📊 Total pendiente: <b>${fmt(d.cxpPendTotal)}</b> (${d.cxpPend.length} cuenta${d.cxpPend.length!==1?'s':''})<br>`;
     if(d.vencCxP.length){
       r+=`<br>⚠️ <b>Vencidas sin pagar (${d.vencCxP.length}):</b><br>`;
-      d.vencCxP.slice(0,3).forEach(x=>{ r+=`• ${x.proveedor}: ${fmt(x.monto)} — venció ${x.vencimiento}<br>`; });
+      d.vencCxP.slice(0,3).forEach(x=>{ r+=`• ${sanitize(x.proveedor)}: ${fmt(x.monto)} — venció ${x.vencimiento}<br>`; });
       r+='<br>💡 Pagá estas deudas cuanto antes para evitar mora.';
     } else {
       r+='<br>✅ No tenés deudas vencidas.';
@@ -3184,7 +3194,7 @@ function zaifiResponde(msg){
     r+=`💰 Total sueldos: <b>${fmt(totalSueldos)}</b><br>`;
     if(pendEmp.length){
       r+=`<br>⏳ <b>Sueldos pendientes (${pendEmp.length}):</b><br>`;
-      pendEmp.forEach(e=>{ r+=`• ${e.nombre}: ${fmt(e.sueldo)}<br>`; });
+      pendEmp.forEach(e=>{ r+=`• ${sanitize(e.nombre)}: ${fmt(e.sueldo)}<br>`; });
     } else {
       r+='<br>✅ Todos los sueldos están pagados.';
     }
@@ -3202,7 +3212,7 @@ function zaifiResponde(msg){
     const vencProv=proveedores.filter(p=>p.vencimiento&&p.vencimiento<=hoy&&p.estado==='activo');
     if(vencProv.length){
       r+=`<br>⚠️ <b>Vencimientos próximos:</b><br>`;
-      vencProv.forEach(p=>{ r+=`• ${p.nombre}: ${fmt(p.costo)} — ${p.vencimiento}<br>`; });
+      vencProv.forEach(p=>{ r+=`• ${sanitize(p.nombre)}: ${fmt(p.costo)} — ${p.vencimiento}<br>`; });
     }
     return r;
   }
@@ -3348,7 +3358,7 @@ function nuevoResumen(){
   resEnvios = [];
   document.getElementById('res-form-title').textContent = 'Nuevo resumen';
   document.getElementById('res-cliente-sel').innerHTML = '<option value="">Seleccioná un cliente</option>' +
-    clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+    clientes.map(c=>`<option value="${sanitize(c.nombre)}">${sanitize(c.nombre)}</option>`).join('');
   document.getElementById('res-periodo').value = '';
   document.getElementById('res-iva').value = '21';
   renderServiciosRes();
@@ -3368,7 +3378,7 @@ function editarResumen(id){
   resEnvios = [...(r.envios_data||[])];
   document.getElementById('res-form-title').textContent = 'Editar resumen — '+r.cliente;
   document.getElementById('res-cliente-sel').innerHTML = '<option value="">Seleccioná un cliente</option>' +
-    clientes.map(c=>`<option value="${c.nombre}" ${c.nombre===r.cliente?'selected':''}>${c.nombre}</option>`).join('');
+    clientes.map(c=>`<option value="${sanitize(c.nombre)}" ${c.nombre===r.cliente?'selected':''}>${sanitize(c.nombre)}</option>`).join('');
   document.getElementById('res-periodo').value = r.periodo||'';
   document.getElementById('res-iva').value = r.iva||21;
   const resVenc = document.getElementById('res-vencimiento');
@@ -3756,7 +3766,7 @@ function renderBancos(){
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="13" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
           </div>
           <div style="flex:1;">
-            <div style="font-weight:600;color:#0D0D0D;font-size:14px;">${b.banco} <span style="background:#EDEDEA;color:#0D0D0D;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:6px;">${b.tipo}</span></div>
+            <div style="font-weight:600;color:#0D0D0D;font-size:14px;">${sanitize(b.banco)} <span style="background:#EDEDEA;color:#0D0D0D;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:6px;">${b.tipo}</span></div>
             <div style="font-size:13px;color:#666660;margin-top:3px;">CBU: <b>${b.cbu}</b> · Alias: <b>${b.alias}</b></div>
             ${b.cuit?`<div style="font-size:12px;color:#888880;margin-top:2px;">CUIT: ${b.cuit}</div>`:''}
           </div>
@@ -3776,9 +3786,9 @@ function renderBancos(){
   }
   tb.innerHTML = bancosTerc.map(b=>`
     <tr>
-      <td><div class="td-main">${b.nombre}</div></td>
+      <td><div class="td-main">${sanitize(b.nombre)}</div></td>
       <td><span class="badge ${b.tipo==='Proveedor'?'badge-blue':'badge-gray'}">${b.tipo}</span></td>
-      <td style="color:#5A5650;">${b.banco}</td>
+      <td style="color:#5A5650;">${sanitize(b.banco)}</td>
       <td>
         <div style="font-size:13px;font-weight:600;color:#0D0D0D;">${b.cbu}</div>
         ${b.alias?`<div style="font-size:12px;color:#888880;">Alias: ${b.alias}</div>`:''}
@@ -4147,7 +4157,7 @@ function nuevaFacturaFull(editId){
   // Populate clients dropdown
   const sel = document.getElementById('fac-cliente');
   sel.innerHTML = '<option value="">Seleccioná un cliente</option>' +
-    clientes.map(c=>`<option value="${c.nombre}" data-cuit="${c.cuit||''}" data-condicion="${c.condicion||''}" data-domicilio="${c.domicilio||''}">${c.nombre}${c.cuit?' · '+c.cuit:''}</option>`).join('');
+    clientes.map(c=>`<option value="${sanitize(c.nombre)}" data-cuit="${c.cuit||''}" data-condicion="${c.condicion||''}" data-domicilio="${c.domicilio||''}">${sanitize(c.nombre)}${c.cuit?' · '+c.cuit:''}</option>`).join('');
 
   // Set values
   document.getElementById('fac-fecha').value = fEdit?.fecha||today();
@@ -5106,14 +5116,14 @@ async function renderInvitaciones(){
     }
     tb.innerHTML = data.map(u=>`
       <tr>
-        <td><div class="td-main">${u.nombre}</div></td>
-        <td style="font-size:13px;color:#666660;">${u.email}</td>
+        <td><div class="td-main">${sanitize(u.nombre)}</div></td>
+        <td style="font-size:13px;color:#666660;">${sanitize(u.email)}</td>
         <td style="font-size:13px;color:#666660;">${u.empresa||'—'}</td>
         <td style="font-size:13px;color:#888880;font-style:italic;">${u.mensaje||'—'}</td>
         <td><span class="badge badge-yellow">⏳ Pendiente</span></td>
         <td>
           <div class="action-btns">
-            <button class="action-btn" style="color:#1A7A52;border-color:#1A7A52;" onclick="aprobarUsuario('${u.id}','${u.email}')">✓ Aprobar</button>
+            <button class="action-btn" style="color:#1A7A52;border-color:#1A7A52;" onclick="aprobarUsuario('${u.id}','${sanitize(u.email)}')">✓ Aprobar</button>
             <button class="action-btn" style="color:#B83232;" onclick="rechazarUsuario('${u.id}')">✕ Rechazar</button>
           </div>
         </td>
@@ -5254,7 +5264,7 @@ function renderCuentaCorriente(){
         <div style="display:flex;align-items:center;gap:14px;">
           <div style="width:50px;height:50px;border-radius:14px;background:${avatarColor};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:white;flex-shrink:0;">${initials}</div>
           <div>
-            <div style="font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.3px;">${cl.nombre}</div>
+            <div style="font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.3px;">${sanitize(cl.nombre)}</div>
             <div style="font-size:13px;color:var(--text3);margin-top:2px;">${cl.categoria||cl.tipo||'Cliente'}</div>
           </div>
         </div>
