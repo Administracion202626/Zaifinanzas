@@ -1796,7 +1796,7 @@ async function doLogin(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    showScreen('2fa');
+    loadApp(_pending2FAUser);
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
@@ -1844,7 +1844,7 @@ async function doRegister(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    showScreen('2fa');
+    loadApp(_pending2FAUser);
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
@@ -5368,7 +5368,7 @@ async function checkGoogleCallback(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    showScreen('2fa');
+    loadApp(_pending2FAUser);
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
