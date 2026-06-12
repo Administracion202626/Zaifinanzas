@@ -1697,14 +1697,12 @@ function getSession(){
   }catch(e){return null;}
 }
 function setSession(u){
- const s = {...u, _expires: Date.now() + SESSION_TTL, _lastActivity: Date.now()};
+  const s = {...u, _expires: Date.now() + SESSION_TTL, _lastActivity: Date.now()};
   localStorage.setItem('zaifi_session', JSON.stringify(s));
 }
 function refreshSession(){
   const s = getSession();
-  if(s){ s._expires = Date.now() + SESSION_TTL = 2 * 60 * 60 * 1000; // 2 horas en ms
- = 8 * 60 * 60 * 1000; // 8 horas en ms
-; s._lastActivity = Date.now(); localStorage.setItem('zaifi_session', JSON.stringify(s)); }
+  if(s){ s._expires = Date.now() + SESSION_TTL; s._lastActivity = Date.now(); localStorage.setItem('zaifi_session', JSON.stringify(s)); }
 }
 function clearSession(){ localStorage.removeItem('zaifi_session'); }
 
@@ -1798,7 +1796,7 @@ async function doLogin(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    loadApp(_pending2FAUser);
+    showScreen('2fa');
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
@@ -1846,7 +1844,7 @@ async function doRegister(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    loadApp(_pending2FAUser);
+    showScreen('2fa');
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
@@ -2106,7 +2104,7 @@ async function loadApp(user){
       const err = document.getElementById('login-error');
       if(err){ err.textContent='Tu sesión expiró. Iniciá sesión de nuevo.'; err.style.display='block'; }
     }
-  }, 3600000 );
+  }, 60000);
   // Refrescar sesión en actividad del usuario
   ['click','keydown','mousemove','touchstart'].forEach(ev=>
     document.addEventListener(ev, ()=>refreshSession(), {passive:true})
@@ -5370,7 +5368,7 @@ async function checkGoogleCallback(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    loadApp(_pending2FAUser);
+    showScreen('2fa');
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
