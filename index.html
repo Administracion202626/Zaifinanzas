@@ -1684,8 +1684,6 @@ function saveUsersCache(u){
 function getUsers(){ return getUsersCache(); }
 function saveUsers(u){ saveUsersCache(u); }
 const SESSION_TTL = 2 * 60 * 60 * 1000; // 2 horas en ms
- = 8 * 60 * 60 * 1000; // 8 horas en ms
- = 2 * 60 * 60 * 1000; // 2 horas en ms
 function getSession(){
   try{
     const raw = JSON.parse(localStorage.getItem('zaifi_session'));
@@ -1699,9 +1697,7 @@ function getSession(){
   }catch(e){return null;}
 }
 function setSession(u){
-  const s = {...u, _expires: Date.now() + SESSION_TTL = 2 * 60 * 60 * 1000; // 2 horas en ms
- = 8 * 60 * 60 * 1000; // 8 horas en ms
-, _lastActivity: Date.now()};
+ const s = {...u, _expires: Date.now() + SESSION_TTL, _lastActivity: Date.now()};
   localStorage.setItem('zaifi_session', JSON.stringify(s));
 }
 function refreshSession(){
