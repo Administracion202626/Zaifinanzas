@@ -1794,17 +1794,7 @@ async function doLogin(){
   const shared = getSharedUsers();
   if(!shared.find(u=>u.email===email)){ shared.push(user); saveSharedUsers(shared); }
 
-  // Login exitoso
-  // Admin requiere 2FA
-  if(user.role==='admin'){
-    _pending2FAUser = user;
-    showScreen('2fa');
-    document.getElementById('2fa-code').value='';
-    document.getElementById('2fa-error').style.display='none';
-    setTimeout(()=>document.getElementById('2fa-code').focus(),100);
-    return;
-  }
-  // Usuarios normales entran directo
+  // Login exitoso - entran directo sin 2FA
   localStorage.removeItem(rlKey);
   setSession(user);
   await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
@@ -1842,21 +1832,10 @@ async function doRegister(){
 
   if(isAdminEmail){
     users.push(user); saveUsersCache(users);
-    // Login exitoso
-  // Admin requiere 2FA
-  if(user.role==='admin'){
-    _pending2FAUser = user;
-    showScreen('2fa');
-    document.getElementById('2fa-code').value='';
-    document.getElementById('2fa-error').style.display='none';
-    setTimeout(()=>document.getElementById('2fa-code').focus(),100);
-    return;
-  }
-  // Usuarios normales entran directo
-  localStorage.removeItem(rlKey);
-  setSession(user);
-  await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
-  await loadApp(user);
+    localStorage.removeItem(rlKey);
+    setSession(user);
+    await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
+    await loadApp(user);
   } else {
     if(ok) ok.style.display='block';
     ['reg-nombre','reg-empresa','reg-email','reg-pass','reg-mensaje'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -5366,21 +5345,11 @@ async function checkGoogleCallback(){
             err.textContent='Tu cuenta está pendiente de aprobación.'; err.style.display='block';
             window.location.hash=''; return;
           }
-          // Login exitoso
-  // Admin requiere 2FA
-  if(user.role==='admin'){
-    _pending2FAUser = user;
-    showScreen('2fa');
-    document.getElementById('2fa-code').value='';
-    document.getElementById('2fa-error').style.display='none';
-    setTimeout(()=>document.getElementById('2fa-code').focus(),100);
-    return;
-  }
-  // Usuarios normales entran directo
-  localStorage.removeItem(rlKey);
-  setSession(user);
-  await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
-  await loadApp(user);
+          // Login exitoso - sin 2FA
+          localStorage.removeItem(rlKey);
+          setSession(user);
+          await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
+          await loadApp(user);
           window.location.hash='';
         }
       }catch(e){ console.log('Google OAuth error:',e); }
