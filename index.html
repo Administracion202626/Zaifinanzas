@@ -1701,8 +1701,10 @@ function setSession(u){
   localStorage.setItem('zaifi_session', JSON.stringify(s));
 }
 function refreshSession(){
-  const s = getSession();
-  if(s){ s._expires = Date.now() + SESSION_TTL; s._lastActivity = Date.now(); localStorage.setItem('zaifi_session', JSON.stringify(s)); }
+  try{
+    const s = JSON.parse(localStorage.getItem('zaifi_session'));
+    if(s){ s._expires = Date.now() + SESSION_TTL; s._lastActivity = Date.now(); localStorage.setItem('zaifi_session', JSON.stringify(s)); }
+  }catch(e){}
 }
 function clearSession(){ localStorage.removeItem('zaifi_session'); }
 
@@ -1796,7 +1798,7 @@ async function doLogin(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    loadApp(_pending2FAUser);
+    showScreen('2fa');
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
@@ -1844,7 +1846,7 @@ async function doRegister(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    loadApp(_pending2FAUser);
+    showScreen('2fa');
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
@@ -5368,7 +5370,7 @@ async function checkGoogleCallback(){
   // Admin requiere 2FA
   if(user.role==='admin'){
     _pending2FAUser = user;
-    loadApp(_pending2FAUser);
+    showScreen('2fa');
     document.getElementById('2fa-code').value='';
     document.getElementById('2fa-error').style.display='none';
     setTimeout(()=>document.getElementById('2fa-code').focus(),100);
