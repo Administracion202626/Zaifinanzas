@@ -2244,6 +2244,7 @@ function _aplicarCobroFactura(f, monto){
 function verDocFactura(id){
   const f = facturas.find(x=>x.id===id);
   if(!f) return;
+  const _prf = getPerfil();
   const cli = clientes.find(c=>c.nombre===f.cliente)||{};
   const esFacA = (f.tipo||'A')==='A';
   const tipoLabel = f.tipo==='A'?'FACTURA A':f.tipo==='B'?'FACTURA B':f.tipo==='C'?'FACTURA C':f.tipo==='presupuesto'?'PRESUPUESTO':'RECIBO INTERNO';
@@ -2305,6 +2306,7 @@ function verDocFactura(id){
 async function enviarFacturaPorEmail(facturaId){
   const f = facturas.find(x=>x.id===facturaId);
   if(!f){ toast('❌ Factura no encontrada'); return; }
+  const _prf = getPerfil();
   const cli = clientes.find(c=>c.nombre===f.cliente)||{};
   const emailDestino = cli.email;
   if(!emailDestino){ toast('❌ El cliente no tiene email registrado'); return; }
@@ -4141,6 +4143,7 @@ function guardarEdicion(tipo, id){
 // LINK DE PAGO
 // ══════════════════════════════════════════════
 function generarLinkPago(clienteNombre){
+  const _prf=getPerfil();
   const cli=clientes.find(c=>c.nombre===clienteNombre)||{};
   const facsPend=facturas.filter(f=>f.cliente===clienteNombre&&f.estado!=='cobrada');
   const cxcP=cxc.filter(x=>x.cliente===clienteNombre&&x.estado!=='cobrado');
@@ -4612,6 +4615,7 @@ function emitirDocFac(tipoDoc){
 }
 
 function generarDocFactura(f, tipoOverride){
+  const _prf = getPerfil();
   const cli = clientes.find(c=>c.nombre===f.cliente)||{};
   const esFacA = (tipoOverride||f.tipo)==='A';
   const tipoLabel = esFacA?'FACTURA A':f.tipo==='B'?'FACTURA B':f.tipo==='C'?'FACTURA C':f.tipo==='presupuesto'?'PRESUPUESTO':'RECIBO INTERNO';
@@ -5093,6 +5097,7 @@ function renderEstadisticas(){
 }
 
 function generarHTMLResumen(r){
+  const _prf = getPerfil();
   const cli = clientes.find(c=>c.nombre===r.cliente)||{};
   const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
   const fechaHoy = new Date().toLocaleDateString('es-AR');
