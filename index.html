@@ -2228,8 +2228,13 @@ function confirmarCobroFactura(id){
 function _aplicarCobroFactura(f, monto){
   f.montoCobrado = Math.min((f.montoCobrado||0) + monto, f.monto);
   f.estado = f.montoCobrado >= f.monto ? 'cobrada' : 'pendiente';
-  // Update linked CxC
-  const cxcItem = cxc.find(x=>x.facturaId===f.id);
+  // Update linked CxC — busca por facturaId primero, luego por cliente+monto como fallback
+  let cxcItem = cxc.find(x=>x.facturaId===f.id);
+  if(!cxcItem){
+    // Fallback: vincular por cliente y monto similar pendiente
+    cxcItem = cxc.find(x=>x.cliente===f.cliente && x.estado!=='cobrado' && Math.abs((+x.monto||0)-(+f.monto||0))<1);
+    if(cxcItem) cxcItem.facturaId = f.id; // vincular para el futuro
+  }
   if(cxcItem){
     cxcItem.monto = Math.max(0, f.monto - f.montoCobrado);
     if(f.estado==='cobrada') cxcItem.estado='cobrado';
@@ -2589,7 +2594,7 @@ function renderCxC(){
     if(desde&&x.fecha<desde)return false;
     if(hasta&&x.fecha>hasta)return false;
     if(estado&&x.estado!==estado)return false;
-    if(+x.monto===0&&x.estado==='cobrado')return false; // hide fully paid
+    if(x.estado==='cobrado')return false; // hide fully paid
     return true;
   });
   document.getElementById('cxc-total').textContent=fmt(f.filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0));
