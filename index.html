@@ -2130,11 +2130,11 @@ function sincronizarCxCconFacturas(){
         item.estado = 'cobrado';
         item.monto = 0;
         if(!item.facturaId) item.facturaId = f.id;
-        huboambios = true;
+        hubocambios = true;
       }
     }
   });
-  if(huboambios) save('cxc', cxc);
+  if(hubocambios) save('cxc', cxc);
 }
 
 function renderAll(){
