@@ -2952,7 +2952,8 @@ function pagarCxPItem(id, gastoId, empleadoId){
 function updateDashboard(){
   const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
   const tg=gastos.reduce((a,x)=>a+(+x.monto||0),0);
-  const tp=facturas.filter(x=>x.estado!=='cobrada').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoCobrado||0)),0);
+  // Por cobrar: usar getCxCAll() igual que la pantalla CxC para que coincidan
+  const tp=getCxCAll().filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
   document.getElementById('dash-facturacion').textContent=fmt(tf);
   document.getElementById('dash-gastos').textContent=fmt(tg);
   document.getElementById('dash-pendientes').textContent=fmt(tp);
