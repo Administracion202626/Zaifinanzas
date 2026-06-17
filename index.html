@@ -815,7 +815,7 @@ tr:hover td{background:#F5F2EC;}
   <div class="topbar">
     <div class="topbar-title" id="topbar-title">Home</div>
     <div class="topbar-right">
-        <button onclick="toggleDarkMode()" id="theme-btn" title="Cambiar tema" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;"><span id="theme-icon">🌙</span><span id="theme-label">Oscuro</span></button>
+        <button onclick="recargarDesdeSupa()" title="Recargar datos desde Supabase" style="border:1px solid #1A7A52;background:#1A7A52;color:white;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;">↻ Recargar</button><button onclick="toggleDarkMode()" id="theme-btn" title="Cambiar tema" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;"><span id="theme-icon">🌙</span><span id="theme-label">Oscuro</span></button>
       <button id="privacy-btn" onclick="togglePrivacy()" title="Ocultar montos" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;">👁</button>
       <button class="tb-btn tb-btn-sec" onclick="openAddModal()">+ Agregar</button>
     </div>
@@ -2054,13 +2054,14 @@ async function loadApp(user){
   const overlay = document.getElementById('loading-overlay');
   if(overlay) overlay.style.display='flex';
 
-  // Intentar Supabase con timeout de 4 segundos, si falla usa localStorage
+  // Intentar Supabase con timeout de 15 segundos
   try{
     await Promise.race([
       loadDataFromSupa(),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),4000))
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000))
     ]);
-  }catch(e){ console.log('Supabase no disponible, usando datos locales:', e.message); }
+    console.log('✅ Datos cargados desde Supabase');
+  }catch(e){ console.log('⚠️ Supabase timeout, usando datos locales:', e.message); }
 
   loadData();
 
@@ -2090,6 +2091,22 @@ async function loadApp(user){
   ['click','keydown','mousemove','touchstart'].forEach(ev=>
     document.addEventListener(ev, ()=>refreshSession(), {passive:true})
   );
+}
+
+async function recargarDesdeSupa(){
+  const overlay = document.getElementById('loading-overlay');
+  if(overlay) overlay.style.display='flex';
+  try{
+    await loadDataFromSupa();
+    loadData();
+    sincronizarCxCconFacturas();
+    renderAll();
+    toast('✅ Datos recargados desde Supabase');
+  }catch(e){
+    toast('⚠️ Error al recargar: '+e.message);
+  }finally{
+    if(overlay) overlay.style.display='none';
+  }
 }
 
 function sincronizarCxCconFacturas(){
