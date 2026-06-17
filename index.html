@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zaifi — Gestión Empresarial</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-ZnR2ABi4e62KRduiMCFkRDgPMzA1bG7Cg5NnCX1Br9Dg96bZfHEJjqJwMTR5lyxP5aRoFcHCeKCJzqnfY9sg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -429,7 +429,7 @@ tr:hover td{background:#F5F2EC;}
 }
 
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCFjOeqIYKNLInOQ6wQtZpMkNjBvZNfwEuMl4t/JxWbz/Kd1z6p0T9VxlV6dBBzw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -2092,7 +2092,36 @@ async function loadApp(user){
   );
 }
 
+function sincronizarCxCconFacturas(){
+  // Sincroniza el estado de CxC con el estado real de las facturas
+  let hubocambios = false;
+  cxc.forEach(item=>{
+    if(item.facturaId){
+      const f = facturas.find(x=>x.id===item.facturaId);
+      if(f && f.estado==='cobrada' && item.estado!=='cobrado'){
+        item.estado = 'cobrado';
+        item.monto = 0;
+        hubocambios = true;
+      }
+    }
+  });
+  // También sincronizar al revés: si la factura está cobrada, buscar CxC por cliente
+  facturas.forEach(f=>{
+    if(f.estado==='cobrada'){
+      const item = cxc.find(x=>x.facturaId===f.id || (x.cliente===f.cliente && x.estado!=='cobrado' && Math.abs((+x.monto||0)-(+f.monto||0))<1));
+      if(item && item.estado!=='cobrado'){
+        item.estado = 'cobrado';
+        item.monto = 0;
+        if(!item.facturaId) item.facturaId = f.id;
+        huboambios = true;
+      }
+    }
+  });
+  if(huboambios) save('cxc', cxc);
+}
+
 function renderAll(){
+  sincronizarCxCconFacturas();
   renderClientes(); renderCatalogo(); renderFacturas(); renderGastos();
   renderEmpleados(); renderProveedores(); renderCxC(); renderCxP();
   renderResumenes(); renderBancos();
@@ -2228,12 +2257,12 @@ function confirmarCobroFactura(id){
 function _aplicarCobroFactura(f, monto){
   f.montoCobrado = Math.min((f.montoCobrado||0) + monto, f.monto);
   f.estado = f.montoCobrado >= f.monto ? 'cobrada' : 'pendiente';
-  // Update linked CxC — busca por facturaId primero, luego por cliente+monto como fallback
+  // Update linked CxC — busca por facturaId, luego por cliente+monto, luego por cliente+pendiente
   let cxcItem = cxc.find(x=>x.facturaId===f.id);
   if(!cxcItem){
-    // Fallback: vincular por cliente y monto similar pendiente
     cxcItem = cxc.find(x=>x.cliente===f.cliente && x.estado!=='cobrado' && Math.abs((+x.monto||0)-(+f.monto||0))<1);
-    if(cxcItem) cxcItem.facturaId = f.id; // vincular para el futuro
+    if(!cxcItem) cxcItem = cxc.find(x=>x.cliente===f.cliente && x.estado!=='cobrado');
+    if(cxcItem) cxcItem.facturaId = f.id;
   }
   if(cxcItem){
     cxcItem.monto = Math.max(0, f.monto - f.montoCobrado);
@@ -2242,6 +2271,7 @@ function _aplicarCobroFactura(f, monto){
   }
   save('facturas', facturas);
   renderFacturas();
+  renderCxC();
   updateDashboard();
   toast('Cobro de '+fmt(monto)+' registrado');
 }
@@ -2623,7 +2653,7 @@ function renderCxC(){
 function cobrarCxC(id, facturaId, resumenId){
   if(id.startsWith('fac_')||facturaId){
     const fid = facturaId||id.replace('fac_','');
-    marcarCobrada(fid, undefined); renderCxC(); return;
+    marcarCobrada(fid, undefined); return;
   }
   if(id.startsWith('res_')||resumenId){
     const rid = resumenId||id.replace('res_','');
