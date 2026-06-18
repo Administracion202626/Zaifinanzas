@@ -3331,11 +3331,20 @@ function toggleCtx(e, id){
   if(el.style.display==='block'){ el.style.display='none'; return; }
   const rect = e.currentTarget.getBoundingClientRect();
   el.style.position='fixed';
-  el.style.top=(rect.bottom+2)+'px';
   el.style.right=(window.innerWidth-rect.right)+'px';
   el.style.left='auto';
   el.style.zIndex='99999';
   el.style.display='block';
+  // Detectar si hay espacio abajo; si no, abrir hacia arriba
+  const menuH = el.offsetHeight;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  if(spaceBelow < menuH + 8){
+    el.style.top='auto';
+    el.style.bottom=(window.innerHeight - rect.top + 2)+'px';
+  } else {
+    el.style.top=(rect.bottom+2)+'px';
+    el.style.bottom='auto';
+  }
 }
 function closeCtx(){
   document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>el.style.display='none');
