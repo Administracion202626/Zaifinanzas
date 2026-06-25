@@ -5397,6 +5397,20 @@ function loginConGoogle(){
   window.location.href = `${SUPA_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
 }
 
+// Notificar al admin sobre intento de login con Google
+async function notificarAdminGoogle(nombre, email, esNuevo, role){
+  try{
+    const secret = typeof ZAIFI_API_SECRET !== 'undefined' ? ZAIFI_API_SECRET : '';
+    const estado = esNuevo ? 'Nueva solicitud' : (role === 'pendiente' ? 'Pendiente de aprobacion' : 'Acceso permitido');
+    const html = `<div style="font-family:'Poppins',sans-serif;max-width:480px;margin:0 auto;background:#FDFCF9;border-radius:16px;padding:32px;border:1.5px solid #DDD9D0;"><div style="font-size:22px;font-weight:900;color:#0D0D0D;margin-bottom:4px;">Login con Google - Zaifi</div><div style="font-size:14px;color:#888880;margin-bottom:24px;">Alguien intentó ingresar al sistema</div><div style="background:#F0EDE6;border-radius:10px;padding:16px;margin-bottom:12px;"><div style="font-size:13px;color:#888880;margin-bottom:4px;">Nombre</div><div style="font-size:16px;font-weight:700;color:#0D0D0D;">${nombre}</div></div><div style="background:#F0EDE6;border-radius:10px;padding:16px;margin-bottom:12px;"><div style="font-size:13px;color:#888880;margin-bottom:4px;">Email</div><div style="font-size:16px;font-weight:700;color:#0D0D0D;">${email}</div></div><div style="background:#F0EDE6;border-radius:10px;padding:16px;margin-bottom:12px;"><div style="font-size:13px;color:#888880;margin-bottom:4px;">Estado</div><div style="font-size:16px;font-weight:700;color:#0D0D0D;">${estado}</div></div></div>`;
+    await fetch('https://zaifi-api.vercel.app/api/send-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+secret},
+      body: JSON.stringify({to: ADMIN_EMAIL, subject:`Login Google: ${nombre} (${email}) - ${estado}`, html})
+    });
+  }catch(e){ console.log('Error notificando admin:', e); }
+}
+
 // Check if returning from Google OAuth
 async function checkGoogleCallback(){
   const hash = window.location.hash;
@@ -5411,13 +5425,17 @@ async function checkGoogleCallback(){
         const userData = await res.json();
         if(userData.email){
           const email = userData.email.toLowerCase();
-          let users = getUsersCache();
-          let user = users.find(u=>u.email===email);
+          const nombre = userData.user_metadata?.full_name || userData.user_metadata?.name || email.split('@')[0];
+
+          // Buscar en Supabase directamente (no en cache local)
+          let supaUsers = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
+          let user = supaUsers && supaUsers.length ? supaUsers[0] : null;
+
           if(!user){
-            // New Google user - create as pendiente
-            user = {id:'g'+Date.now(),nombre:userData.user_metadata?.full_name||email.split('@')[0],empresa:'',email,pass:'google_oauth',role:'pendiente',created_at:new Date().toISOString()};
+            // Usuario nuevo - crear como pendiente siempre
+            user = {id:'g'+Date.now(), nombre, empresa:'', email, pass:'google_oauth', role:'pendiente', created_at:new Date().toISOString()};
             await upsertUsuarioSupa(user);
-            // Show pending message
+            await notificarAdminGoogle(nombre, email, true, 'pendiente');
             showScreen('login');
             const err = document.getElementById('login-error');
             err.textContent='Tu cuenta Google fue registrada. Esperá la aprobación del administrador.';
@@ -5425,16 +5443,23 @@ async function checkGoogleCallback(){
             window.location.hash='';
             return;
           }
+
+          // Siempre notificar al admin
+          await notificarAdminGoogle(nombre, email, false, user.role);
+
           if(user.role==='pendiente'){
             showScreen('login');
             const err=document.getElementById('login-error');
-            err.textContent='Tu cuenta está pendiente de aprobación.'; err.style.display='block';
+            err.textContent='Tu cuenta está pendiente de aprobación del administrador.'; err.style.display='block';
             window.location.hash=''; return;
           }
-          // Login exitoso - sin 2FA
+
+          // Login exitoso
           localStorage.removeItem(rlKey);
+          let cache = getUsersCache();
+          if(!cache.find(u=>u.email===email)){ cache.push(user); saveUsersCache(cache); }
           setSession(user);
-          await logAudit('LOGIN', `Inicio de sesión exitoso: ${email}`);
+          await logAudit('LOGIN', `Inicio de sesión con Google: ${email}`);
           await loadApp(user);
           window.location.hash='';
         }
