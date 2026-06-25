@@ -5392,9 +5392,9 @@ function togglePass(inputId, btn){
 }
 
 function loginConGoogle(){
-  // Supabase Google OAuth
-  const redirectUrl = window.location.href.split('?')[0];
-  window.location.href = `${SUPA_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
+  // Supabase Google OAuth - PKCE flow
+  const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+  window.location.href = `${SUPA_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&flow_type=implicit`;
 }
 
 // Notificar al admin sobre intento de login con Google
@@ -5411,61 +5411,85 @@ async function notificarAdminGoogle(nombre, email, esNuevo, role){
   }catch(e){ console.log('Error notificando admin:', e); }
 }
 
-// Check if returning from Google OAuth
+// Check if returning from Google OAuth (maneja #access_token y ?code=)
 async function checkGoogleCallback(){
+  // Caso 1: token en el hash (#access_token=...)
   const hash = window.location.hash;
+  let accessToken = null;
   if(hash && hash.includes('access_token')){
     const params = new URLSearchParams(hash.substring(1));
-    const accessToken = params.get('access_token');
-    if(accessToken){
-      try{
-        const res = await fetch(`${SUPA_URL}/auth/v1/user`, {
-          headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPA_KEY}
-        });
-        const userData = await res.json();
-        if(userData.email){
-          const email = userData.email.toLowerCase();
-          const nombre = userData.user_metadata?.full_name || userData.user_metadata?.name || email.split('@')[0];
-
-          // Buscar en Supabase directamente (no en cache local)
-          let supaUsers = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
-          let user = supaUsers && supaUsers.length ? supaUsers[0] : null;
-
-          if(!user){
-            // Usuario nuevo - crear como pendiente siempre
-            user = {id:'g'+Date.now(), nombre, empresa:'', email, pass:'google_oauth', role:'pendiente', created_at:new Date().toISOString()};
-            await upsertUsuarioSupa(user);
-            await notificarAdminGoogle(nombre, email, true, 'pendiente');
-            showScreen('login');
-            const err = document.getElementById('login-error');
-            err.textContent='Tu cuenta Google fue registrada. Esperá la aprobación del administrador.';
-            err.style.background='#F0EDE6'; err.style.color='#0D0D0D'; err.style.display='block';
-            window.location.hash='';
-            return;
-          }
-
-          // Siempre notificar al admin
-          await notificarAdminGoogle(nombre, email, false, user.role);
-
-          if(user.role==='pendiente'){
-            showScreen('login');
-            const err=document.getElementById('login-error');
-            err.textContent='Tu cuenta está pendiente de aprobación del administrador.'; err.style.display='block';
-            window.location.hash=''; return;
-          }
-
-          // Login exitoso
-          localStorage.removeItem(rlKey);
-          let cache = getUsersCache();
-          if(!cache.find(u=>u.email===email)){ cache.push(user); saveUsersCache(cache); }
-          setSession(user);
-          await logAudit('LOGIN', `Inicio de sesión con Google: ${email}`);
-          await loadApp(user);
-          window.location.hash='';
-        }
-      }catch(e){ console.log('Google OAuth error:',e); }
-    }
+    accessToken = params.get('access_token');
   }
+
+  // Caso 2: code en query string (?code=...) - PKCE
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  if(!accessToken && code){
+    try{
+      const res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=pkce`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPA_KEY},
+        body: JSON.stringify({auth_code: code})
+      });
+      const data = await res.json();
+      accessToken = data.access_token || null;
+      // Limpiar URL
+      const cleanUrl = window.location.href.split('?')[0];
+      window.history.replaceState({}, document.title, cleanUrl);
+    }catch(e){ console.log('PKCE exchange error:', e); }
+  }
+
+  if(accessToken){
+    try{
+      const res = await fetch(`${SUPA_URL}/auth/v1/user`, {
+        headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPA_KEY}
+      });
+      const userData = await res.json();
+      if(userData.email){
+        const email = userData.email.toLowerCase();
+        const nombre = userData.user_metadata?.full_name || userData.user_metadata?.name || email.split('@')[0];
+
+        // Buscar en Supabase directamente
+        let supaUsers = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
+        let user = supaUsers && supaUsers.length ? supaUsers[0] : null;
+
+        if(!user){
+          // Usuario nuevo - crear como pendiente
+          user = {id:'g'+Date.now(), nombre, empresa:'', email, pass:'google_oauth', role:'pendiente', created_at:new Date().toISOString()};
+          await upsertUsuarioSupa(user);
+          await notificarAdminGoogle(nombre, email, true, 'pendiente');
+          showScreen('login');
+          const err = document.getElementById('login-error');
+          err.textContent='Tu cuenta Google fue registrada. Esperá la aprobación del administrador.';
+          err.style.background='#F0EDE6'; err.style.color='#0D0D0D'; err.style.display='block';
+          window.location.hash='';
+          return true;
+        }
+
+        // Siempre notificar al admin
+        await notificarAdminGoogle(nombre, email, false, user.role);
+
+        if(user.role==='pendiente'){
+          showScreen('login');
+          const err=document.getElementById('login-error');
+          err.textContent='Tu cuenta está pendiente de aprobación del administrador.'; err.style.display='block';
+          window.location.hash='';
+          return true;
+        }
+
+        // Login exitoso
+        localStorage.removeItem(rlKey);
+        let cache = getUsersCache();
+        if(!cache.find(u=>u.email===email)){ cache.push(user); saveUsersCache(cache); }
+        setSession(user);
+        await logAudit('LOGIN', `Inicio de sesión con Google: ${email}`);
+        await loadApp(user);
+        window.location.hash='';
+        return true;
+      }
+    }catch(e){ console.log('Google OAuth error:',e); }
+  }
+  return false;
 }
 
 // ══════════════════════════════════════════════
