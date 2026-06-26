@@ -6,6 +6,7 @@
 <title>Zaifi — Gestión Empresarial</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -620,7 +621,12 @@ tr:hover td{background:#F5F2EC;}
 
     <div class="auth-error" id="login-error"></div>
 
-    <!-- Google Login -->
+    <!-- Google Login con Google Identity Services -->
+    <div id="g_id_onload"
+      data-client_id="905283986552-pri6gmhksnf2eatjhhqt3s859krlqas2.apps.googleusercontent.com"
+      data-callback="handleGoogleCredential"
+      data-auto_prompt="false">
+    </div>
     <button onclick="loginConGoogle()" style="width:100%;padding:12px;background:white;border:1.5px solid #DDD9D0;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;color:#0D0D0D;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#0D0D0D'" onmouseout="this.style.borderColor='#DDD9D0'">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Continuar con Google
@@ -5392,9 +5398,71 @@ function togglePass(inputId, btn){
 }
 
 function loginConGoogle(){
-  // Supabase Google OAuth - PKCE flow
-  const redirectUrl = window.location.href.split('?')[0].split('#')[0];
-  window.location.href = `${SUPA_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&flow_type=implicit`;
+  // Usar Google Identity Services popup
+  if(typeof google !== 'undefined' && google.accounts){
+    google.accounts.id.prompt();
+  } else {
+    // Fallback: Supabase OAuth redirect
+    const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+    window.location.href = `${SUPA_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}`;
+  }
+}
+
+// Callback de Google Identity Services — recibe el credential (JWT) directamente
+async function handleGoogleCredential(response){
+  try{
+    const credential = response.credential;
+    // Decodificar el JWT de Google para obtener email y nombre
+    const payload = JSON.parse(atob(credential.split('.')[1]));
+    const email = payload.email.toLowerCase();
+    const nombre = payload.name || email.split('@')[0];
+
+    // Verificar con Supabase usando el token de Google directamente
+    const supaRes = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=id_token`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','apikey':SUPA_KEY},
+      body: JSON.stringify({provider:'google', id_token: credential})
+    });
+    const supaData = await supaRes.json();
+
+    // Buscar usuario en nuestra tabla
+    let supaUsers = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
+    let user = supaUsers && supaUsers.length ? supaUsers[0] : null;
+
+    if(!user){
+      // Usuario nuevo - crear como pendiente
+      user = {id:'g'+Date.now(), nombre, empresa:'', email, pass:'google_oauth', role:'pendiente', created_at:new Date().toISOString()};
+      await upsertUsuarioSupa(user);
+      await notificarAdminGoogle(nombre, email, true, 'pendiente');
+      showScreen('login');
+      const err = document.getElementById('login-error');
+      err.textContent='Tu cuenta Google fue registrada. Esperá la aprobación del administrador.';
+      err.style.background='#F0EDE6'; err.style.color='#0D0D0D'; err.style.display='block';
+      return;
+    }
+
+    // Siempre notificar al admin
+    await notificarAdminGoogle(nombre, email, false, user.role);
+
+    if(user.role==='pendiente'){
+      showScreen('login');
+      const err=document.getElementById('login-error');
+      err.textContent='Tu cuenta está pendiente de aprobación del administrador.'; err.style.display='block';
+      return;
+    }
+
+    // Login exitoso
+    localStorage.removeItem(rlKey);
+    let cache = getUsersCache();
+    if(!cache.find(u=>u.email===email)){ cache.push(user); saveUsersCache(cache); }
+    setSession(user);
+    await logAudit('LOGIN', `Inicio de sesión con Google: ${email}`);
+    await loadApp(user);
+  }catch(e){
+    console.log('Google credential error:', e);
+    const err = document.getElementById('login-error');
+    if(err){ err.textContent='Error al iniciar sesión con Google. Intentá de nuevo.'; err.style.display='block'; }
+  }
 }
 
 // Notificar al admin sobre intento de login con Google
