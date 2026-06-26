@@ -5412,20 +5412,13 @@ function loginConGoogle(){
 async function handleGoogleCredential(response){
   try{
     const credential = response.credential;
-    // Decodificar el JWT de Google para obtener email y nombre
-    const payload = JSON.parse(atob(credential.split('.')[1]));
+    // Decodificar el JWT de Google para obtener email y nombre (sin pasar por Supabase auth)
+    const parts = credential.split('.');
+    const payload = JSON.parse(decodeURIComponent(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
     const email = payload.email.toLowerCase();
-    const nombre = payload.name || email.split('@')[0];
+    const nombre = payload.name || payload.given_name || email.split('@')[0];
 
-    // Verificar con Supabase usando el token de Google directamente
-    const supaRes = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=id_token`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','apikey':SUPA_KEY},
-      body: JSON.stringify({provider:'google', id_token: credential})
-    });
-    const supaData = await supaRes.json();
-
-    // Buscar usuario en nuestra tabla
+    // Buscar usuario directamente en nuestra tabla de Supabase
     let supaUsers = await supaFetch(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
     let user = supaUsers && supaUsers.length ? supaUsers[0] : null;
 
