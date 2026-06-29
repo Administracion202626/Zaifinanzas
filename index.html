@@ -800,6 +800,7 @@ tr:hover td{background:#F5F2EC;}
     <div class="nav-section-label">Zaifi IA</div>
     <div class="nav-item" onclick="goTo('rentabilidad',this)"><span class="ni">◎</span>Rentabilidad</div>
     <div class="nav-item" onclick="goTo('proyeccion',this)"><span class="ni">◉</span>Proyección</div>
+    <div class="nav-item" onclick="goTo('lineacritica',this)"><span class="ni">◎</span>Línea crítica</div>
     <div class="nav-item" onclick="goTo('estadisticas',this)"><span class="ni">◈</span>Estadísticas</div>
     <div class="nav-item" onclick="goTo('bot',this)"><span class="ni">◎</span>Chat con Zaifi</div>
     <div class="nav-item" id="nav-invitaciones" onclick="goTo('invitaciones',this)" style="display:none;"><span class="ni">◈</span>Invitaciones</div>
@@ -1372,6 +1373,27 @@ tr:hover td{background:#F5F2EC;}
           <tbody id="bancos-tbody"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- LÍNEA CRÍTICA -->
+    <div class="page" id="page-lineacritica">
+      <div style="background:linear-gradient(135deg,#0D0D0D,#2E1A5E);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+        <div style="font-size:32px;">🎯</div>
+        <div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:white;">Línea crítica del mes</div><div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:3px;">Cuántos clientes de consultoría necesitás para cubrir todos los gastos</div></div>
+      </div>
+      <div class="table-card" style="margin-bottom:20px;">
+        <div style="padding:18px 24px;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <div style="font-size:12px;color:#888880;font-weight:700;margin-bottom:6px;">Mes a analizar</div>
+            <input type="month" id="lc-mes" onchange="renderLineaCritica()" style="padding:8px 12px;border:1px solid #E2DDD5;border-radius:8px;font-size:14px;">
+          </div>
+          <div>
+            <div style="font-size:12px;color:#888880;font-weight:700;margin-bottom:6px;">Ticket de consultoría objetivo <span style="font-weight:400;">(opcional)</span></div>
+            <input type="number" id="lc-ticket" oninput="renderLineaCritica()" placeholder="Se calcula solo" style="padding:8px 12px;border:1px solid #E2DDD5;border-radius:8px;font-size:14px;width:180px;">
+          </div>
+        </div>
+      </div>
+      <div id="lc-results"></div>
     </div>
 
     <!-- RENTABILIDAD -->
@@ -3361,13 +3383,14 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
   if(page==='estadisticas') renderEstadisticas();
   if(page==='cuentacorriente') initCuentaCorriente();
   if(page==='perfil') cargarPerfil();
   if(page==='rentabilidad') renderRentabilidad();
   if(page==='proyeccion') renderProyeccion();
+  if(page==='lineacritica') renderLineaCritica();
   if(page==='invitaciones') renderInvitaciones();
 }
 function clearFilter(p){
@@ -4235,6 +4258,81 @@ ${bp.cuit?`<div class="br"><span class="bk">CUIT</span><span class="bv">${bp.cui
 <div class="hint">Tocá el CBU o Alias para copiar</div></div>
 <div class="footer">${_prf.razon||_prf.nombre||"Mi empresa"} · CUIT: ${_prf.cuit||"—"} · ${fechaHoy}</div>
 </div></div></body></html>`);
+}
+
+// ══════════════════════════════════════════════
+// LÍNEA CRÍTICA — break-even de consultoría
+// ══════════════════════════════════════════════
+function renderLineaCritica(){
+  const mesEl = document.getElementById('lc-mes');
+  let ym = mesEl && mesEl.value;
+  if(!ym){ ym = new Date().toISOString().slice(0,7); if(mesEl) mesEl.value = ym; }
+
+  // Gastos del mes seleccionado
+  const gastosMes = gastos.filter(g=>(g.fecha||'').slice(0,7)===ym);
+  const totalGastosMes = gastosMes.reduce((a,g)=>a+(+g.monto||0),0);
+  // Sueldos: costo fijo mensual (no se filtra por fecha)
+  const totalSueldos = empleados.reduce((a,e)=>a+(+e.sueldo||0),0);
+  // Línea crítica: todo lo que hay que cubrir en el mes
+  const lineaCritica = totalGastosMes + totalSueldos;
+
+  // Consultoría facturada en el mes — SOLO totalSrv (sin logística/envíos/mt3)
+  const factMes = facturas.filter(f=>(f.fecha||'').slice(0,7)===ym);
+  const consultoriaMes = factMes.reduce((a,f)=>a+(+f.totalSrv||0),0);
+  const clientesConsultoria = new Set(factMes.filter(f=>(+f.totalSrv||0)>0).map(f=>f.cliente));
+  const nClientesActuales = clientesConsultoria.size;
+
+  // Ticket promedio de consultoría por cliente (o el objetivo manual si lo cargaron)
+  const ticketManual = +(document.getElementById('lc-ticket')?.value)||0;
+  const ticketCalculado = nClientesActuales ? consultoriaMes/nClientesActuales : 0;
+  const ticket = ticketManual>0 ? ticketManual : ticketCalculado;
+
+  // Clientes necesarios para cubrir la línea crítica
+  const clientesNecesarios = ticket>0 ? Math.ceil(lineaCritica/ticket) : null;
+  const brecha = clientesNecesarios!=null ? clientesNecesarios - nClientesActuales : null;
+  const faltaFacturar = Math.max(0, lineaCritica - consultoriaMes);
+
+  const cont = document.getElementById('lc-results');
+  if(!cont) return;
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+    <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Línea crítica del mes</div><div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:#C0392B;">${fmt(lineaCritica)}</div><div style="font-size:12px;color:#888880;margin-top:4px;">Gastos totales a cubrir</div></div>
+    <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Ticket prom. consultoría</div><div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:#0D0D0D;">${ticket>0?fmt(Math.round(ticket)):'—'}</div><div style="font-size:12px;color:#888880;margin-top:4px;">${ticketManual>0?'Objetivo (manual)':'Promedio facturado'}</div></div>
+    <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Clientes necesarios</div><div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:#5B4FE9;">${clientesNecesarios!=null?clientesNecesarios:'—'}</div><div style="font-size:12px;color:#888880;margin-top:4px;">${nClientesActuales} con consultoría hoy</div></div>
+  </div>`;
+
+  if(ticket<=0){
+    html += `<div class="table-card" style="padding:32px;text-align:center;color:#888880;">Para calcular los clientes necesarios, cargá facturas con consultoría en este mes o escribí un <b>ticket objetivo</b> arriba.</div>`;
+    cont.innerHTML = html; return;
+  }
+
+  html += `<div class="table-card" style="margin-bottom:20px;">
+    <div class="table-head"><div><div class="th-title">¿De dónde sale la línea crítica?</div><div class="th-sub">Todo lo que hay que cubrir en ${ym}</div></div></div>
+    <table><tbody>
+      <tr><td>Gastos del mes</td><td style="text-align:right;font-weight:700;">${fmt(totalGastosMes)}</td></tr>
+      <tr><td>Sueldos (empleados)</td><td style="text-align:right;font-weight:700;">${fmt(totalSueldos)}</td></tr>
+      <tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total a cubrir</td><td style="text-align:right;font-weight:800;color:#C0392B;">${fmt(lineaCritica)}</td></tr>
+    </tbody></table>
+  </div>`;
+
+  const cubierto = lineaCritica>0 ? Math.min(100, Math.round(consultoriaMes/lineaCritica*100)) : 0;
+  html += `<div class="table-card">
+    <div class="table-head"><div><div class="th-title">Tu situación este mes</div><div class="th-sub">Consultoría facturada vs. lo necesario</div></div></div>
+    <div style="padding:20px 24px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#666660;margin-bottom:6px;"><span>Consultoría facturada: <b style="color:#1A7A52;">${fmt(consultoriaMes)}</b></span><span>${cubierto}% de la línea crítica</span></div>
+      <div style="height:10px;background:#F0EDE6;border-radius:5px;overflow:hidden;margin-bottom:18px;"><div style="height:100%;width:${cubierto}%;background:${cubierto>=100?'#1A7A52':'#5B4FE9'};"></div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div><div style="font-size:12px;color:#888880;">Clientes hoy</div><div style="font-size:20px;font-weight:800;font-family:'Poppins',sans-serif;">${nClientesActuales}</div></div>
+        <div><div style="font-size:12px;color:#888880;">Te faltan</div><div style="font-size:20px;font-weight:800;font-family:'Poppins',sans-serif;color:${brecha>0?'#C0392B':'#1A7A52'};">${brecha>0?brecha+' clientes':'¡cubierto!'}</div></div>
+        <div><div style="font-size:12px;color:#888880;">Falta facturar</div><div style="font-size:20px;font-weight:800;font-family:'Poppins',sans-serif;color:${faltaFacturar>0?'#C0392B':'#1A7A52'};">${fmt(faltaFacturar)}</div></div>
+      </div>
+      <div style="margin-top:18px;padding:14px 16px;background:#F7F5F0;border-radius:10px;font-size:13px;color:#666660;line-height:1.6;">
+        Con un ticket promedio de consultoría de <b>${fmt(Math.round(ticket))}</b>, necesitás <b>${clientesNecesarios} clientes</b> de consultoría al mes para cubrir <b>${fmt(lineaCritica)}</b> de gastos. No se cuentan envíos, logística ni mt3.
+      </div>
+    </div>
+  </div>`;
+
+  cont.innerHTML = html;
 }
 
 // ══════════════════════════════════════════════
