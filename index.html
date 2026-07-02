@@ -155,6 +155,7 @@ body{font-family:'Poppins',sans-serif;font-size:14px;background:var(--bg);color:
 .nav-item:hover{background:var(--nav-hover);color:var(--text);}
 .nav-item.active{background:var(--nav-active);color:var(--nav-active-text);font-weight:600;}
 .nav-item .ni{font-size:17px;width:22px;text-align:center;flex-shrink:0;line-height:1;}
+.nav-badge{margin-left:auto;background:#E5484D;color:#fff;font-size:10px;font-weight:800;border-radius:10px;padding:2px 7px;min-width:18px;text-align:center;line-height:1.4;display:none;}
 .sidebar-bottom{margin-top:auto;padding:18px 20px;border-top:1px solid var(--sidebar-border);}
 .user-row{display:flex;align-items:center;gap:10px;}
 .user-av{width:34px;height:34px;background:#0D0D0D;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#FDFCF9;flex-shrink:0;}
@@ -779,6 +780,7 @@ tr:hover td{background:#F5F2EC;}
   <div class="nav-section">
     <div class="nav-section-label">Principal</div>
     <div class="nav-item active" onclick="goTo('dashboard',this)"><span class="ni">◉</span>Home</div>
+    <div class="nav-item" id="nav-pendientes" onclick="goTo('pendientes',this)"><span class="ni">☑</span>Pendientes<span class="nav-badge" id="pend-badge">0</span></div>
     <div class="nav-item" onclick="goTo('clientes',this)"><span class="ni">◈</span>Clientes</div>
     <div class="nav-item" onclick="goTo('catalogo',this)"><span class="ni">▦</span>Catálogo</div>
     <div class="nav-item" onclick="goTo('facturacion',this)"><span class="ni">◫</span>Facturación</div>
@@ -834,6 +836,17 @@ tr:hover td{background:#F5F2EC;}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
+      <!-- Tareas pendientes -->
+      <div class="table-card" id="dash-pend-card" style="margin-bottom:20px;">
+        <div class="table-head">
+          <div><div class="th-title">☑ Tareas pendientes</div><div class="th-sub" id="dash-pend-sub">Sin pendientes</div></div>
+          <div style="display:flex;gap:8px;">
+            <button class="tb-btn tb-btn-sec" onclick="goTo('pendientes',document.getElementById('nav-pendientes'))">Ver todas →</button>
+            <button class="tb-btn tb-btn-primary" onclick="abrirModalPendiente()">+ Nueva tarea</button>
+          </div>
+        </div>
+        <div id="dash-pend-list" style="padding:0;"></div>
+      </div>
       <div class="stats-row">
         <div class="stat-card card-fact">
           <div class="stat-icon" style="background:#EEEDF8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B4FE9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
@@ -1207,6 +1220,23 @@ tr:hover td{background:#F5F2EC;}
         </div>
         <table><thead><tr><th>Empleado</th><th>Tipo</th><th>Desde</th><th>Hasta</th><th>Días</th><th>Estado</th><th>Observaciones</th><th>Acciones</th></tr></thead>
         <tbody id="licencias-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PENDIENTES -->
+    <div class="page" id="page-pendientes">
+      <div class="filter-bar">
+        <select id="pend-estado" onchange="renderPendientes()"><option value="pendiente">Pendientes</option><option value="completada">Completadas</option><option value="">Todas</option></select>
+        <select id="pend-prio" onchange="renderPendientes()"><option value="">Todas las prioridades</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+        <button class="filter-clear" onclick="clearFilter('pendientes')">Limpiar</button>
+      </div>
+      <div class="table-card">
+        <div class="table-head">
+          <div><div class="th-title">Pendientes</div><div class="th-sub" id="pend-count">0 tareas</div></div>
+          <div style="display:flex;gap:10px;"><div class="search-box"><span>🔍</span><input placeholder="Buscar..." oninput="searchTable(this,'pendientes-tbody')"/></div><button class="tb-btn tb-btn-primary" onclick="abrirModalPendiente()">+ Nueva tarea</button></div>
+        </div>
+        <table><thead><tr><th style="width:36px;"></th><th>Tarea</th><th>Pedida por</th><th>Para</th><th>Prioridad</th><th>Fecha límite</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="pendientes-tbody"></tbody></table>
       </div>
     </div>
 
@@ -1953,7 +1983,7 @@ async function logAudit(accion, detalle=''){
 }
 
 async function loadDataFromSupa(){
-  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos','licencias'];
+  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos','licencias','pendientes'];
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
@@ -1964,7 +1994,7 @@ async function loadDataFromSupa(){
   await Promise.all(promises);
 }
 
-let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc,licencias;
+let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc,licencias,pendientes;
 
 function loadData(){
   clientes   =load('clientes');
@@ -1979,6 +2009,7 @@ function loadData(){
   bancosPropios=load('bancosPropios');
   bancosTerc  =load('bancosTerc');
   licencias  =load('licencias');
+  pendientes =load('pendientes');
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
@@ -2212,7 +2243,7 @@ function renderAll(){
   sincronizarCxCconFacturas();
   renderClientes(); renderCatalogo(); renderFacturas(); renderGastos();
   renderEmpleados(); renderProveedores(); renderCxC(); renderCxP();
-  renderResumenes(); renderBancos(); renderLicencias();
+  renderResumenes(); renderBancos(); renderLicencias(); renderPendientes();
   updateDashboard();
 }
 
@@ -2755,6 +2786,148 @@ function guardarLicencia(){
   save('licencias',licencias); closeModal(); renderLicencias(); toast('✅ Licencia registrada');
 }
 
+// ══════════════════════════════════════════════
+// PENDIENTES (tareas compartidas con notificación)
+// ══════════════════════════════════════════════
+const PRIO_BADGE={'Alta':'badge-red','Media':'badge-yellow','Baja':'badge-gray'};
+const PRIO_ORDEN={'Alta':0,'Media':1,'Baja':2};
+
+function pendSeenKey(){
+  const s=getSession();
+  return 'zaifi_pend_seen_'+(s?btoa(s.email||'x').slice(0,16):'anon');
+}
+function pendientesNuevos(){
+  const lastSeen=+(localStorage.getItem(pendSeenKey())||0);
+  return (pendientes||[]).filter(p=>p.estado!=='completada' && (+p.creadoEn||0)>lastSeen);
+}
+function marcarPendientesVistos(){
+  localStorage.setItem(pendSeenKey(),String(Date.now()));
+  updatePendBadge();
+}
+function updatePendBadge(){
+  const b=document.getElementById('pend-badge'); if(!b) return;
+  const n=pendientesNuevos().length;
+  b.textContent=n>9?'9+':n;
+  b.style.display=n>0?'inline-block':'none';
+}
+function nombrePend(){
+  const s=getSession();
+  return s?(s.nombre||s.email||'—'):'—';
+}
+function ordenarPendientes(lst){
+  return lst.sort((a,b)=>{
+    if((a.estado==='completada')!==(b.estado==='completada')) return a.estado==='completada'?1:-1;
+    const pa=PRIO_ORDEN[a.prioridad]??1, pb=PRIO_ORDEN[b.prioridad]??1;
+    if(pa!==pb) return pa-pb;
+    return (a.fechaLimite||'9999').localeCompare(b.fechaLimite||'9999');
+  });
+}
+function fmtFechaCorta(f){ return f?f.split('-').reverse().join('/'):'—'; }
+function pendVencida(p){ return p.estado!=='completada' && p.fechaLimite && p.fechaLimite<today(); }
+
+function renderPendientes(){
+  const tb=document.getElementById('pendientes-tbody'); if(!tb) return;
+  const fEst=document.getElementById('pend-estado')?.value??'pendiente';
+  const fPrio=document.getElementById('pend-prio')?.value||'';
+  let lst=[...(pendientes||[])];
+  if(fEst) lst=lst.filter(p=>(p.estado||'pendiente')===fEst);
+  if(fPrio) lst=lst.filter(p=>p.prioridad===fPrio);
+  ordenarPendientes(lst);
+  tb.innerHTML=lst.length?lst.map(p=>{
+    const done=p.estado==='completada';
+    const venc=pendVencida(p);
+    return `<tr style="${done?'opacity:0.55;':''}">
+    <td><input type="checkbox" ${done?'checked':''} onchange="togglePendiente('${p.id}')" style="width:17px;height:17px;cursor:pointer;accent-color:#1A7A52;"/></td>
+    <td><div class="td-main" style="${done?'text-decoration:line-through;':''}">${sanitize(p.tarea||'—')}</div>${p.detalle?`<div class="td-sub">${sanitize(p.detalle)}</div>`:''}</td>
+    <td style="color:var(--text3);">${sanitize(p.creadoPor||'—')}</td>
+    <td>${p.para?`<span class="badge badge-gray">${sanitize(p.para)}</span>`:'<span style="color:var(--text3);">Todos</span>'}</td>
+    <td><span class="badge ${PRIO_BADGE[p.prioridad]||'badge-gray'}">${p.prioridad||'Media'}</span></td>
+    <td style="color:${venc?'#B83232':'var(--text3)'};font-weight:${venc?'800':'400'};">${fmtFechaCorta(p.fechaLimite)}${venc?' ⚠️':''}</td>
+    <td><span class="badge ${done?'badge-green':'badge-yellow'}">${done?'✓ Completada':'⏳ Pendiente'}</span></td>
+    <td><div class="action-btns"><button class="action-btn" onclick="editarItem('pendientes','${p.id}')">Editar</button><button class="action-btn" onclick="eliminar('pendientes','${p.id}')">Eliminar</button></div></td></tr>`;
+  }).join(''):empty('No hay tareas acá →');
+  const tot=(pendientes||[]).filter(p=>p.estado!=='completada').length;
+  document.getElementById('pend-count').textContent=lst.length+' tarea'+(lst.length!==1?'s':'')+' · '+tot+' sin completar';
+  renderPendientesHome();
+  updatePendBadge();
+}
+
+function renderPendientesHome(){
+  const list=document.getElementById('dash-pend-list'); if(!list) return;
+  const abiertas=ordenarPendientes((pendientes||[]).filter(p=>p.estado!=='completada'));
+  const sub=document.getElementById('dash-pend-sub');
+  if(sub) sub.textContent=abiertas.length?abiertas.length+' tarea'+(abiertas.length!==1?'s':'')+' sin completar':'Sin pendientes 🎉';
+  list.innerHTML=abiertas.length?abiertas.slice(0,5).map(p=>{
+    const venc=pendVencida(p);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:11px 22px;border-bottom:1px solid var(--nav-hover);">
+      <input type="checkbox" onchange="togglePendiente('${p.id}')" style="width:17px;height:17px;cursor:pointer;accent-color:#1A7A52;flex-shrink:0;"/>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${sanitize(p.tarea||'—')}</div>
+        <div style="font-size:11px;color:var(--text3);">Pedida por ${sanitize(p.creadoPor||'—')}${p.para?' · para '+sanitize(p.para):''}</div>
+      </div>
+      <span class="badge ${PRIO_BADGE[p.prioridad]||'badge-gray'}" style="flex-shrink:0;">${p.prioridad||'Media'}</span>
+      ${p.fechaLimite?`<span style="font-size:11px;font-weight:${venc?'800':'600'};color:${venc?'#B83232':'var(--text3)'};flex-shrink:0;">${venc?'⚠️ ':''}${fmtFechaCorta(p.fechaLimite)}</span>`:''}
+    </div>`;
+  }).join('')+(abiertas.length>5?`<div style="padding:10px 22px;font-size:12px;color:var(--text3);cursor:pointer;font-weight:700;" onclick="goTo('pendientes',document.getElementById('nav-pendientes'))">+ ${abiertas.length-5} tareas más →</div>`:''):'<div style="color:var(--text3);font-size:13px;text-align:center;padding:24px;">No hay tareas pendientes. ¡Todo al día! 🎉</div>';
+}
+
+function togglePendiente(id){
+  const p=(pendientes||[]).find(x=>x.id===id); if(!p) return;
+  if(p.estado==='completada'){ p.estado='pendiente'; delete p.completadaPor; delete p.completadaEn; }
+  else { p.estado='completada'; p.completadaPor=nombrePend(); p.completadaEn=Date.now(); }
+  save('pendientes',pendientes); renderPendientes();
+  toast(p.estado==='completada'?'✅ Tarea completada':'↩️ Tarea reabierta');
+}
+
+function abrirModalPendiente(){
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-title">Nueva tarea pendiente</div>
+    <div class="modal-sub">Se comparte con todos los usuarios de Zaifi</div>
+    <div class="form-group"><label class="form-label">Tarea</label>
+      <input class="form-input" id="pd_tarea" type="text" placeholder="Ej: Enviar factura a cliente X"/></div>
+    <div class="form-group"><label class="form-label">Detalle (opcional)</label>
+      <input class="form-input" id="pd_detalle" type="text" placeholder="Más información sobre la tarea"/></div>
+    <div class="form-group"><label class="form-label">Para (opcional)</label>
+      <input class="form-input" id="pd_para" type="text" placeholder="Dejá vacío si es para todos"/></div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">Prioridad</label>
+        <select class="form-select" id="pd_prio"><option>Alta</option><option selected>Media</option><option>Baja</option></select></div>
+      <div class="form-group" style="flex:1;"><label class="form-label">Fecha límite (opcional)</label>
+        <input class="form-input" id="pd_fecha" type="date"/></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" onclick="guardarPendiente()">Guardar →</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function guardarPendiente(){
+  const t=document.getElementById('pd_tarea').value.trim();
+  if(!t){ toast('⚠️ Escribí la tarea'); return; }
+  pendientes.push({id:uid(),tarea:t,detalle:document.getElementById('pd_detalle').value.trim(),para:document.getElementById('pd_para').value.trim(),prioridad:document.getElementById('pd_prio').value,fechaLimite:document.getElementById('pd_fecha').value,estado:'pendiente',creadoPor:nombrePend(),creadoEn:Date.now()});
+  save('pendientes',pendientes);
+  // Quien la crea ya la vio: no contarse a sí misma en el badge
+  localStorage.setItem(pendSeenKey(),String(Date.now()));
+  closeModal(); renderPendientes(); toast('✅ Tarea agregada');
+}
+
+// Sincronización automática: cada 60s trae los pendientes de Supabase
+// para que aparezca el globito si otra persona cargó una tarea
+setInterval(async ()=>{
+  try{
+    if(!getSession()) return;
+    const data=await loadSupa('pendientes');
+    if(!Array.isArray(data)) return;
+    const antes=JSON.stringify(pendientes||[]);
+    const ahora=JSON.stringify(data);
+    if(antes!==ahora){
+      pendientes=data;
+      localStorage.setItem(dbKey('pendientes'),ahora);
+      renderPendientes();
+    }
+  }catch(e){ /* sin conexión, se reintenta en el próximo ciclo */ }
+},60000);
+
 function renderProveedores(){
   const cat=document.getElementById('prov-cat').value;
   let p=cat?proveedores.filter(x=>x.categoria===cat):proveedores;
@@ -3223,7 +3396,7 @@ function updateDashboard(){
 
 function eliminar(tipo,id){
   if(!confirm('¿Eliminar este registro?'))return;
-  const map={clientes:[clientes,'clientes',renderClientes],facturas:[facturas,'facturas',renderFacturas],gastos:[gastos,'gastos',renderGastos],empleados:[empleados,'empleados',renderEmpleados],proveedores:[proveedores,'proveedores',renderProveedores],catalogo:[catalogo,'catalogo',renderCatalogo],cxc:[cxc,'cxc',renderCxC],cxp:[cxp,'cxp',renderCxP],licencias:[licencias,'licencias',renderLicencias]};
+  const map={clientes:[clientes,'clientes',renderClientes],facturas:[facturas,'facturas',renderFacturas],gastos:[gastos,'gastos',renderGastos],empleados:[empleados,'empleados',renderEmpleados],proveedores:[proveedores,'proveedores',renderProveedores],catalogo:[catalogo,'catalogo',renderCatalogo],cxc:[cxc,'cxc',renderCxC],cxp:[cxp,'cxp',renderCxP],licencias:[licencias,'licencias',renderLicencias],pendientes:[pendientes,'pendientes',renderPendientes]};
   const [arr,key,fn]=map[tipo];
   const i=arr.findIndex(x=>x.id===id);if(i>=0)arr.splice(i,1);
   save(key,arr);fn();updateDashboard();toast('🗑 Eliminado');
@@ -3453,6 +3626,7 @@ function saveModal(type){
 function openAddModal(){
   const page=document.querySelector('.page.active').id.replace('page-','');
   if(page==='licencias'){ abrirModalLicencia(); return; }
+  if(page==='pendientes'){ abrirModalPendiente(); return; }
   const map={dashboard:'add-gasto',clientes:'add-cliente',catalogo:'add-servicio',facturacion:'nueva-factura',proveedores:'add-proveedor',empleados:'add-empleado',gastos:'add-gasto',cxc:'add-cxc',cxp:'add-cxp',bot:'add-gasto'};
   openModal(map[page]||'add-gasto');
 }
@@ -3520,8 +3694,9 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa',licencias:'Licencias de empleados'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa',licencias:'Licencias de empleados',pendientes:'Tareas pendientes'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
+  if(page==='pendientes'){ marcarPendientesVistos(); renderPendientes(); }
   if(page==='licencias') renderLicencias();
   if(page==='estadisticas') renderEstadisticas();
   if(page==='cuentacorriente') initCuentaCorriente();
@@ -3533,9 +3708,9 @@ function goTo(page,el){
   if(page==='invitaciones') renderInvitaciones();
 }
 function clearFilter(p){
-  const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat'],licencias:['lic-emp','lic-tipo','lic-desde','lic-hasta']};
+  const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat'],licencias:['lic-emp','lic-tipo','lic-desde','lic-hasta'],pendientes:['pend-estado','pend-prio']};
   (m[p]||[]).forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  const fn={gastos:renderGastos,facturacion:renderFacturas,cxc:renderCxC,cxp:renderCxP,proveedores:renderProveedores,licencias:renderLicencias};
+  const fn={gastos:renderGastos,facturacion:renderFacturas,cxc:renderCxC,cxp:renderCxP,proveedores:renderProveedores,licencias:renderLicencias,pendientes:renderPendientes};
   if(fn[p])fn[p]();
 }
 function searchTable(input,id){const q=input.value.toLowerCase();document.querySelectorAll(`#${id} tr`).forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none';});}
@@ -4336,9 +4511,10 @@ const editFields = {
   cxc:        [{id:'cliente',label:'Cliente',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']}],
   cxp:        [{id:'proveedor',label:'Proveedor',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','pagado']}],
   licencias:  [{id:'empleado',label:'Empleado',type:'text'},{id:'tipo',label:'Tipo de licencia',type:'select',opts:['Vacaciones','Enfermedad','Estudio','Maternidad/Paternidad','Trámite personal','Fallecimiento familiar','Matrimonio','Mudanza','Otro']},{id:'desde',label:'Desde',type:'date'},{id:'hasta',label:'Hasta',type:'date'},{id:'observaciones',label:'Observaciones',type:'text'}],
+  pendientes: [{id:'tarea',label:'Tarea',type:'text'},{id:'detalle',label:'Detalle',type:'text'},{id:'para',label:'Para (asignada a)',type:'text'},{id:'prioridad',label:'Prioridad',type:'select',opts:['Alta','Media','Baja']},{id:'fechaLimite',label:'Fecha límite',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','completada']}],
 };
-const dataMap  = {clientes:()=>clientes,catalogo:()=>catalogo,facturas:()=>facturas,gastos:()=>gastos,empleados:()=>empleados,proveedores:()=>proveedores,cxc:()=>cxc,cxp:()=>cxp,licencias:()=>licencias};
-const renderMap= {clientes:renderClientes,catalogo:renderCatalogo,facturas:renderFacturas,gastos:renderGastos,empleados:renderEmpleados,proveedores:renderProveedores,cxc:renderCxC,cxp:renderCxP,licencias:renderLicencias};
+const dataMap  = {clientes:()=>clientes,catalogo:()=>catalogo,facturas:()=>facturas,gastos:()=>gastos,empleados:()=>empleados,proveedores:()=>proveedores,cxc:()=>cxc,cxp:()=>cxp,licencias:()=>licencias,pendientes:()=>pendientes};
+const renderMap= {clientes:renderClientes,catalogo:renderCatalogo,facturas:renderFacturas,gastos:renderGastos,empleados:renderEmpleados,proveedores:renderProveedores,cxc:renderCxC,cxp:renderCxP,licencias:renderLicencias,pendientes:renderPendientes};
 
 function editarItem(tipo, id){
   // Facturas usan modal propio
