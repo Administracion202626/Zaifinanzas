@@ -4398,24 +4398,33 @@ function verRubroDetalle(idx){
     .sort((a,b)=>b.m-a.m);
   const totGas = gs.reduce((a,x)=>a+x.m,0);
 
+  const neto = totIng - totGas;
   let h = `<div class="table-card">
     <div class="table-head"><div><div class="th-title">Rubro: ${sanitize(fila.nombre)}</div><div class="th-sub">${todo?'Todo el histórico':ym}</div></div>
       <button class="action-btn" onclick="renderPorRubro()">← Volver</button></div>
-    <div style="padding:10px 24px 4px;font-size:11px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:0.5px;">Ingresos por cliente</div>`;
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 24px;">
+      <div style="background:#EAF5EF;border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:#1A7A52;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Ingresos</div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#1A7A52;">${fmt(totIng)}</div></div>
+      <div style="background:#FBECEC;border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:#C0392B;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Egresos</div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#C0392B;">${fmt(totGas)}</div></div>
+      <div style="background:#F2F0FB;border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:#5B4FE9;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Neto</div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:${neto>=0?'#1A7A52':'#C0392B'};">${fmt(neto)}</div></div>
+    </div>
+    <div style="padding:6px 24px 4px;font-size:11px;font-weight:700;color:#1A7A52;text-transform:uppercase;letter-spacing:0.5px;border-top:0.5px solid #F0EDE6;">&#9650; Ingresos por cliente</div>`;
   if(clientes.length){
     h += `<table><thead><tr><th>Cliente</th><th style="text-align:right;">Monto</th></tr></thead><tbody>`;
     h += clientes.map(x=>`<tr><td><div class="td-main">${sanitize(x.c)}</div></td><td style="text-align:right;font-weight:700;color:#1A7A52;">${fmt(x.m)}</td></tr>`).join('');
-    h += `<tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total</td><td style="text-align:right;font-weight:800;color:#1A7A52;">${fmt(totIng)}</td></tr></tbody></table>`;
+    h += `<tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total ingresos</td><td style="text-align:right;font-weight:800;color:#1A7A52;">${fmt(totIng)}</td></tr></tbody></table>`;
   } else {
-    h += `<div style="padding:12px 24px 20px;color:#888880;">Este rubro no tiene ingresos de clientes en el período.</div>`;
+    h += `<div style="padding:10px 24px 16px;color:#888880;">Sin ingresos de clientes en este rubro para el período.</div>`;
   }
+  h += `<div style="padding:12px 24px 4px;font-size:11px;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:0.5px;border-top:0.5px solid #F0EDE6;">&#9660; Egresos / gastos</div>`;
   if(gs.length){
-    h += `<div style="padding:14px 24px 4px;font-size:11px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:0.5px;border-top:0.5px solid #F0EDE6;">Gastos</div>`;
     h += `<table><thead><tr><th>Proveedor / concepto</th><th style="text-align:right;">Monto</th></tr></thead><tbody>`;
     h += gs.map(x=>`<tr><td><div class="td-main">${sanitize(x.p)}</div>${x.d&&x.d!==x.p?`<div style="font-size:12px;color:#888880;">${sanitize(x.d)}</div>`:''}</td><td style="text-align:right;font-weight:700;color:#C0392B;">${fmt(x.m)}</td></tr>`).join('');
-    h += `<tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total</td><td style="text-align:right;font-weight:800;color:#C0392B;">${fmt(totGas)}</td></tr></tbody></table>`;
+    h += `<tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total egresos</td><td style="text-align:right;font-weight:800;color:#C0392B;">${fmt(totGas)}</td></tr></tbody></table>`;
+  } else {
+    h += `<div style="padding:10px 24px 16px;color:#888880;">Sin gastos cargados en este rubro. Para que aparezcan acá, cargá el gasto con la categoría <b>${sanitize(fila.nombre)}</b>.</div>`;
   }
   h += `</div>`;
+
   const det = document.getElementById('rub-detalle');
   if(det){ det.innerHTML = h; det.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 }
