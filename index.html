@@ -767,7 +767,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#5B4FE9;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.4 · todos los rubros</span>
+          <span style="font-size:10px;font-weight:800;color:#5B4FE9;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.5 · rubros ajustados</span>
         </div>
       </div>
     </div>
@@ -1165,7 +1165,7 @@ tr:hover td{background:#F5F2EC;}
     <div class="page" id="page-proveedores">
       <div class="filter-bar">
         <label>Categoría</label>
-        <select id="prov-cat" onchange="renderProveedores()"><option value="">Todas</option><option>Software</option><option>Servicios</option><option>Alquiler</option><option>Logística</option><option>Otro</option></select>
+        <select id="prov-cat" onchange="renderProveedores()"><option value="">Todas</option><option>Servicios</option><option>Alquiler</option><option>Logística</option><option>Proveedores</option><option>Otro</option></select>
         <button class="filter-clear" onclick="clearFilter('proveedores')">Limpiar</button>
       </div>
       <div class="table-card">
@@ -1195,7 +1195,7 @@ tr:hover td{background:#F5F2EC;}
       <div class="filter-bar">
         <label>Desde</label><input type="date" id="gasto-desde" onchange="renderGastos()">
         <label>Hasta</label><input type="date" id="gasto-hasta" onchange="renderGastos()">
-        <select id="gasto-cat" onchange="renderGastos()"><option value="">Todas las categorías</option><option>Software</option><option>Empleados</option><option>Proveedores</option><option>Marketing</option><option>Alquiler</option><option>Servicios</option><option>Impuestos</option><option>Otro</option></select>
+        <select id="gasto-cat" onchange="renderGastos()"><option value="">Todas las categorías</option><option>Consultoría</option><option>Logística</option><option>Sueldos</option><option>Aguinaldo</option><option>Comisiones</option><option>Empleados</option><option>Proveedores</option><option>Alquiler</option><option>Servicios</option><option>Otro</option></select>
         <button class="filter-clear" onclick="clearFilter('gastos')">Limpiar</button>
       </div>
       <div class="table-card">
@@ -3167,7 +3167,7 @@ const modals={
     {id:'condicion',label:'Condición IVA',type:'select',opts:['Responsable Inscripto','Monotributista','Consumidor Final','Exento']},
     {id:'domicilio',label:'Domicilio fiscal',type:'text',ph:'Ej: Av. Corrientes 1234, CABA'},
     {id:'sector',label:'Sector',type:'text',ph:'Ej: Ecommerce'},
-    {id:'servicio',label:'Servicio contratado',type:'text',ph:'Ej: Marketing digital'},
+    {id:'servicio',label:'Servicio contratado',type:'text',ph:'Ej: Consultoría mensual'},
     {id:'estado',label:'Estado',type:'select',opts:['Activo','Pendiente','Inactivo']},
     {id:'diaResumen',label:'Día del mes para enviar resumen (1-31)',type:'number',ph:'Ej: 5'},
     {id:'diaCobro',label:'Día del mes para cobrar (1-31)',type:'number',ph:'Ej: 10'},
@@ -3183,7 +3183,7 @@ const modals={
   'add-gasto':{title:'Factura de proveedor',sub:'Registrá una factura o cargo de un proveedor',fields:[
     {id:'descripcion',label:'Descripción / Concepto',type:'text',ph:'Ej: Factura Adobe Creative Cloud'},
     {id:'proveedor',label:'Proveedor',type:'text',ph:'Ej: Adobe'},
-    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Empleados','Proveedores','Alquiler','Servicios','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha de emisión',type:'date'},
     {id:'vencimiento',label:'Fecha de vencimiento',type:'date'},
@@ -3191,7 +3191,7 @@ const modals={
   ]},
   'add-gasto-extra':{title:'Gasto adicional',sub:'Registrá un gasto que no es factura de proveedor',fields:[
     {id:'descripcion',label:'Descripción',type:'text',ph:'Ej: Taxi, almuerzo de trabajo, insumos...'},
-    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Empleados','Proveedores','Alquiler','Servicios','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha',type:'date'},
     {id:'notas',label:'Notas (opcional)',type:'text',ph:'Detalle adicional'},
@@ -3207,7 +3207,7 @@ const modals={
   'add-proveedor':{title:'Nuevo proveedor',sub:'Registrá un proveedor',fields:[
     {id:'nombre',label:'Nombre del proveedor',type:'text',ph:'Ej: Adobe'},
     {id:'email',label:'Email / Contacto',type:'email',ph:''},
-    {id:'categoria',label:'Categoría',type:'select',opts:['Software','Servicios','Alquiler','Logística','Otro']},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Servicios','Alquiler','Logística','Proveedores','Otro']},
     {id:'costo',label:'Costo mensual ($)',type:'number',ph:'0'},
     {id:'vencimiento',label:'Vencimiento',type:'date'},
     {id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']},
@@ -4215,9 +4215,9 @@ const editFields = {
   clientes:   [{id:'nombre',label:'Nombre / Empresa',type:'text'},{id:'email',label:'Email',type:'email'},{id:'telefono',label:'WhatsApp',type:'text'},{id:'cuit',label:'CUIT / CUIL',type:'text'},{id:'condicion',label:'Condición IVA',type:'select',opts:['Responsable Inscripto','Monotributista','Consumidor Final','Exento']},{id:'domicilio',label:'Domicilio fiscal',type:'text'},{id:'sector',label:'Sector',type:'text'},{id:'servicio',label:'Servicio',type:'text'},{id:'estado',label:'Estado',type:'select',opts:['Activo','Pendiente','Inactivo']},{id:'diaResumen',label:'Día resumen (1-31)',type:'number'},{id:'diaCobro',label:'Día cobro (1-31)',type:'number'},{id:'plazoCobroDias',label:'Plazo cobro (días)',type:'number'}],
   catalogo:   [{id:'nombre',label:'Nombre del servicio',type:'text'},{id:'descripcion',label:'Descripción',type:'text'},{id:'precio',label:'Precio ($)',type:'number'},{id:'icono',label:'Ícono (emoji)',type:'text'}],
   facturas:   [{id:'numero',label:'Número',type:'text'},{id:'cliente',label:'Cliente',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrada','vencida']}],
-  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
+  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Empleados','Proveedores','Alquiler','Servicios','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
   empleados:  [{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'rol',label:'Rol',type:'text'},{id:'empresa',label:'Empresa',type:'text'},{id:'sueldo',label:'Sueldo ($)',type:'number'},{id:'estado',label:'Estado pago',type:'select',opts:['pendiente','pagado']}],
-  proveedores:[{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Servicios','Alquiler','Logística','Otro']},{id:'costo',label:'Costo ($)',type:'number'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']}],
+  proveedores:[{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'categoria',label:'Categoría',type:'select',opts:['Servicios','Alquiler','Logística','Proveedores','Otro']},{id:'costo',label:'Costo ($)',type:'number'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']}],
   cxc:        [{id:'cliente',label:'Cliente',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']}],
   cxp:        [{id:'proveedor',label:'Proveedor',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','pagado']}],
 };
@@ -4306,7 +4306,7 @@ function renderPorRubro(){
   };
 
   // Conceptos de egreso que se muestran siempre (aunque estén en $0)
-  ['Sueldos','Aguinaldo','Comisiones','Proveedores','Servicios','Impuestos','Alquiler','Marketing','Software'].forEach(n=>bump(n,'gasto',0));
+  ['Sueldos','Aguinaldo','Comisiones','Proveedores','Servicios','Alquiler'].forEach(n=>bump(n,'gasto',0));
 
   // ── INGRESOS (desde facturas) ────────────────────────────────────────
   facturas.filter(f=>enScope(f.fecha)).forEach(f=>{
