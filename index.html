@@ -3182,7 +3182,7 @@ const modals={
   'add-gasto':{title:'Factura de proveedor',sub:'Registrá una factura o cargo de un proveedor',fields:[
     {id:'descripcion',label:'Descripción / Concepto',type:'text',ph:'Ej: Factura Adobe Creative Cloud'},
     {id:'proveedor',label:'Proveedor',type:'text',ph:'Ej: Adobe'},
-    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha de emisión',type:'date'},
     {id:'vencimiento',label:'Fecha de vencimiento',type:'date'},
@@ -3190,7 +3190,7 @@ const modals={
   ]},
   'add-gasto-extra':{title:'Gasto adicional',sub:'Registrá un gasto que no es factura de proveedor',fields:[
     {id:'descripcion',label:'Descripción',type:'text',ph:'Ej: Taxi, almuerzo de trabajo, insumos...'},
-    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha',type:'date'},
     {id:'notas',label:'Notas (opcional)',type:'text',ph:'Detalle adicional'},
@@ -4214,7 +4214,7 @@ const editFields = {
   clientes:   [{id:'nombre',label:'Nombre / Empresa',type:'text'},{id:'email',label:'Email',type:'email'},{id:'telefono',label:'WhatsApp',type:'text'},{id:'cuit',label:'CUIT / CUIL',type:'text'},{id:'condicion',label:'Condición IVA',type:'select',opts:['Responsable Inscripto','Monotributista','Consumidor Final','Exento']},{id:'domicilio',label:'Domicilio fiscal',type:'text'},{id:'sector',label:'Sector',type:'text'},{id:'servicio',label:'Servicio',type:'text'},{id:'estado',label:'Estado',type:'select',opts:['Activo','Pendiente','Inactivo']},{id:'diaResumen',label:'Día resumen (1-31)',type:'number'},{id:'diaCobro',label:'Día cobro (1-31)',type:'number'},{id:'plazoCobroDias',label:'Plazo cobro (días)',type:'number'}],
   catalogo:   [{id:'nombre',label:'Nombre del servicio',type:'text'},{id:'descripcion',label:'Descripción',type:'text'},{id:'precio',label:'Precio ($)',type:'number'},{id:'icono',label:'Ícono (emoji)',type:'text'}],
   facturas:   [{id:'numero',label:'Número',type:'text'},{id:'cliente',label:'Cliente',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrada','vencida']}],
-  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
+  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
   empleados:  [{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'rol',label:'Rol',type:'text'},{id:'empresa',label:'Empresa',type:'text'},{id:'sueldo',label:'Sueldo ($)',type:'number'},{id:'estado',label:'Estado pago',type:'select',opts:['pendiente','pagado']}],
   proveedores:[{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Servicios','Alquiler','Logística','Otro']},{id:'costo',label:'Costo ($)',type:'number'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']}],
   cxc:        [{id:'cliente',label:'Cliente',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']}],
@@ -4321,6 +4321,10 @@ function renderPorRubro(){
     bump(g.categoria||'Otro', 'gasto', g.monto);
   });
 
+  // ── SUELDOS (desde la sección Empleados; costo mensual) ──────────────
+  const _totSueldos = empleados.reduce((a,e)=>a+(+e.sueldo||0),0);
+  if(_totSueldos>0) bump('Sueldos', 'gasto', _totSueldos);
+
   const filas = Object.entries(rubros)
     .map(([k,r])=>({ ...r, key:k, neto: r.ingreso - r.gasto }))
     .sort((a,b)=> (b.ingreso+b.gasto) - (a.ingreso+a.gasto));
@@ -4393,10 +4397,16 @@ function verRubroDetalle(idx){
   const totIng = clientes.reduce((a,x)=>a+x.m,0);
 
   // Gastos del rubro (por proveedor / concepto)
-  const gs = gastos.filter(g=>inScope(g.fecha) && norm(g.categoria||'Otro')===rk)
+  let gs = gastos.filter(g=>inScope(g.fecha) && norm(g.categoria||'Otro')===rk)
     .map(g=>({ p:g.proveedor||g.descripcion||'—', m:(+g.monto||0), d:g.descripcion||'' }))
     .sort((a,b)=>b.m-a.m);
-  const totGas = gs.reduce((a,x)=>a+x.m,0);
+  // El rubro Sueldos suma también a cada empleado (fuente: sección Empleados)
+  if(rk==='sueldos'){
+    const emp = empleados.filter(e=>(+e.sueldo||0)>0)
+      .map(e=>({ p:e.nombre||'Empleado', m:(+e.sueldo||0), d:e.rol?('Sueldo · '+e.rol):'Sueldo' }));
+    gs = emp.concat(gs).sort((a,b)=>b.m-a.m);
+  }
+  let totGas = gs.reduce((a,x)=>a+x.m,0);
 
   const neto = totIng - totGas;
   let h = `<div class="table-card">
