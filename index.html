@@ -4321,9 +4321,10 @@ function renderPorRubro(){
     bump(g.categoria||'Otro', 'gasto', g.monto);
   });
 
-  const filas = Object.values(rubros)
-    .map(r=>({ ...r, neto: r.ingreso - r.gasto }))
+  const filas = Object.entries(rubros)
+    .map(([k,r])=>({ ...r, key:k, neto: r.ingreso - r.gasto }))
     .sort((a,b)=> (b.ingreso+b.gasto) - (a.ingreso+a.gasto));
+  _rubFilas = filas; _rubScope = { todo:!!todo, ym };
 
   const totIngreso = filas.reduce((a,r)=>a+r.ingreso,0);
   const totGasto   = filas.reduce((a,r)=>a+r.gasto,0);
@@ -4345,9 +4346,9 @@ function renderPorRubro(){
   if(!filas.length){
     html += `<tr><td colspan="4" style="text-align:center;color:#888880;padding:32px;">No hay movimientos en este período. Cargá facturas o gastos →</td></tr>`;
   } else {
-    html += filas.map(r=>`
+    html += filas.map((r,idx)=>`
       <tr style="border-left:3px solid ${r.neto>=0?'#1A7A52':'#C0392B'};">
-        <td><div class="td-main">${r.nombre}</div></td>
+        <td><span class="td-main" style="cursor:pointer;color:#5B4FE9;font-weight:700;" onclick="verRubroDetalle(${idx})" title="Ver clientes de este rubro">${r.nombre} ›</span></td>
         <td style="text-align:right;font-weight:700;color:${r.ingreso?'#1A7A52':'#B8B4AC'};">${fmt(r.ingreso)}</td>
         <td style="text-align:right;font-weight:700;color:${r.gasto?'#C0392B':'#B8B4AC'};">${fmt(r.gasto)}</td>
         <td style="text-align:right;font-weight:800;color:${r.neto>=0?'#1A7A52':'#C0392B'};">${fmt(r.neto)}</td>
@@ -4364,12 +4365,61 @@ function renderPorRubro(){
       Los ingresos salen de tus facturas (la logística se agrupa aparte y la consultoría por el concepto de cada línea). Los gastos se agrupan por la categoría que elegís al cargarlos. Para que un rubro cruce ingreso y gasto, usá el mismo nombre (ej: cargá el gasto con categoría <b>Logística</b>).
     </div>`;
 
-  cont.innerHTML = html;
+  cont.innerHTML = html + '<div id="rub-detalle" style="margin-top:20px;"></div>';
+}
+// ══════════════════════════════════════════════
+var _rubFilas = [], _rubScope = {};
+// Detalle de un rubro: clientes + monto (ingresos) y gastos de ese rubro
+function verRubroDetalle(idx){
+  const fila = _rubFilas[idx]; if(!fila) return;
+  const todo = _rubScope.todo, ym = _rubScope.ym;
+  const inScope = (fecha)=> todo ? true : (String(fecha||'').slice(0,7)===ym);
+  const rk = fila.key;
+  const norm = s => (s||'').trim().toLowerCase();
+
+  // Ingresos por cliente
+  const porCliente = {};
+  facturas.filter(f=>inScope(f.fecha)).forEach(f=>{
+    const cli = f.cliente || 'Sin cliente';
+    if(rk==='logística' || rk==='logistica'){
+      if((+f.totalLog||0)>0) porCliente[cli]=(porCliente[cli]||0)+(+f.totalLog||0);
+    } else if(Array.isArray(f.servicios) && f.servicios.length){
+      f.servicios.forEach(s=>{ if(norm(s.desc||'Consultoría')===rk) porCliente[cli]=(porCliente[cli]||0)+(+s.monto||0); });
+    } else if((+f.totalSrv||0)>0 && rk==='consultoría'){
+      porCliente[cli]=(porCliente[cli]||0)+(+f.totalSrv||0);
+    }
+  });
+  const clientes = Object.entries(porCliente).map(([c,m])=>({c,m})).sort((a,b)=>b.m-a.m);
+  const totIng = clientes.reduce((a,x)=>a+x.m,0);
+
+  // Gastos del rubro (por proveedor / concepto)
+  const gs = gastos.filter(g=>inScope(g.fecha) && norm(g.categoria||'Otro')===rk)
+    .map(g=>({ p:g.proveedor||g.descripcion||'—', m:(+g.monto||0), d:g.descripcion||'' }))
+    .sort((a,b)=>b.m-a.m);
+  const totGas = gs.reduce((a,x)=>a+x.m,0);
+
+  let h = `<div class="table-card">
+    <div class="table-head"><div><div class="th-title">Rubro: ${sanitize(fila.nombre)}</div><div class="th-sub">${todo?'Todo el histórico':ym}</div></div>
+      <button class="action-btn" onclick="renderPorRubro()">← Volver</button></div>
+    <div style="padding:10px 24px 4px;font-size:11px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:0.5px;">Ingresos por cliente</div>`;
+  if(clientes.length){
+    h += `<table><thead><tr><th>Cliente</th><th style="text-align:right;">Monto</th></tr></thead><tbody>`;
+    h += clientes.map(x=>`<tr><td><div class="td-main">${sanitize(x.c)}</div></td><td style="text-align:right;font-weight:700;color:#1A7A52;">${fmt(x.m)}</td></tr>`).join('');
+    h += `<tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total</td><td style="text-align:right;font-weight:800;color:#1A7A52;">${fmt(totIng)}</td></tr></tbody></table>`;
+  } else {
+    h += `<div style="padding:12px 24px 20px;color:#888880;">Este rubro no tiene ingresos de clientes en el período.</div>`;
+  }
+  if(gs.length){
+    h += `<div style="padding:14px 24px 4px;font-size:11px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:0.5px;border-top:0.5px solid #F0EDE6;">Gastos</div>`;
+    h += `<table><thead><tr><th>Proveedor / concepto</th><th style="text-align:right;">Monto</th></tr></thead><tbody>`;
+    h += gs.map(x=>`<tr><td><div class="td-main">${sanitize(x.p)}</div>${x.d&&x.d!==x.p?`<div style="font-size:12px;color:#888880;">${sanitize(x.d)}</div>`:''}</td><td style="text-align:right;font-weight:700;color:#C0392B;">${fmt(x.m)}</td></tr>`).join('');
+    h += `<tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total</td><td style="text-align:right;font-weight:800;color:#C0392B;">${fmt(totGas)}</td></tr></tbody></table>`;
+  }
+  h += `</div>`;
+  const det = document.getElementById('rub-detalle');
+  if(det){ det.innerHTML = h; det.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 }
 
-// ══════════════════════════════════════════════
-// LÍNEA CRÍTICA — break-even de consultoría
-// ══════════════════════════════════════════════
 function renderLineaCritica(){
   const mesEl = document.getElementById('lc-mes');
   let ym = mesEl && mesEl.value;
