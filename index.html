@@ -801,6 +801,7 @@ tr:hover td{background:#F5F2EC;}
     <div class="nav-item" onclick="goTo('rentabilidad',this)"><span class="ni">◎</span>Rentabilidad</div>
     <div class="nav-item" onclick="goTo('proyeccion',this)"><span class="ni">◉</span>Proyección</div>
     <div class="nav-item" onclick="goTo('lineacritica',this)"><span class="ni">◎</span>Línea crítica</div>
+    <div class="nav-item" onclick="goTo('porrubro',this)"><span class="ni">▦</span>Por rubro</div>
     <div class="nav-item" onclick="goTo('estadisticas',this)"><span class="ni">◈</span>Estadísticas</div>
     <div class="nav-item" onclick="goTo('bot',this)"><span class="ni">◎</span>Chat con Zaifi</div>
     <div class="nav-item" id="nav-invitaciones" onclick="goTo('invitaciones',this)" style="display:none;"><span class="ni">◈</span>Invitaciones</div>
@@ -1373,6 +1374,26 @@ tr:hover td{background:#F5F2EC;}
           <tbody id="bancos-tbody"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- POR RUBRO -->
+    <div class="page" id="page-porrubro">
+      <div style="background:linear-gradient(135deg,#0D0D0D,#1A5E3A);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+        <div style="font-size:32px;">▦</div>
+        <div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:white;">Ingresos y gastos por rubro</div><div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:3px;">Cuánto entra y cuánto sale por cada concepto (consultoría, logística, etc.)</div></div>
+      </div>
+      <div class="table-card" style="margin-bottom:20px;">
+        <div style="padding:18px 24px;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <div style="font-size:12px;color:#888880;font-weight:700;margin-bottom:6px;">Mes</div>
+            <input type="month" id="rub-mes" onchange="renderPorRubro()" style="padding:8px 12px;border:1px solid #E2DDD5;border-radius:8px;font-size:14px;">
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#666660;cursor:pointer;padding-bottom:8px;">
+            <input type="checkbox" id="rub-todo" onchange="renderPorRubro()" style="width:16px;height:16px;"> Todo el histórico
+          </label>
+        </div>
+      </div>
+      <div id="rub-results"></div>
     </div>
 
     <!-- LÍNEA CRÍTICA -->
@@ -3161,7 +3182,7 @@ const modals={
   'add-gasto':{title:'Factura de proveedor',sub:'Registrá una factura o cargo de un proveedor',fields:[
     {id:'descripcion',label:'Descripción / Concepto',type:'text',ph:'Ej: Factura Adobe Creative Cloud'},
     {id:'proveedor',label:'Proveedor',type:'text',ph:'Ej: Adobe'},
-    {id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha de emisión',type:'date'},
     {id:'vencimiento',label:'Fecha de vencimiento',type:'date'},
@@ -3169,7 +3190,7 @@ const modals={
   ]},
   'add-gasto-extra':{title:'Gasto adicional',sub:'Registrá un gasto que no es factura de proveedor',fields:[
     {id:'descripcion',label:'Descripción',type:'text',ph:'Ej: Taxi, almuerzo de trabajo, insumos...'},
-    {id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
+    {id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha',type:'date'},
     {id:'notas',label:'Notas (opcional)',type:'text',ph:'Detalle adicional'},
@@ -3230,9 +3251,10 @@ function openModal(type){
   // Build proveedor dropdown for gasto modal
   const isProvModal = type==='add-gasto'||type==='add-cxp';
   const provFieldId = type==='add-cxp'?'cxp-prov-sel':'gasto-prov-sel';
-  const provOpts = isProvModal && proveedores.length
-    ? '<div class="form-group"><label class="form-label">Proveedor</label><select class="form-select" id="'+provFieldId+'"><option value="">Seleccioná un proveedor</option>'+proveedores.map(p=>`<option value="${sanitize(p.nombre)}">${sanitize(p.nombre)}</option>`).join('')+'</select></div>'
-    : '';
+  const provOpts = !isProvModal ? ''
+    : (proveedores.length
+      ? '<div class="form-group"><label class="form-label">Proveedor</label><select class="form-select" id="'+provFieldId+'"><option value="">— Sin proveedor / otro —</option>'+proveedores.map(p=>`<option value="${sanitize(p.nombre)}">${sanitize(p.nombre)}</option>`).join('')+'</select></div>'
+      : '<div class="form-group"><label class="form-label">Proveedor <span style="font-weight:400;color:#888880;">(opcional)</span></label><input class="form-input" id="'+provFieldId+'" type="text" placeholder="Ej: La Reja"/></div>');
 
   document.getElementById('modal-content').innerHTML=`
     <div class="modal-title">${m.title}</div><div class="modal-sub">${m.sub}</div>
@@ -3264,7 +3286,8 @@ function saveModal(type){
       const d=gf('descripcion'),m=gf('monto');if(!d||!m){toast('⚠️ Completá descripción y monto');return;}
       const gId=uid();
       const venc=gf('vencimiento');
-      const provNombre=gf('proveedor')||d;
+      const provEl=document.getElementById('gasto-prov-sel');
+      const provNombre=(provEl?provEl.value.trim():'')||gf('proveedor')||d;
       gastos.push({id:gId,descripcion:d,proveedor:provNombre,categoria:gf('categoria')||'Otro',monto:m,fecha:gf('fecha')||today(),vencimiento:venc,notas:gf('notas')||''});
       save('gastos',gastos);
       // Auto-crear CxP vinculada al proveedor
@@ -3303,9 +3326,8 @@ function saveModal(type){
     },
     'add-cxp':()=>{
       const m=gf('monto');if(!m){toast('⚠️ Ingresá el monto');return;}
-      const provSel=document.getElementById('cxp-prov-sel');
-      const p=provSel?provSel.value:'';
-      if(!p){toast('⚠️ Seleccioná un proveedor');return;}
+      const provEl=document.getElementById('cxp-prov-sel');
+      const p=(provEl?provEl.value.trim():'') || gf('concepto') || 'Sin proveedor';
       cxp.push({id:uid(),proveedor:p,concepto:gf('concepto'),monto:m,fecha:gf('fecha')||today(),vencimiento:gf('vencimiento'),estado:gf('estado')||'pendiente'});
       save('cxp',cxp);closeModal();renderCxP();toast('✅ Cuenta por pagar registrada');
     },
@@ -3383,7 +3405,7 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa'};
   document.getElementById('topbar-title').textContent=titles[page]||page;
   if(page==='estadisticas') renderEstadisticas();
   if(page==='cuentacorriente') initCuentaCorriente();
@@ -3391,6 +3413,7 @@ function goTo(page,el){
   if(page==='rentabilidad') renderRentabilidad();
   if(page==='proyeccion') renderProyeccion();
   if(page==='lineacritica') renderLineaCritica();
+  if(page==='porrubro') renderPorRubro();
   if(page==='invitaciones') renderInvitaciones();
 }
 function clearFilter(p){
@@ -4191,7 +4214,7 @@ const editFields = {
   clientes:   [{id:'nombre',label:'Nombre / Empresa',type:'text'},{id:'email',label:'Email',type:'email'},{id:'telefono',label:'WhatsApp',type:'text'},{id:'cuit',label:'CUIT / CUIL',type:'text'},{id:'condicion',label:'Condición IVA',type:'select',opts:['Responsable Inscripto','Monotributista','Consumidor Final','Exento']},{id:'domicilio',label:'Domicilio fiscal',type:'text'},{id:'sector',label:'Sector',type:'text'},{id:'servicio',label:'Servicio',type:'text'},{id:'estado',label:'Estado',type:'select',opts:['Activo','Pendiente','Inactivo']},{id:'diaResumen',label:'Día resumen (1-31)',type:'number'},{id:'diaCobro',label:'Día cobro (1-31)',type:'number'},{id:'plazoCobroDias',label:'Plazo cobro (días)',type:'number'}],
   catalogo:   [{id:'nombre',label:'Nombre del servicio',type:'text'},{id:'descripcion',label:'Descripción',type:'text'},{id:'precio',label:'Precio ($)',type:'number'},{id:'icono',label:'Ícono (emoji)',type:'text'}],
   facturas:   [{id:'numero',label:'Número',type:'text'},{id:'cliente',label:'Cliente',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrada','vencida']}],
-  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
+  gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Software','Empleados','Proveedores','Marketing','Alquiler','Servicios','Impuestos','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
   empleados:  [{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'rol',label:'Rol',type:'text'},{id:'empresa',label:'Empresa',type:'text'},{id:'sueldo',label:'Sueldo ($)',type:'number'},{id:'estado',label:'Estado pago',type:'select',opts:['pendiente','pagado']}],
   proveedores:[{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'categoria',label:'Categoría',type:'select',opts:['Software','Servicios','Alquiler','Logística','Otro']},{id:'costo',label:'Costo ($)',type:'number'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']}],
   cxc:        [{id:'cliente',label:'Cliente',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']}],
@@ -4258,6 +4281,90 @@ ${bp.cuit?`<div class="br"><span class="bk">CUIT</span><span class="bv">${bp.cui
 <div class="hint">Tocá el CBU o Alias para copiar</div></div>
 <div class="footer">${_prf.razon||_prf.nombre||"Mi empresa"} · CUIT: ${_prf.cuit||"—"} · ${fechaHoy}</div>
 </div></div></body></html>`);
+}
+
+// ══════════════════════════════════════════════
+// INGRESOS Y GASTOS POR RUBRO / CONCEPTO
+// ══════════════════════════════════════════════
+function renderPorRubro(){
+  const mesEl = document.getElementById('rub-mes');
+  const todo  = document.getElementById('rub-todo')?.checked;
+  let ym = mesEl && mesEl.value;
+  if(!ym){ ym = new Date().toISOString().slice(0,7); if(mesEl) mesEl.value = ym; }
+  if(mesEl) mesEl.disabled = !!todo;
+
+  const enScope = (fecha)=> todo ? true : (String(fecha||'').slice(0,7)===ym);
+
+  // Acumuladores por rubro (clave normalizada → { nombre, ingreso, gasto })
+  const rubros = {};
+  const key = s => (s||'').trim().toLowerCase();
+  const bump = (nombre, campo, valor)=>{
+    const k = key(nombre) || 'sin concepto';
+    if(!rubros[k]) rubros[k] = { nombre:(nombre||'Sin concepto').trim(), ingreso:0, gasto:0 };
+    rubros[k][campo] += (+valor||0);
+  };
+
+  // ── INGRESOS (desde facturas) ────────────────────────────────────────
+  facturas.filter(f=>enScope(f.fecha)).forEach(f=>{
+    // Logística: va todo junto como rubro "Logística"
+    if((+f.totalLog||0)>0) bump('Logística', 'ingreso', f.totalLog);
+    // Consultoría / servicios: se agrupan por el concepto (desc) de cada línea
+    if(Array.isArray(f.servicios) && f.servicios.length){
+      f.servicios.forEach(s=> bump(s.desc||'Consultoría', 'ingreso', s.monto));
+    } else if((+f.totalSrv||0)>0){
+      bump('Consultoría', 'ingreso', f.totalSrv); // facturas viejas sin detalle
+    }
+  });
+
+  // ── GASTOS (por categoría) ───────────────────────────────────────────
+  gastos.filter(g=>enScope(g.fecha)).forEach(g=>{
+    bump(g.categoria||'Otro', 'gasto', g.monto);
+  });
+
+  const filas = Object.values(rubros)
+    .map(r=>({ ...r, neto: r.ingreso - r.gasto }))
+    .sort((a,b)=> (b.ingreso+b.gasto) - (a.ingreso+a.gasto));
+
+  const totIngreso = filas.reduce((a,r)=>a+r.ingreso,0);
+  const totGasto   = filas.reduce((a,r)=>a+r.gasto,0);
+  const totNeto    = totIngreso - totGasto;
+
+  const cont = document.getElementById('rub-results');
+  if(!cont) return;
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+    <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Ingresos totales</div><div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:#1A7A52;">${fmt(totIngreso)}</div></div>
+    <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Gastos totales</div><div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:#C0392B;">${fmt(totGasto)}</div></div>
+    <div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Resultado neto</div><div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:${totNeto>=0?'#1A7A52':'#C0392B'};">${fmt(totNeto)}</div></div>
+  </div>`;
+
+  html += `<div class="table-card">
+    <div class="table-head"><div><div class="th-title">Detalle por rubro</div><div class="th-sub">${todo?'Todo el histórico':ym} — consultoría separada de logística y demás conceptos</div></div></div>
+    <table><thead><tr><th>Rubro</th><th style="text-align:right;">Ingresos</th><th style="text-align:right;">Gastos</th><th style="text-align:right;">Neto</th></tr></thead><tbody>`;
+
+  if(!filas.length){
+    html += `<tr><td colspan="4" style="text-align:center;color:#888880;padding:32px;">No hay movimientos en este período. Cargá facturas o gastos →</td></tr>`;
+  } else {
+    html += filas.map(r=>`
+      <tr style="border-left:3px solid ${r.neto>=0?'#1A7A52':'#C0392B'};">
+        <td><div class="td-main">${r.nombre}</div></td>
+        <td style="text-align:right;font-weight:700;color:${r.ingreso?'#1A7A52':'#B8B4AC'};">${fmt(r.ingreso)}</td>
+        <td style="text-align:right;font-weight:700;color:${r.gasto?'#C0392B':'#B8B4AC'};">${fmt(r.gasto)}</td>
+        <td style="text-align:right;font-weight:800;color:${r.neto>=0?'#1A7A52':'#C0392B'};">${fmt(r.neto)}</td>
+      </tr>`).join('');
+    html += `<tr style="border-top:2px solid #E2DDD5;background:#FAF8F3;">
+        <td style="font-weight:800;">TOTAL</td>
+        <td style="text-align:right;font-weight:800;color:#1A7A52;">${fmt(totIngreso)}</td>
+        <td style="text-align:right;font-weight:800;color:#C0392B;">${fmt(totGasto)}</td>
+        <td style="text-align:right;font-weight:800;color:${totNeto>=0?'#1A7A52':'#C0392B'};">${fmt(totNeto)}</td>
+      </tr>`;
+  }
+  html += `</tbody></table></div>
+    <div style="margin-top:14px;padding:12px 16px;background:#F7F5F0;border-radius:10px;font-size:12px;color:#888880;line-height:1.6;">
+      Los ingresos salen de tus facturas (la logística se agrupa aparte y la consultoría por el concepto de cada línea). Los gastos se agrupan por la categoría que elegís al cargarlos. Para que un rubro cruce ingreso y gasto, usá el mismo nombre (ej: cargá el gasto con categoría <b>Logística</b>).
+    </div>`;
+
+  cont.innerHTML = html;
 }
 
 // ══════════════════════════════════════════════
