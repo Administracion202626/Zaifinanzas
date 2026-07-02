@@ -767,6 +767,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
+          <span style="font-size:10px;font-weight:800;color:#5B4FE9;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.4 · todos los rubros</span>
         </div>
       </div>
     </div>
@@ -4303,6 +4304,9 @@ function renderPorRubro(){
     if(!rubros[k]) rubros[k] = { nombre:(nombre||'Sin concepto').trim(), ingreso:0, gasto:0 };
     rubros[k][campo] += (+valor||0);
   };
+
+  // Conceptos de egreso que se muestran siempre (aunque estén en $0)
+  ['Sueldos','Aguinaldo','Comisiones','Proveedores','Servicios','Impuestos','Alquiler','Marketing','Software'].forEach(n=>bump(n,'gasto',0));
 
   // ── INGRESOS (desde facturas) ────────────────────────────────────────
   facturas.filter(f=>enScope(f.fecha)).forEach(f=>{
