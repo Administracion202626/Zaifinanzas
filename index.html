@@ -2166,6 +2166,7 @@ async function loadApp(user){
   }catch(e){ console.log('⚠️ Supabase timeout, usando datos locales:', e.message); }
 
   loadData();
+  migrarCxPaGastos();
 
   // Setup sidebar
   document.getElementById('sidebar-empresa').textContent = user.empresa||'Mi empresa';
@@ -3126,6 +3127,30 @@ function abrirDetalleCxP(tipo){
   document.getElementById('modal').classList.add('open');
 }
 
+// ── MIGRACIÓN: CxP sueltas pasan a tener su gasto vinculado ──
+// (corre una sola vez por registro; así aparecen en Gastos y Por rubro)
+function migrarCxPaGastos(){
+  let cambios=false;
+  (cxp||[]).forEach(c=>{
+    if(c.gastoId||c.empleadoId) return; // ya vinculada
+    const txt=((c.concepto||'')+' '+(c.proveedor||'')).toLowerCase();
+    let cat='Otro';
+    if(/log[ií]st/.test(txt)) cat='Logística';
+    else if(/alquiler/.test(txt)) cat='Alquiler';
+    else if(/sueldo|salario/.test(txt)) cat='Sueldos';
+    else if(/aguinaldo/.test(txt)) cat='Aguinaldo';
+    else if(/comisi[oó]n/.test(txt)) cat='Comisiones';
+    else if(/consultor/.test(txt)) cat='Consultoría';
+    else if(/servicio|luz|agua|gas|internet|tel[eé]fono/.test(txt)) cat='Servicios';
+    else if(/proveedor/.test(txt)) cat='Proveedores';
+    const gId=uid();
+    gastos.push({id:gId,descripcion:c.concepto||c.proveedor||'Cuenta por pagar',proveedor:c.proveedor||'',categoria:cat,monto:+c.monto||0,fecha:c.fecha||today(),vencimiento:c.vencimiento||'',notas:'Migrado desde CxP',estado:c.estado==='pagado'?'pagado':'pendiente',montoPagado:+c.montoPagado||0,fechaPago:c.fechaPago||''});
+    c.gastoId=gId;
+    cambios=true;
+  });
+  if(cambios){ save('gastos',gastos); save('cxp',cxp); console.log('✅ CxP migradas a Gastos'); }
+}
+
 function renderCxP(){
   const desde=document.getElementById('cxp-desde').value;
   const hasta=document.getElementById('cxp-hasta').value;
@@ -3135,7 +3160,8 @@ function renderCxP(){
 
   let allCxp=[];
   cxp.forEach(c=>{
-    if(c.gastoId){const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));if(g){c.montoPagado=+(g.montoPagado)||0;c.estado=g.estado||c.estado;}}
+    if(c.gastoId){const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));if(g){c.monto=+g.monto||0;c.fecha=g.fecha||c.fecha;c.vencimiento=g.vencimiento||c.vencimiento;c.montoPagado=+(g.montoPagado)||0;c.estado=g.estado||c.estado;}}
+    if(c.empleadoId){const e=empleados.find(ee=>String(ee.id)===String(c.empleadoId));if(e){c.monto=+e.sueldo||0;}}
     allCxp.push(c);
   });
   gastos.forEach(g=>{
@@ -3506,8 +3532,9 @@ const modals={
     {id:'vencimiento',label:'Fecha de vencimiento',type:'date'},
     {id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']},
   ]},
-  'add-cxp':{title:'Cuenta por Pagar',sub:'Registrá lo que tenés que pagar',fields:[
+  'add-cxp':{title:'Cuenta por Pagar',sub:'Registrá lo que tenés que pagar (también se refleja en Gastos y Por rubro)',fields:[
     {id:'concepto',label:'Concepto',type:'text',ph:'Ej: Alquiler mayo 2026'},
+    {id:'categoria',label:'Categoría (para "Por rubro")',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Empleados','Proveedores','Alquiler','Servicios','Otro']},
     {id:'monto',label:'Monto ($)',type:'number',ph:'0'},
     {id:'fecha',label:'Fecha de emisión',type:'date'},
     {id:'vencimiento',label:'Fecha de vencimiento',type:'date'},
@@ -3615,8 +3642,11 @@ function saveModal(type){
       const m=gf('monto');if(!m){toast('⚠️ Ingresá el monto');return;}
       const provEl=document.getElementById('cxp-prov-sel');
       const p=(provEl?provEl.value.trim():'') || gf('concepto') || 'Sin proveedor';
-      cxp.push({id:uid(),proveedor:p,concepto:gf('concepto'),monto:m,fecha:gf('fecha')||today(),vencimiento:gf('vencimiento'),estado:gf('estado')||'pendiente'});
-      save('cxp',cxp);closeModal();renderCxP();toast('✅ Cuenta por pagar registrada');
+      // Crear el gasto vinculado: fuente de verdad para Gastos y Por rubro
+      const gId=uid();
+      gastos.push({id:gId,descripcion:gf('concepto')||p,proveedor:p,categoria:gf('categoria')||'Otro',monto:+m,fecha:gf('fecha')||today(),vencimiento:gf('vencimiento')||'',notas:'',estado:gf('estado')==='pagado'?'pagado':'pendiente'});
+      cxp.push({id:uid(),proveedor:p,concepto:gf('concepto'),monto:m,fecha:gf('fecha')||today(),vencimiento:gf('vencimiento'),estado:gf('estado')||'pendiente',gastoId:gId});
+      save('gastos',gastos);save('cxp',cxp);closeModal();renderCxP();renderGastos();toast('✅ Cuenta por pagar registrada (también en Gastos)');
     },
   };
   if(actions[type])actions[type]();
@@ -5917,8 +5947,26 @@ function guardarCxCxP(tipo, id){
     : ['proveedor','concepto','monto','fecha','vencimiento','estado'];
   fields.forEach(f=>{ if(gf(f)) item[f]=gf(f); });
   save(tipo, arr);
+  // ── Sincronizar con la fuente de verdad ──
+  if(tipo==='cxp'){
+    if(item.gastoId){
+      const g=gastos.find(x=>String(x.id)===String(item.gastoId));
+      if(g){
+        g.monto=+item.monto||0;
+        if(item.fecha) g.fecha=item.fecha;
+        if(item.vencimiento) g.vencimiento=item.vencimiento;
+        if(item.proveedor) g.proveedor=item.proveedor;
+        g.estado=item.estado==='pagado'?'pagado':(g.estado==='pagado'?'pendiente':g.estado);
+        save('gastos',gastos); renderGastos();
+      }
+    } else if(item.empleadoId){
+      const e=empleados.find(x=>String(x.id)===String(item.empleadoId));
+      if(e){ e.sueldo=+item.monto||0; save('empleados',empleados); renderEmpleados(); }
+    }
+  }
   closeModal();
   tipo==='cxc' ? renderCxC() : renderCxP();
+  updateDashboard();
   toast('✅ Guardado');
 }
 // ══════════════════════════════════════════════
