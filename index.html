@@ -979,6 +979,18 @@ tr:hover td{background:#F5F2EC;}
           <select id="fact-tipo-filter" onchange="renderFacturas()"><option value="">Todos los tipos</option><option value="A">Factura A</option><option value="B">Factura B</option><option value="C">Factura C</option><option value="interna">Interno</option><option value="presupuesto">Presupuesto</option></select>
           <button class="filter-clear" onclick="clearFilter('facturacion')">Limpiar</button>
         </div>
+        <!-- BANNER ARCA -->
+        <div style="background:linear-gradient(135deg,#003087 0%,#0052CC 100%);border-radius:14px;padding:16px 22px;margin-bottom:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="width:44px;height:44px;background:rgba(255,255,255,0.15);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏛️</div>
+          <div style="flex:1;min-width:200px;">
+            <div style="font-size:15px;font-weight:800;color:white;">Facturación electrónica ARCA <span id="arca-env-badge" style="font-size:10px;font-weight:800;background:#FBBF24;color:#0D0D0D;border-radius:6px;padding:2px 8px;margin-left:6px;vertical-align:middle;">MODO PRUEBA</span></div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.75);">Emití facturas A, B y C con CAE oficial, directo desde Zaifi.</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="probarArca()" style="padding:9px 16px;background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">Probar conexión</button>
+            <button onclick="abrirModalArca()" style="padding:9px 18px;background:white;color:#003087;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;">Emitir con ARCA →</button>
+          </div>
+        </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
           <div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;">Facturas emitidas</div>
           <button class="tb-btn tb-btn-primary" onclick="nuevaFacturaFull()">+ Nueva factura</button>
@@ -2928,6 +2940,97 @@ setInterval(async ()=>{
     }
   }catch(e){ /* sin conexión, se reintenta en el próximo ciclo */ }
 },60000);
+
+// ══════════════════════════════════════════════
+// FACTURACIÓN ELECTRÓNICA ARCA (ex AFIP)
+// ══════════════════════════════════════════════
+const ARCA_API='/api/arca';
+async function arcaFetch(payload){
+  const r=await fetch(ARCA_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const j=await r.json().catch(()=>({ok:false,error:'Respuesta inválida del servidor'}));
+  if(!j.ok) throw new Error(j.error||'Error desconocido');
+  return j;
+}
+async function probarArca(){
+  toast('⏳ Consultando ARCA...');
+  try{
+    const r=await arcaFetch({action:'status'});
+    const badge=document.getElementById('arca-env-badge');
+    if(badge){badge.textContent=r.env==='production'?'PRODUCCIÓN':'MODO PRUEBA';badge.style.background=r.env==='production'?'#34D399':'#FBBF24';}
+    toast('✅ Conexión con ARCA OK ('+(r.env==='production'?'producción':'modo prueba')+')');
+  }catch(e){ toast('❌ '+e.message); }
+}
+function abrirModalArca(){
+  const opCli=clientes.map(c=>`<option value="${sanitize(c.nombre)}" data-cuit="${sanitize(c.cuit||'')}">${sanitize(c.nombre)}</option>`).join('');
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-title">🏛️ Emitir factura ARCA</div>
+    <div class="modal-sub">Se solicita el CAE a ARCA y la factura queda registrada en Zaifi</div>
+    <div class="form-group"><label class="form-label">Cliente</label>
+      <select class="form-select" id="ar_cliente" onchange="const o=this.selectedOptions[0];if(o&&o.dataset.cuit)document.getElementById('ar_docnro').value=o.dataset.cuit.replace(/\\D/g,'');">
+        <option value="">— Sin cliente de Zaifi —</option>${opCli}</select></div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">Tipo de factura</label>
+        <select class="form-select" id="ar_tipo" onchange="arcaCalc()"><option value="1">Factura A</option><option value="6" selected>Factura B</option><option value="11">Factura C</option></select></div>
+      <div class="form-group" style="flex:1;"><label class="form-label">Concepto</label>
+        <select class="form-select" id="ar_concepto"><option value="1">Productos</option><option value="2" selected>Servicios</option><option value="3">Productos y servicios</option></select></div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">Doc. del receptor</label>
+        <select class="form-select" id="ar_doctipo"><option value="80">CUIT</option><option value="96">DNI</option><option value="99">Consumidor final</option></select></div>
+      <div class="form-group" style="flex:1;"><label class="form-label">Nro. de documento</label>
+        <input class="form-input" id="ar_docnro" type="text" placeholder="Sin guiones"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Condición IVA del receptor</label>
+      <select class="form-select" id="ar_condiva"><option value="1">Responsable Inscripto</option><option value="4">Exento</option><option value="5" selected>Consumidor Final</option><option value="6">Monotributista</option></select></div>
+    <div class="form-group"><label class="form-label">Importe neto ($, sin IVA)</label>
+      <input class="form-input" id="ar_neto" type="number" step="0.01" placeholder="0" oninput="arcaCalc()"/></div>
+    <div id="ar_resumen" style="padding:12px 16px;background:var(--nav-hover);border-radius:10px;font-size:13px;margin-bottom:14px;color:var(--text3);">Neto $0 + IVA $0 = <b>Total $0</b></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn modal-btn-primary" id="ar_btn" onclick="emitirArca()">Solicitar CAE →</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function arcaCalc(){
+  const neto=parseFloat(document.getElementById('ar_neto').value)||0;
+  const esC=document.getElementById('ar_tipo').value==='11';
+  const iva=esC?0:Math.round(neto*21)/100;
+  const el=document.getElementById('ar_resumen');
+  if(el) el.innerHTML=`Neto ${fmt(neto)} + IVA (21%) ${fmt(iva)} = <b>Total ${fmt(neto+iva)}</b>${esC?' <span style="font-size:11px;">(Factura C: sin discriminar IVA)</span>':''}`;
+}
+async function emitirArca(){
+  const neto=parseFloat(document.getElementById('ar_neto').value)||0;
+  const tipo=+document.getElementById('ar_tipo').value;
+  const docTipo=+document.getElementById('ar_doctipo').value;
+  const docNro=(document.getElementById('ar_docnro').value||'').replace(/\D/g,'');
+  if(neto<=0){ toast('⚠️ Ingresá el importe neto'); return; }
+  if(tipo===1 && (docTipo!==80||!docNro)){ toast('⚠️ La Factura A requiere el CUIT del receptor'); return; }
+  if(docTipo!==99 && !docNro){ toast('⚠️ Ingresá el número de documento'); return; }
+  const btn=document.getElementById('ar_btn'); btn.disabled=true; btn.textContent='Solicitando CAE...';
+  try{
+    const r=await arcaFetch({action:'emitir',ptoVta:1,cbteTipo:tipo,docTipo,docNro:+docNro||0,
+      condIVAReceptor:+document.getElementById('ar_condiva').value,
+      concepto:+document.getElementById('ar_concepto').value,neto});
+    const tipoLetra=tipo===1?'A':tipo===6?'B':'C';
+    const cliente=document.getElementById('ar_cliente').value||'Consumidor final';
+    facturas.push({id:uid(),tipo:tipoLetra,cliente,numero:r.numero,monto:r.total,fecha:today(),
+      estado:'pendiente',montoCobrado:0,cae:r.cae,caeVto:r.caeVto,arca:true,arcaEnv:r.env});
+    save('facturas',facturas); renderFacturas(); updateDashboard();
+    document.getElementById('modal-content').innerHTML=`
+      <div class="modal-title">✅ Factura autorizada por ARCA</div>
+      <div class="modal-sub">${r.env==='production'?'Factura real emitida':'Factura de PRUEBA (no impacta en ARCA real)'}</div>
+      <div style="padding:16px;background:var(--nav-hover);border-radius:10px;font-size:14px;line-height:2;">
+        <b>Comprobante:</b> Factura ${tipoLetra} ${r.numero}<br>
+        <b>CAE:</b> ${r.cae}<br>
+        <b>Vencimiento CAE:</b> ${String(r.caeVto).replace(/(\\d{4})(\\d{2})(\\d{2})/,'$3/$2/$1')}<br>
+        <b>Total:</b> ${fmt(r.total)} (neto ${fmt(r.neto)} + IVA ${fmt(r.iva)})
+      </div>
+      <div class="modal-btns"><button class="modal-btn modal-btn-primary" onclick="closeModal()">Listo</button></div>`;
+  }catch(e){
+    btn.disabled=false; btn.textContent='Solicitar CAE →';
+    toast('❌ ARCA: '+e.message);
+  }
+}
 
 function renderProveedores(){
   const cat=document.getElementById('prov-cat').value;
