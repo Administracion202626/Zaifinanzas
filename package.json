@@ -1,9 +1,8 @@
 {
   "name": "zaifi",
-  "version": "11.5.0",
+  "version": "11.7.0",
   "private": true,
-  "description": "Zaifi - Gestión empresarial con facturación electrónica ARCA",
   "dependencies": {
-    "@afipsdk/afip.js": "^1.2.0"
+    "@afipsdk/afip.js": "^1.2.3"
   }
 }

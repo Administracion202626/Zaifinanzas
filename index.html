@@ -767,7 +767,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#5B4FE9;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.6 · sueldos↔cxp</span>
+          <span style="font-size:10px;font-weight:800;color:#5B4FE9;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.7 · ARCA</span>
         </div>
       </div>
     </div>
@@ -953,6 +953,19 @@ tr:hover td{background:#F5F2EC;}
 
       <!-- LISTA DE FACTURAS -->
       <div id="fac-lista-view">
+        <!-- ══ ARCA / AFIP — Facturación electrónica ══ -->
+        <div style="background:linear-gradient(135deg,#EEF3FA,#E4EDF8);border:1.5px solid #C9DAF0;border-radius:14px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="width:44px;height:44px;background:#003087;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">🏛</div>
+          <div style="flex:1;min-width:220px;">
+            <div style="font-family:'Poppins',sans-serif;font-weight:800;font-size:15px;color:#0D2B57;">Facturación electrónica ARCA</div>
+            <div style="font-size:12px;color:#3D5A80;" id="arca-banner-status">Emití facturas A, B y C con CAE oficial.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="action-btn" style="border-color:#003087;color:#003087;background:white;" onclick="arcaProbarConexion()">Probar conexión</button>
+            <button style="padding:9px 16px;background:#003087;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;" onclick="abrirModalArca()">🏛 Emitir con ARCA</button>
+          </div>
+        </div>
+
         <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
           <div class="stat-card"><div class="stat-icon" style="background:#EAF4EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-val" style="color:#1A7A52" id="fact-cobrado">$0</div><div class="stat-label">Cobrado</div></div>
           <div class="stat-card"><div class="stat-icon" style="background:#FBF6E6;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A6A00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-val" style="color:#8A6A00" id="fact-pendiente">$0</div><div class="stat-label">Pendiente</div></div>
@@ -2256,7 +2269,7 @@ function renderFacturas(){
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
             <span style="background:${tc}18;color:${tc};font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;">${tl}</span>
-            <span style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;">${x.numero||'—'}</span>
+            <span style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;">${x.numero||'—'}</span>${x.cae?`<span style="background:#EEF3FA;color:#003087;font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;" title="CAE ${x.cae} · Vto ${x.caeVto||''}">🏛 CAE</span>`:''}
           </div>
           <div style="font-size:12px;color:#666660;">${sanitize(x.cliente)} · Emitida: ${x.fecha||'—'}${x.vencimiento?' · <span style="color:'+(vencida?'#B83232':'#8A6A00')+';font-weight:600;">'+venceLabel+'</span>':''}</div>
         </div>
@@ -6057,6 +6070,257 @@ function guardarPerfil(){
   <div style="font-size:13px;color:#71717A;">Cargando datos...</div>
 </div>
 <style>@keyframes spin-loader{to{transform:rotate(360deg);}}</style>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   ARCA (ex AFIP) — Facturación electrónica
+   Habla con el backend /api/arca (mismo proyecto de Vercel).
+   El certificado y el token NUNCA están en este archivo.
+   ═══════════════════════════════════════════════════════════════ */
+const ARCA_API = '/api/arca';
+
+async function arcaCall(payload){
+  const r = await fetch(ARCA_API, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  let j = null;
+  try { j = await r.json(); } catch(e){}
+  if(!j) throw new Error('El backend no respondió (HTTP '+r.status+'). ¿Está deployado api/arca.js?');
+  if(!j.ok) throw new Error(j.error || ('Error del backend (HTTP '+r.status+')'));
+  return j;
+}
+
+async function arcaProbarConexion(){
+  const st = document.getElementById('arca-banner-status');
+  if(st) st.innerHTML = '⏳ Probando conexión con ARCA...';
+  try{
+    const j = await arcaCall({action:'status'});
+    const modo = j.env==='production' ? '<b style="color:#B83232;">PRODUCCIÓN (facturas reales)</b>' : '<b style="color:#1A7A52;">PRUEBA (homologación)</b>';
+    if(st) st.innerHTML = '✅ Conectado a ARCA · Modo: '+modo+' · CUIT '+j.cuit;
+    toast('✅ Conexión con ARCA OK');
+  }catch(e){
+    if(st) st.innerHTML = '❌ '+sanitize(e.message);
+    toast('❌ No se pudo conectar con ARCA');
+  }
+}
+
+/* ── Modal de emisión ─────────────────────────────────────────── */
+function arcaCondFromText(txt){
+  const t = (txt||'').toLowerCase();
+  if(t.includes('inscripto')) return '1';
+  if(t.includes('monotrib')) return '6';
+  if(t.includes('exento'))   return '4';
+  if(t.includes('final'))    return '5';
+  return '';
+}
+
+function abrirModalArca(){
+  let ov = document.getElementById('arca-modal-overlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'arca-modal-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(13,13,13,0.45);z-index:9000;display:none;align-items:center;justify-content:center;padding:16px;';
+    ov.innerHTML = `
+    <div style="background:white;border-radius:18px;max-width:560px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,0.25);" onclick="event.stopPropagation()">
+      <div style="padding:18px 24px;border-bottom:1px solid #EDEAE3;display:flex;align-items:center;gap:12px;">
+        <div style="width:38px;height:38px;background:#003087;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;">🏛</div>
+        <div style="flex:1;">
+          <div style="font-family:'Poppins',sans-serif;font-weight:800;font-size:17px;color:#0D0D0D;">Emitir con ARCA</div>
+          <div style="font-size:12px;color:#888880;">Comprobante electrónico con CAE oficial</div>
+        </div>
+        <button class="action-btn" onclick="cerrarModalArca()">✕</button>
+      </div>
+      <div style="padding:20px 24px;display:grid;gap:14px;">
+        <div class="form-group">
+          <label class="form-label">Cliente (opcional, autocompleta los datos)</label>
+          <select class="form-select" id="arca-cliente" onchange="arcaSyncCliente()"><option value="">— Sin cliente de Zaifi —</option></select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Tipo de comprobante</label>
+            <select class="form-select" id="arca-tipo" onchange="arcaTipoChanged()">
+              <option value="A">Factura A</option>
+              <option value="B" selected>Factura B</option>
+              <option value="C">Factura C</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Punto de venta</label>
+            <input class="form-input" id="arca-pv" type="number" min="1" value="1"/>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Documento del receptor</label>
+            <select class="form-select" id="arca-doctipo" onchange="arcaTipoChanged()">
+              <option value="80">CUIT</option>
+              <option value="96">DNI</option>
+              <option value="99" selected>Consumidor Final (sin doc.)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">N° de documento</label>
+            <input class="form-input" id="arca-docnro" type="text" placeholder="Solo números"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Condición de IVA del receptor</label>
+          <select class="form-select" id="arca-cond">
+            <option value="5" selected>Consumidor Final</option>
+            <option value="1">IVA Responsable Inscripto</option>
+            <option value="6">Responsable Monotributo</option>
+            <option value="4">IVA Sujeto Exento</option>
+            <option value="7">Sujeto No Categorizado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Concepto / descripción</label>
+          <input class="form-input" id="arca-desc" type="text" value="Servicios" placeholder="Ej: Consultoría, logística..."/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="arca-importe-label">Importe NETO (sin IVA)</label>
+          <input class="form-input" id="arca-importe" type="number" min="0" step="0.01" placeholder="0.00" oninput="arcaRecalc()"/>
+        </div>
+        <div style="background:#F5F2EC;border-radius:12px;padding:14px 18px;">
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;"><span style="color:#666660;">Neto</span><b id="arca-r-neto">$0</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;" id="arca-r-iva-row"><span style="color:#666660;">IVA 21%</span><b id="arca-r-iva">$0</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:17px;padding:6px 0 0;border-top:1px solid #DDD9D0;margin-top:6px;"><span style="font-family:'Poppins',sans-serif;font-weight:800;">TOTAL</span><b style="color:#1A7A52;font-family:'Poppins',sans-serif;" id="arca-r-total">$0</b></div>
+        </div>
+        <div id="arca-result" style="display:none;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.7;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;padding-bottom:4px;">
+          <button class="action-btn" onclick="cerrarModalArca()">Cancelar</button>
+          <button id="arca-btn-emitir" style="padding:11px 22px;background:#003087;color:white;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Poppins',sans-serif;" onclick="arcaEmitir()">Solicitar CAE →</button>
+        </div>
+      </div>
+    </div>`;
+    ov.addEventListener('click', e=>{ if(e.target===ov) cerrarModalArca(); });
+    document.body.appendChild(ov);
+  }
+  // Poblar clientes cada vez (por si cambiaron)
+  const sel = document.getElementById('arca-cliente');
+  sel.innerHTML = '<option value="">— Sin cliente de Zaifi —</option>' +
+    (window.clientes||[]).map(c=>`<option value="${sanitize(c.nombre)}" data-cuit="${(c.cuit||'').replace(/\D/g,'')}" data-condicion="${sanitize(c.condicion||'')}">${sanitize(c.nombre)}${c.cuit?' · '+c.cuit:''}</option>`).join('');
+  document.getElementById('arca-result').style.display='none';
+  const btn = document.getElementById('arca-btn-emitir');
+  btn.disabled = false; btn.textContent = 'Solicitar CAE →';
+  arcaTipoChanged();
+  ov.style.display='flex';
+}
+
+function cerrarModalArca(){
+  const ov = document.getElementById('arca-modal-overlay');
+  if(ov) ov.style.display='none';
+}
+
+function arcaSyncCliente(){
+  const sel = document.getElementById('arca-cliente');
+  const opt = sel.options[sel.selectedIndex];
+  if(!opt || !opt.value) return;
+  const cuit = opt.getAttribute('data-cuit')||'';
+  const cond = arcaCondFromText(opt.getAttribute('data-condicion'));
+  if(cuit){
+    document.getElementById('arca-doctipo').value = '80';
+    document.getElementById('arca-docnro').value = cuit;
+  }
+  if(cond) document.getElementById('arca-cond').value = cond;
+  // Si es Responsable Inscripto con CUIT, sugerimos Factura A
+  if(cond==='1' && cuit) document.getElementById('arca-tipo').value = 'A';
+  arcaTipoChanged();
+}
+
+function arcaTipoChanged(){
+  const tipo = document.getElementById('arca-tipo').value;
+  const docT = document.getElementById('arca-doctipo').value;
+  document.getElementById('arca-importe-label').textContent =
+    tipo==='C' ? 'Importe TOTAL (la Factura C no discrimina IVA)' : 'Importe NETO (sin IVA)';
+  document.getElementById('arca-r-iva-row').style.display = tipo==='C' ? 'none' : 'flex';
+  document.getElementById('arca-docnro').disabled = (docT==='99');
+  if(docT==='99') document.getElementById('arca-docnro').value = '';
+  arcaRecalc();
+}
+
+function arcaRecalc(){
+  const tipo = document.getElementById('arca-tipo').value;
+  const imp = parseFloat(document.getElementById('arca-importe').value)||0;
+  let neto, iva, total;
+  if(tipo==='C'){ neto=imp; iva=0; total=imp; }
+  else { neto=imp; iva=Math.round(imp*21)/100; total=Math.round((imp+iva)*100)/100; }
+  document.getElementById('arca-r-neto').textContent = fmt(neto);
+  document.getElementById('arca-r-iva').textContent = fmt(iva);
+  document.getElementById('arca-r-total').textContent = fmt(total);
+}
+
+function arcaFmtFecha(yyyymmdd){
+  const s = String(yyyymmdd||'');
+  return s.length===8 ? s.slice(6,8)+'/'+s.slice(4,6)+'/'+s.slice(0,4) : s;
+}
+
+async function arcaEmitir(){
+  const tipo   = document.getElementById('arca-tipo').value;
+  const ptoVta = parseInt(document.getElementById('arca-pv').value,10)||0;
+  const docTipo= parseInt(document.getElementById('arca-doctipo').value,10);
+  const docNro = (document.getElementById('arca-docnro').value||'').replace(/\D/g,'');
+  const cond   = parseInt(document.getElementById('arca-cond').value,10);
+  const desc   = (document.getElementById('arca-desc').value||'').trim() || 'Factura electrónica';
+  const imp    = parseFloat(document.getElementById('arca-importe').value)||0;
+  const cliSel = document.getElementById('arca-cliente').value;
+  const resBox = document.getElementById('arca-result');
+  const btn    = document.getElementById('arca-btn-emitir');
+
+  // Validaciones antes de llamar a ARCA
+  if(ptoVta<1){ toast('⚠️ Punto de venta inválido'); return; }
+  if(imp<=0){ toast('⚠️ Ingresá un importe mayor a cero'); return; }
+  if(tipo==='A' && docTipo!==80){ toast('⚠️ La Factura A exige CUIT del receptor'); return; }
+  if(docTipo!==99 && !docNro){ toast('⚠️ Ingresá el número de documento'); return; }
+
+  btn.disabled = true; btn.textContent = '⏳ Solicitando CAE a ARCA...';
+  resBox.style.display='none';
+  try{
+    const j = await arcaCall({action:'emitir', tipo, ptoVta, docTipo, docNro, condIvaReceptor:cond, neto:imp});
+
+    // ── Guardar la factura en Zaifi ──────────────────────────────
+    const numero = 'F'+j.tipo+'-'+String(j.ptoVta).padStart(5,'0')+'-'+String(j.numero).padStart(8,'0');
+    const cli = (window.clientes||[]).find(c=>c.nombre===cliSel)||{};
+    const nombreCli = cliSel || (docTipo===99?'Consumidor Final':(docTipo===80?'CUIT ':'DNI ')+docNro);
+    const obj = {
+      id: uid(), tipo: j.tipo, numero, cliente: nombreCli,
+      fecha: today(), vencimiento:'', estado:'pendiente',
+      monto: j.total, montoCobrado: 0,
+      servicios: [{id:uid(), desc:desc, monto:j.neto}], envios_data: [],
+      totalSrv: j.neto, totalLog: 0, subtotal: j.neto, neto: j.neto, ivaM: j.iva,
+      cuit: cli.cuit || (docTipo===80?docNro:''), condicion: cli.condicion||'', domicilio: cli.domicilio||'',
+      arca: true, cae: j.cae, caeVto: j.caeVto, arcaEnv: j.env
+    };
+    facturas.push(obj);
+    if(j.total>0){
+      cxc.unshift({id:uid(), cliente:nombreCli, concepto:'Factura '+j.tipo+' '+numero,
+        monto:j.total, fecha:today(), vencimiento:'', estado:'pendiente', facturaId:obj.id});
+      save('cxc',cxc);
+    }
+    save('facturas',facturas);
+    renderFacturas(); updateDashboard();
+
+    const modoAviso = j.env==='production' ? '' : '<div style="margin-top:6px;color:#8A6A00;">⚠️ Modo PRUEBA: este CAE es de homologación, no impacta en ARCA real.</div>';
+    resBox.style.cssText='display:block;background:#EAF4EE;border:1.5px solid #BFDCCB;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.7;';
+    resBox.innerHTML = '<b style="color:#1A7A52;font-size:14px;">✅ Comprobante autorizado por ARCA</b><br>'
+      +'<b>Comprobante:</b> Factura '+j.tipo+' '+numero+'<br>'
+      +'<b>CAE:</b> '+sanitize(j.cae)+'<br>'
+      +'<b>Vto. CAE:</b> '+arcaFmtFecha(j.caeVto)+'<br>'
+      +'<b>Total:</b> '+fmt(j.total)
+      +modoAviso
+      +'<div style="margin-top:6px;color:#666660;">La factura ya quedó guardada en Zaifi (y su cuenta por cobrar).</div>';
+    btn.textContent = 'Emitir otra'; btn.disabled = false;
+    document.getElementById('arca-importe').value=''; arcaRecalc();
+    toast('✅ CAE recibido: factura guardada');
+  }catch(e){
+    resBox.style.cssText='display:block;background:#FBECEC;border:1.5px solid #EDD9D9;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.7;';
+    resBox.innerHTML = '<b style="color:#B83232;">❌ ARCA rechazó la solicitud</b><br>'+sanitize(e.message);
+    btn.textContent = 'Solicitar CAE →'; btn.disabled = false;
+  }
+}
+</script>
 
 </body>
 </html>

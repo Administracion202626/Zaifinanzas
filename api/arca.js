@@ -1,133 +1,161 @@
-// ══════════════════════════════════════════════════════════════
-// ZAIFI × ARCA — Función serverless de Vercel
-// Conecta Zaifi con la facturación electrónica de ARCA (ex AFIP)
-// usando Afip SDK (https://docs.afipsdk.com)
+// api/arca.js
+// ─────────────────────────────────────────────────────────────────────────
+// Backend de facturación electrónica de Zaifi contra ARCA (ex AFIP).
+// Corre como función serverless en Vercel, en el mismo proyecto que el HTML.
 //
-// Variables de entorno necesarias (Vercel → Settings → Environment Variables):
-//   AFIP_SDK_TOKEN  → access token de https://app.afipsdk.com (cuenta gratis)
-//   AFIP_CUIT       → CUIT que factura. Para modo prueba usar: 20409378472
-//   AFIP_ENV        → "dev" (pruebas) o "production" (facturas reales)
-//   AFIP_CERT       → contenido del certificado .crt (solo producción)
-//   AFIP_KEY        → contenido de la clave privada .key (solo producción)
-// ══════════════════════════════════════════════════════════════
+// Variables de entorno (Vercel → Settings → Environment Variables):
+//   AFIP_SDK_TOKEN → access token de app.afipsdk.com          (obligatoria)
+//   AFIP_CUIT      → CUIT que factura (en modo dev: 20409378472)
+//   AFIP_ENV       → "dev" (pruebas) o "production" (facturas reales)
+//   AFIP_CERT      → contenido del certificado .crt   (solo producción)
+//   AFIP_KEY       → contenido de la clave privada .key (solo producción)
+//
+// El certificado y la clave viven SOLO acá. Nunca en el HTML.
+// ─────────────────────────────────────────────────────────────────────────
+
 const Afip = require('@afipsdk/afip.js');
 
-function crearAfip() {
-  const CUIT = Number(process.env.AFIP_CUIT || 20409378472);
-  const access_token = process.env.AFIP_SDK_TOKEN;
-  if (!access_token) throw new Error('Falta configurar AFIP_SDK_TOKEN en Vercel');
+const TIPO_CBTE = { A: 1, B: 6, C: 11 };
+const DOC_VALIDOS = [80, 96, 99]; // CUIT, DNI, Consumidor Final
 
-  const opts = { CUIT, access_token };
-  if (process.env.AFIP_ENV === 'production') {
+function err(msg, status = 400) {
+  const e = new Error(msg);
+  e.status = status;
+  return e;
+}
+
+function getAfip() {
+  const token = process.env.AFIP_SDK_TOKEN;
+  const cuit = process.env.AFIP_CUIT;
+  const prod = String(process.env.AFIP_ENV || 'dev').toLowerCase() === 'production';
+  if (!token) throw err('Falta la variable AFIP_SDK_TOKEN en Vercel.', 500);
+  if (!cuit) throw err('Falta la variable AFIP_CUIT en Vercel.', 500);
+
+  const opts = { CUIT: Number(cuit), access_token: token, production: prod };
+  if (prod) {
     if (!process.env.AFIP_CERT || !process.env.AFIP_KEY) {
-      throw new Error('Modo producción requiere AFIP_CERT y AFIP_KEY en Vercel');
+      throw err('Modo producción: faltan AFIP_CERT y/o AFIP_KEY en Vercel.', 500);
     }
-    opts.production = true;
     opts.cert = process.env.AFIP_CERT;
-    opts.key  = process.env.AFIP_KEY;
+    opts.key = process.env.AFIP_KEY;
   }
-  return new Afip(opts);
+  return { afip: new Afip(opts), env: prod ? 'production' : 'dev', cuit: Number(cuit) };
+}
+
+// yyyymmdd de hoy (hora Argentina, para que la fecha del comprobante no se corra)
+function hoyArg() {
+  const d = new Date(Date.now() - 3 * 60 * 60 * 1000); // UTC-3
+  return d.toISOString().slice(0, 10).replace(/-/g, '');
+}
+
+async function handleStatus(res) {
+  const { afip, env, cuit } = getAfip();
+  const s = await afip.ElectronicBilling.getServerStatus();
+  const ok = s && s.AppServer === 'OK' && s.DbServer === 'OK' && s.AuthServer === 'OK';
+  return res.status(200).json({ ok, env, cuit, server: s });
+}
+
+async function handleEmitir(body, res) {
+  const { afip, env } = getAfip();
+
+  // ── Validación de entrada ────────────────────────────────────────────
+  const tipo = String(body.tipo || '').toUpperCase();
+  if (!TIPO_CBTE[tipo]) throw err('Tipo de comprobante inválido (usá A, B o C).');
+
+  const ptoVta = parseInt(body.ptoVta, 10);
+  if (!ptoVta || ptoVta < 1) throw err('Punto de venta inválido.');
+
+  const docTipo = parseInt(body.docTipo, 10);
+  if (!DOC_VALIDOS.includes(docTipo)) throw err('Tipo de documento inválido (80=CUIT, 96=DNI, 99=Cons. Final).');
+
+  const docNro = docTipo === 99 ? 0 : parseInt(String(body.docNro || '').replace(/\D/g, ''), 10);
+  if (docTipo !== 99 && (!docNro || isNaN(docNro))) throw err('Número de documento inválido.');
+  if (tipo === 'A' && docTipo !== 80) throw err('La Factura A exige CUIT del receptor.');
+
+  const condIva = parseInt(body.condIvaReceptor, 10);
+  if (!condIva) throw err('Falta la condición de IVA del receptor.');
+
+  const importe = Math.round((parseFloat(body.neto) || 0) * 100) / 100;
+  if (!(importe > 0)) throw err('El importe tiene que ser mayor a cero.');
+
+  // ── Cálculo de importes ──────────────────────────────────────────────
+  // A y B: el importe recibido es NETO, se le suma IVA 21%.
+  // C: sin discriminar IVA; el importe recibido es el TOTAL.
+  let neto, iva, total;
+  if (tipo === 'C') {
+    neto = importe; iva = 0; total = importe;
+  } else {
+    neto = importe;
+    iva = Math.round(neto * 21) / 100;
+    total = Math.round((neto + iva) * 100) / 100;
+  }
+
+  // ── Número de comprobante: el siguiente al último autorizado ─────────
+  const cbteTipo = TIPO_CBTE[tipo];
+  const ultimo = await afip.ElectronicBilling.getLastVoucher(ptoVta, cbteTipo);
+  const numero = (Number(ultimo) || 0) + 1;
+
+  const fecha = hoyArg();
+
+  const data = {
+    CantReg: 1,
+    PtoVta: ptoVta,
+    CbteTipo: cbteTipo,
+    Concepto: 2,               // Servicios
+    DocTipo: docTipo,
+    DocNro: docNro,
+    CbteDesde: numero,
+    CbteHasta: numero,
+    CbteFch: parseInt(fecha, 10),
+    FchServDesde: parseInt(fecha, 10),
+    FchServHasta: parseInt(fecha, 10),
+    FchVtoPago: parseInt(fecha, 10),
+    ImpTotal: total,
+    ImpTotConc: 0,
+    ImpNeto: neto,
+    ImpOpEx: 0,
+    ImpIVA: iva,
+    ImpTrib: 0,
+    MonId: 'PES',
+    MonCotiz: 1,
+    CondicionIVAReceptorId: condIva, // obligatorio desde RG 5616 (2025)
+  };
+  if (tipo !== 'C') {
+    data.Iva = [{ Id: 5, BaseImp: neto, Importe: iva }]; // 5 = IVA 21%
+  }
+
+  const v = await afip.ElectronicBilling.createVoucher(data);
+  if (!v || !v.CAE) throw err('ARCA no devolvió CAE. Revisá los datos e intentá de nuevo.', 502);
+
+  return res.status(200).json({
+    ok: true,
+    env,
+    tipo,
+    ptoVta,
+    numero,
+    cae: String(v.CAE),
+    caeVto: String(v.CAEFchVto || ''), // yyyymmdd
+    neto, iva, total,
+  });
 }
 
 module.exports = async (req, res) => {
-  // CORS básico (mismo dominio en Vercel, pero por las dudas)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'Usar POST' });
-
-  const body = req.body || {};
-  const action = body.action;
+  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Usá POST.' });
 
   try {
-    const afip = crearAfip();
+    let body = req.body;
+    if (typeof body === 'string') { try { body = JSON.parse(body || '{}'); } catch { body = {}; } }
+    body = body || {};
 
-    // ── Probar conexión ──────────────────────────────────────
-    if (action === 'status') {
-      const st = await afip.ElectronicBilling.getServerStatus();
-      return res.status(200).json({ ok:true, env: process.env.AFIP_ENV || 'dev', status: st });
-    }
-
-    // ── Último comprobante autorizado ────────────────────────
-    if (action === 'ultimo') {
-      const nro = await afip.ElectronicBilling.getLastVoucher(Number(body.ptoVta)||1, Number(body.cbteTipo)||6);
-      return res.status(200).json({ ok:true, ultimo: nro });
-    }
-
-    // ── Emitir factura (solicitar CAE) ───────────────────────
-    if (action === 'emitir') {
-      const ptoVta    = Number(body.ptoVta) || 1;
-      const cbteTipo  = Number(body.cbteTipo);          // 1=A, 6=B, 11=C
-      const docTipo   = Number(body.docTipo);           // 80=CUIT, 96=DNI, 99=Cons.Final
-      const docNro    = Number(body.docNro) || 0;
-      const condIVA   = Number(body.condIVAReceptor);   // 1=RI, 4=Exento, 5=Cons.Final, 6=Monotributo
-      const concepto  = Number(body.concepto) || 1;     // 1=Productos, 2=Servicios, 3=Ambos
-      const neto      = Math.round((Number(body.neto)||0) * 100) / 100;
-
-      if (!cbteTipo || !neto) return res.status(400).json({ ok:false, error:'Faltan datos: tipo de comprobante o importe' });
-      if (cbteTipo === 1 && docTipo !== 80) return res.status(400).json({ ok:false, error:'La Factura A requiere CUIT del receptor' });
-
-      // IVA: A y B discriminan 21%; C va sin IVA
-      const esC   = cbteTipo === 11;
-      const iva   = esC ? 0 : Math.round(neto * 21) / 100;
-      const total = Math.round((neto + iva) * 100) / 100;
-
-      const ultimo = await afip.ElectronicBilling.getLastVoucher(ptoVta, cbteTipo);
-      const nroCbte = ultimo + 1;
-
-      const hoy = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().split('T')[0];
-      const fchNum = parseInt(hoy.replace(/-/g,''));
-
-      const data = {
-        CantReg: 1,
-        PtoVta: ptoVta,
-        CbteTipo: cbteTipo,
-        Concepto: concepto,
-        DocTipo: docTipo,
-        DocNro: docNro,
-        CbteDesde: nroCbte,
-        CbteHasta: nroCbte,
-        CbteFch: fchNum,
-        ImpTotal: total,
-        ImpTotConc: 0,
-        ImpNeto: neto,
-        ImpOpEx: 0,
-        ImpIVA: iva,
-        ImpTrib: 0,
-        MonId: 'PES',
-        MonCotiz: 1,
-        CondicionIVAReceptorId: condIVA || (esC ? 5 : (cbteTipo===1 ? 1 : 5)),
-      };
-      // Servicios: requiere período y vencimiento de pago
-      if (concepto === 2 || concepto === 3) {
-        data.FchServDesde = fchNum;
-        data.FchServHasta = fchNum;
-        data.FchVtoPago   = fchNum;
-      }
-      // Alícuotas de IVA (no aplica a Factura C)
-      if (!esC) {
-        data.Iva = [{ Id: 5, BaseImp: neto, Importe: iva }]; // Id 5 = 21%
-      }
-
-      const r = await afip.ElectronicBilling.createVoucher(data);
-
-      return res.status(200).json({
-        ok: true,
-        env: process.env.AFIP_ENV || 'dev',
-        cae: r.CAE,
-        caeVto: r.CAEFchVto,
-        nroCbte,
-        ptoVta,
-        cbteTipo,
-        neto, iva, total,
-        numero: String(ptoVta).padStart(4,'0') + '-' + String(nroCbte).padStart(8,'0'),
-      });
-    }
-
-    return res.status(400).json({ ok:false, error:'Acción desconocida: ' + action });
+    if (body.action === 'status') return await handleStatus(res);
+    if (body.action === 'emitir') return await handleEmitir(body, res);
+    return res.status(400).json({ ok: false, error: 'Acción desconocida (usá "status" o "emitir").' });
   } catch (e) {
-    console.error('Error ARCA:', e);
-    return res.status(500).json({ ok:false, error: String(e.message || e) });
+    const msg = e && e.message ? e.message : 'Error inesperado.';
+    return res.status(e.status || 500).json({ ok: false, error: msg });
   }
 };
