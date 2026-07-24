@@ -2669,27 +2669,37 @@ function renderProveedores(){
 }
 
 function getCxCAll(){
-  // Combine manual CxC + facturas pendientes + resumenes pendientes
-  const all = [...cxc];
+  // Combine facturas + resumenes + CxC manuales.
+  // La factura/resumen es SIEMPRE la fuente de verdad de su propio estado y saldo,
+  // así una factura pendiente aparece siempre en Por cobrar aunque haya quedado
+  // vinculada por error a una CxC manual marcada como cobrada.
+  const all = [];
   const hoy = today();
-  // Add facturas not already in CxC
+  const facIds = new Set();
+  const resIds = new Set();
+  // 1) Facturas (fuente de verdad)
   facturas.forEach(f=>{
-    if(!all.find(x=>x.facturaId===f.id)){
-      all.push({id:'fac_'+f.id, cliente:f.cliente, concepto:(f.tipo==='interna'?'Recibo':'Factura '+(f.tipo||''))+(f.numero?' '+f.numero:''),
-        monto:Math.max(0,(+f.monto||0)-(f.montoCobrado||0)), fecha:f.fecha||hoy,
-        vencimiento:f.vencimiento||'', estado:f.estado==='cobrada'?'cobrado':'pendiente',
-        facturaId:f.id, tipo:'factura', _readonly:true});
-    }
+    facIds.add(f.id);
+    all.push({id:'fac_'+f.id, cliente:f.cliente, concepto:(f.tipo==='interna'?'Recibo':'Factura '+(f.tipo||''))+(f.numero?' '+f.numero:''),
+      monto:Math.max(0,(+f.monto||0)-(+f.montoCobrado||0)), fecha:f.fecha||hoy,
+      vencimiento:f.vencimiento||'', estado:f.estado==='cobrada'?'cobrado':'pendiente',
+      facturaId:f.id, tipo:'factura', _readonly:true});
   });
-  // Add resumenes not already in CxC
+  // 2) Resumenes (fuente de verdad)
   resumenes.forEach(r=>{
-    if(!all.find(x=>x.resumenId===r.id)){
-      all.push({id:'res_'+r.id, cliente:r.cliente, concepto:'Resumen '+r.periodo,
-        monto:r.estado==='pagado'?0:Math.max(0,(+r.totalFinal||0)-(r.pagadoParcial||0)),
-        fecha:r.fecha||hoy, vencimiento:r.vencimiento||'',
-        estado:r.estado==='pagado'?'cobrado':r.estado==='parcial'?'pendiente':'pendiente',
-        resumenId:r.id, tipo:'resumen', _readonly:true});
-    }
+    resIds.add(r.id);
+    all.push({id:'res_'+r.id, cliente:r.cliente, concepto:'Resumen '+r.periodo,
+      monto:r.estado==='pagado'?0:Math.max(0,(+r.totalFinal||0)-(+r.pagadoParcial||0)),
+      fecha:r.fecha||hoy, vencimiento:r.vencimiento||'',
+      estado:r.estado==='pagado'?'cobrado':'pendiente',
+      resumenId:r.id, tipo:'resumen', _readonly:true});
+  });
+  // 3) CxC manuales: solo las que NO son espejo de una factura/resumen ya listada,
+  //    para no duplicar ni ocultar por un vínculo viejo/incorrecto.
+  cxc.forEach(x=>{
+    if(x.facturaId && facIds.has(x.facturaId)) return;
+    if(x.resumenId && resIds.has(x.resumenId)) return;
+    all.push(x);
   });
   return all;
 }
