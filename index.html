@@ -1704,14 +1704,30 @@ async function loadSupa(tabla){
 }
 
 async function saveSupa(tabla, arr){
-  // Todos los usuarios guardan en zaifi_global (datos compartidos)
-  await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}`, 'DELETE');
-  if(arr.length){
-    const rows = arr.map(item=>({tabla, record_id: item.id||String(Math.random()), data: item}));
+  // IMPORTANTE: NO borramos la tabla completa. Solo tocamos los registros que este
+  // dispositivo tiene en memoria: reemplazamos su versión (borrar ese id + reinsertar).
+  // Así un equipo con datos viejos ya NO puede pisar/borrar registros que no conoce.
+  // Aseguramos un id estable en cada registro (antes, los que no tenían id recibían
+  // un id random en cada guardado y se duplicaban).
+  arr.forEach(item=>{ if(!item.id) item.id = 'auto_'+Date.now()+'_'+Math.random().toString(36).slice(2); });
+  const ids = arr.map(item=>item.id);
+  if(ids.length){
+    const list = ids.map(id=>encodeURIComponent(id)).join(',');
+    // Borra SOLO las versiones anteriores de estos mismos ids (no otros registros)
+    await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&record_id=in.(${list})`, 'DELETE');
+    const rows = arr.map(item=>({tabla, record_id: item.id, data: item}));
     await supaFetch('zaifi_global', 'POST', rows);
   }
   // Also keep localStorage as cache
   localStorage.setItem(dbKey(tabla), JSON.stringify(arr));
+}
+
+// Borra UN registro puntual de Supabase (para cuando el usuario elimina algo a propósito).
+async function deleteSupaRecord(tabla, id){
+  if(id==null) return;
+  try{
+    await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&record_id=eq.${encodeURIComponent(id)}`, 'DELETE');
+  }catch(e){ console.log('Supabase delete error:', e); }
 }
 
 const ZAIFI_API_URL = 'https://zaifi-api.vercel.app';
@@ -1925,8 +1941,11 @@ function load(table){ try{return JSON.parse(localStorage.getItem(dbKey(table)))|
 function save(table,data){
   logAudit('MODIFICACION', `Tabla: ${table}`);
   localStorage.setItem(dbKey(table),JSON.stringify(data));
-  // Async save to Supabase (fire and forget)
-  saveSupa(table, data).catch(e=>console.log('Supabase save error:',e));
+  // Guardado en Supabase. Si falla, AVISAMOS (antes fallaba en silencio y se perdían datos).
+  saveSupa(table, data).catch(e=>{
+    console.log('Supabase save error:',e);
+    try{ toast('⚠️ No se pudo guardar en la nube. Revisá tu conexión y no cierres sesión hasta reintentar.'); }catch(_){}
+  });
 }
 
 // Load all data from Supabase on login
@@ -3137,7 +3156,7 @@ function eliminar(tipo,id){
   const map={clientes:[clientes,'clientes',renderClientes],facturas:[facturas,'facturas',renderFacturas],gastos:[gastos,'gastos',renderGastos],empleados:[empleados,'empleados',renderEmpleados],proveedores:[proveedores,'proveedores',renderProveedores],catalogo:[catalogo,'catalogo',renderCatalogo],cxc:[cxc,'cxc',renderCxC],cxp:[cxp,'cxp',renderCxP]};
   const [arr,key,fn]=map[tipo];
   const i=arr.findIndex(x=>x.id===id);if(i>=0)arr.splice(i,1);
-  save(key,arr);fn();updateDashboard();toast('🗑 Eliminado');
+  save(key,arr);deleteSupaRecord(key,id);fn();updateDashboard();toast('🗑 Eliminado');
 }
 
 // ══════════════════════════════════════════════
@@ -4006,6 +4025,7 @@ function eliminarResumen(id){
   if(!confirm('¿Eliminar este resumen?')) return;
   resumenes = resumenes.filter(x=>x.id!==id);
   save('resumenes', resumenes);
+  deleteSupaRecord('resumenes', id);
   renderResumenes();
   toast('🗑 Resumen eliminado');
 }
@@ -4210,8 +4230,8 @@ function copiarTexto(texto){
 
 function eliminarBanco(tipo, id){
   if(!confirm('¿Eliminar este dato bancario?')) return;
-  if(tipo==='propio'){ bancosPropios=bancosPropios.filter(x=>x.id!==id); save('bancosPropios',bancosPropios); }
-  else { bancosTerc=bancosTerc.filter(x=>x.id!==id); save('bancosTerc',bancosTerc); }
+  if(tipo==='propio'){ bancosPropios=bancosPropios.filter(x=>x.id!==id); save('bancosPropios',bancosPropios); deleteSupaRecord('bancosPropios',id); }
+  else { bancosTerc=bancosTerc.filter(x=>x.id!==id); save('bancosTerc',bancosTerc); deleteSupaRecord('bancosTerc',id); }
   renderBancos(); toast('🗑 Eliminado');
 }
 
