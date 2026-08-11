@@ -858,7 +858,7 @@ tr:hover td{background:#F5F2EC;}
         <div class="stat-card card-fact">
           <div class="stat-icon" style="background:#EEEDF8;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B4FE9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
           <div class="stat-val" id="dash-facturacion">$0</div>
-          <div class="stat-label">Facturación total</div>
+          <div class="stat-label">Facturación del mes</div>
         </div>
         <div class="stat-card card-clientes">
           <div class="stat-icon" style="background:#E8F5EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
@@ -878,7 +878,7 @@ tr:hover td{background:#F5F2EC;}
         <div class="stat-card card-gastos">
           <div class="stat-icon" style="background:#EEF3FA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A4A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
           <div class="stat-val" style="color:#1A4A7A;" id="dash-gastos">$0</div>
-          <div class="stat-label">Gastos totales</div>
+          <div class="stat-label">Gastos del mes</div>
         </div>
       </div>
       <!-- Estado del mes + últimos movimientos -->
@@ -931,15 +931,15 @@ tr:hover td{background:#F5F2EC;}
       <!-- Resumen financiero total -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;">
         <div class="table-card" style="padding:20px 22px;">
-          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Total facturado</div>
+          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Facturado del mes</div>
           <div style="font-size:28px;font-weight:800;color:#0D0D0D;letter-spacing:-1px;" id="r-total-fact">$0</div>
         </div>
         <div class="table-card" style="padding:20px 22px;">
-          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Total gastos</div>
+          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Gastos del mes</div>
           <div style="font-size:28px;font-weight:800;color:#B83232;letter-spacing:-1px;" id="r-total-gast">$0</div>
         </div>
         <div class="table-card" style="padding:20px 22px;">
-          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Ganancia neta</div>
+          <div style="font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;">Ganancia del mes</div>
           <div style="font-size:28px;font-weight:800;letter-spacing:-1px;" id="r-ganancia">$0</div>
         </div>
       </div>
@@ -3185,7 +3185,9 @@ function exportarResumenPDF(){
     const gastosTotal = (gastos||[]).reduce((a,x)=>a+(+x.monto||0),0);
     const porPagar = (cxp||[]).reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
     const resultado = cobradoTotal - gastosTotal;
-    const ticket = facturas.length ? facturadoTotal/facturas.length : 0;
+    const _totalSrvAll = facturas.reduce((a,f)=>a+(+f.totalSrv||0),0);
+    const _nSrv = facturas.filter(f=>(+f.totalSrv||0)>0).length;
+    const ticket = _nSrv ? _totalSrvAll/_nSrv : 0;
     const bySrv={}, byLog={};
     facturas.forEach(f=>{ const k=f.cliente||'—'; bySrv[k]=(bySrv[k]||0)+(+f.totalSrv||0); byLog[k]=(byLog[k]||0)+(+f.totalLog||0); });
     const mkTop = obj => Object.entries(obj).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -3230,7 +3232,7 @@ function exportarResumenPDF(){
   </div>
   <h2>Indicadores</h2>
   <table><tr><td>Cantidad de facturas</td><td class="r">${facturas.length}</td></tr>
-  <tr><td>Ticket promedio</td><td class="r">${money(ticket)}</td></tr>
+  <tr><td>Ticket promedio (consultoría)</td><td class="r">${money(ticket)}</td></tr>
   <tr><td>Cantidad de clientes</td><td class="r">${(clientes||[]).length}</td></tr></table>
   <h2>Top clientes — Consultoría</h2>
   <table><tr><th>Cliente</th><th class="r">Facturado consultoría</th></tr>${filasSrv}</table>
@@ -3245,8 +3247,11 @@ function exportarResumenPDF(){
 }
 
 function updateDashboard(){
-  const tf=facturas.reduce((a,x)=>a+(+x.monto||0),0);
-  const tg=gastos.reduce((a,x)=>a+(+x.monto||0),0);
+  // Home enfocado en el MES EN CURSO (facturación, gastos y ganancia del mes actual)
+  const _mesCur = today().substring(0,7);
+  const _factsMes = facturas.filter(f=>f.fecha&&f.fecha.startsWith(_mesCur));
+  const tf=_factsMes.reduce((a,x)=>a+(+x.monto||0),0);
+  const tg=gastos.filter(g=>g.fecha&&g.fecha.startsWith(_mesCur)).reduce((a,x)=>a+(+x.monto||0),0);
   // Por cobrar: usar getCxCAll() igual que la pantalla CxC para que coincidan
   const tp=getCxCAll().filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
   document.getElementById('dash-facturacion').textContent=fmt(tf);
