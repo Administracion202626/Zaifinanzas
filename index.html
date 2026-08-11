@@ -12,21 +12,21 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#F4F5F7;--white:#FFFFFF;
-  --z1:#151A21;--z2:#2A2A2A;
-  --accent:#1F3A5F;--accent2:#33567F;--accent-dark:#152B47;
-  --green:#1B7A54;--green-light:#E7F4EE;
-  --red:#B23A32;--red-light:#FBEEEC;
-  --blue:#1A4A7A;--blue-light:#EEF3FA;
-  --yellow:#8A6A00;--yellow-light:#FBF6E6;
-  --text:#151A21;--text2:#3C4450;--text3:#8A9099;
-  --border:#E4E7EC;--shadow:0 1px 3px rgba(16,24,40,0.06),0 1px 2px rgba(16,24,40,0.04);
-  --shadow-lg:0 12px 32px rgba(16,24,40,0.10);
-  --radius:10px;--radius-lg:14px;
-  --sidebar-bg:#FFFFFF;--sidebar-border:#E4E7EC;
-  --topbar-bg:#FFFFFF;--topbar-border:#E4E7EC;
-  --nav-hover:#EEF1F5;--nav-active:#1F3A5F;--nav-active-text:#FFFFFF;
-  --card-bg:#FFFFFF;--page-bg:#F4F5F7;
+  --bg:#FAFAF9;--white:#FFFFFF;
+  --z1:#18181B;--z2:#27272A;
+  --accent:#232323;--accent2:#3F3F46;--accent-dark:#111111;
+  --green:#3F7A5F;--green-light:#EEF4F0;
+  --red:#B24A3F;--red-light:#FAF0EE;
+  --blue:#3A5673;--blue-light:#F1F2F4;
+  --yellow:#8A6A00;--yellow-light:#F7F4EC;
+  --text:#18181B;--text2:#52525B;--text3:#A1A1AA;
+  --border:#ECECEA;--shadow:0 1px 2px rgba(0,0,0,0.03);
+  --shadow-lg:0 6px 24px rgba(0,0,0,0.06);
+  --radius:8px;--radius-lg:12px;
+  --sidebar-bg:#FFFFFF;--sidebar-border:#EFEFED;
+  --topbar-bg:#FFFFFF;--topbar-border:#EFEFED;
+  --nav-hover:#F4F4F3;--nav-active:#18181B;--nav-active-text:#FFFFFF;
+  --card-bg:#FFFFFF;--page-bg:#FAFAF9;
   --dark-mode:0;}
 
 [data-theme="dark"]{
@@ -750,7 +750,7 @@ tr:hover td{background:#F5F2EC;}
     <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <!-- Gallinita grande -->
-        <div style="width:58px;height:58px;background:#5B4FE9;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(108,92,231,0.3);">
+        <div style="width:58px;height:58px;background:#18181B;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);">
           <svg width="38" height="38" viewBox="0 0 88 104" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="43" cy="72" rx="19" ry="15" fill="white"/>
             <rect x="49" y="50" width="8" height="16" rx="4" fill="white"/>
@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#1F3A5F;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.3 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#18181B;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.4 · ARCA</span>
         </div>
       </div>
     </div>
@@ -6587,6 +6587,15 @@ body, input, select, textarea, button, .nav-item, td, th, .form-input{
 /* Tablas más formales */
 th{ text-transform:uppercase !important; font-size:10px !important; letter-spacing:.8px !important; }
 .stat-val, .kv, td{ font-variant-numeric:tabular-nums; }
+/* ===== Minimalista v11.9.4 — sobrio, sin exagerar ===== */
+.stat-icon{ background:#F4F4F3 !important; box-shadow:none !important; }
+.stat-icon svg{ stroke:#52525B !important; }
+.stat-val{ font-weight:600 !important; }
+.stat-card, .table-card, .card{ box-shadow:none !important; border:0.5px solid var(--border) !important; }
+[style*="F5F2EC"]{ background:#FAFAF9 !important; border-color:#EFEFED !important; }
+[style*="FBF0F0"]{ background:#FAFAF9 !important; border-color:#EFEFED !important; }
+[style*="DDD9D0"]{ border-color:#EFEFED !important; }
+[style*="EDD9D9"]{ border-color:#EFEFED !important; }
 </style>
 
 </body>
