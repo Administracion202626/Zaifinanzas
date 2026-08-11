@@ -816,7 +816,6 @@ tr:hover td{background:#F5F2EC;}
   <div class="nav-section collapsed">
     <div class="nav-section-label" onclick="toggleNavSection(this)">Herramientas<span class="nav-chevron">▾</span></div>
     <div class="nav-links">
-      <div class="nav-item" onclick="exportarExcel()"><span class="ni">⤓</span>Exportar a Excel</div>
       <div class="nav-item" onclick="exportarResumenPDF()"><span class="ni">▤</span>Resumen Ejecutivo (PDF)</div>
       <div class="nav-item" onclick="goTo('bot',this)"><span class="ni">◎</span>Chat con Zaifi</div>
     </div>
@@ -846,7 +845,7 @@ tr:hover td{background:#F5F2EC;}
   <div class="topbar">
     <div class="topbar-title" id="topbar-title">Home</div>
     <div class="topbar-right">
-        <button onclick="exportarPaginaActual()" id="btn-export-page" title="Exportar los datos de esta pantalla a Excel" style="border:1px solid var(--accent);background:var(--white);color:var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;">⤓ Exportar a Excel</button><button onclick="recargarDesdeSupa()" title="Recargar datos desde Supabase" style="border:1px solid #1A7A52;background:#1A7A52;color:white;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;">↻ Recargar</button><button onclick="toggleDarkMode()" id="theme-btn" title="Cambiar tema" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;"><span id="theme-icon">🌙</span><span id="theme-label">Oscuro</span></button>
+        <button onclick="exportarPaginaPDF()" id="btn-export-page" title="Exportar esta pantalla a PDF" style="border:1px solid var(--accent);background:var(--white);color:var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;">⤓ Exportar a PDF</button><button onclick="recargarDesdeSupa()" title="Recargar datos desde Supabase" style="border:1px solid #1A7A52;background:#1A7A52;color:white;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;">↻ Recargar</button><button onclick="toggleDarkMode()" id="theme-btn" title="Cambiar tema" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;"><span id="theme-icon">🌙</span><span id="theme-label">Oscuro</span></button>
       <button id="privacy-btn" onclick="togglePrivacy()" title="Ocultar montos" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;">👁</button>
       <button class="tb-btn tb-btn-sec" onclick="openAddModal()">+ Agregar</button>
     </div>
@@ -3119,6 +3118,61 @@ function exportarPaginaActual(){
   }catch(e){ console.log('export page error',e); toast('No se pudo exportar'); }
 }
 
+function exportarPaginaPDF(){
+  const page = window.__zaifiPage || 'dashboard';
+  const pretty = {
+    facturacion: ['Facturas', ()=> (facturas||[]).map(f=>({Numero:f.numero||'',Cliente:f.cliente||'',Tipo:f.tipo||'',Fecha:f.fecha||'',Vencimiento:f.vencimiento||'',Monto:+f.monto||0,Cobrado:+f.montoCobrado||0,Pendiente:Math.max(0,(+f.monto||0)-(+f.montoCobrado||0)),Estado:f.estado||''}))],
+    clientes: ['Clientes', ()=> (clientes||[]).map(c=>({Nombre:c.nombre||'',Email:c.email||'',Telefono:c.telefono||'',CUIT:c.cuit||'',Condicion:c.condicion||'',Estado:c.estado||''}))],
+    gastos: ['Gastos', ()=> (gastos||[]).map(g=>({Descripcion:g.descripcion||'',Categoria:g.categoria||'',Proveedor:g.proveedor||'',Fecha:g.fecha||'',Vencimiento:g.vencimiento||'',Monto:+g.monto||0,Pagado:+g.montoPagado||0,Estado:g.estado||''}))],
+    cxc: ['Cuentas por Cobrar', ()=> getCxCAll().filter(x=>x.estado!=='cobrado').map(x=>({Cliente:x.cliente||'',Concepto:x.concepto||'',Monto:+x.monto||0,Vencimiento:x.vencimiento||'',Estado:x.estado||''}))],
+    cxp: ['Cuentas por Pagar', ()=> (cxp||[]).map(c=>({Proveedor:c.proveedor||'',Concepto:c.concepto||'',Monto:+c.monto||0,Pagado:+c.montoPagado||0,Vencimiento:c.vencimiento||'',Estado:c.estado||''}))],
+    proveedores: ['Proveedores', ()=> (proveedores||[])],
+    empleados: ['Empleados', ()=> (empleados||[])],
+    catalogo: ['Catálogo', ()=> (catalogo||[])]
+  };
+  if(!pretty[page]){ exportarResumenPDF(); return; }
+  try{
+    const nombre = pretty[page][0];
+    const filas = pretty[page][1]();
+    if(!filas || !filas.length){ toast('⚠️ No hay datos para exportar en esta pantalla'); return; }
+    const p = (typeof getPerfil==='function'? (getPerfil()||{}) : {});
+    const empresa = p.razon || p.nombre || 'Mi Empresa';
+    const cuit = p.cuit ? ('CUIT '+p.cuit) : '';
+    const money = v => (typeof fmt==='function'? fmt(v) : '$'+Math.round(v||0).toLocaleString('es-AR'));
+    const cols = Object.keys(filas[0]);
+    const th = cols.map(c=>`<th class="${typeof filas[0][c]==='number'?'r':''}">${c}</th>`).join('');
+    const rows = filas.map(r=>`<tr>${cols.map(c=>{ const v=r[c]; const isNum=typeof v==='number'; return `<td class="${isNum?'r':''}">${isNum?money(v):(v==null?'':String(v))}</td>`; }).join('')}</tr>`).join('');
+    const fechaHoy = new Date().toLocaleDateString('es-AR');
+    const win = window.open('', '_blank');
+    if(!win){ toast('Permití las ventanas emergentes para generar el PDF'); return; }
+    win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${nombre} — ${empresa}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+  body{color:#151A21;padding:34px;}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1F3A5F;padding-bottom:14px;margin-bottom:18px;}
+  .emp{font-size:20px;font-weight:800;color:#1F3A5F;} .cuit{font-size:12px;color:#666;margin-top:2px;}
+  .doc{text-align:right;} .doc h1{font-size:14px;color:#1F3A5F;letter-spacing:1px;text-transform:uppercase;} .doc .f{font-size:11px;color:#888;margin-top:4px;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th,td{padding:7px 8px;border-bottom:1px solid #EEF0F3;text-align:left;}
+  th{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:#8A9099;background:#F8F9FB;}
+  .r{text-align:right;}
+  tbody tr:nth-child(even){background:#FAFBFC;}
+  .foot{margin-top:26px;padding-top:10px;border-top:1px solid #E4E7EC;font-size:10px;color:#AAB0B8;text-align:center;}
+  @media print{body{padding:10px;} @page{margin:12mm;} thead{display:table-header-group;}}
+</style></head><body>
+  <div class="head">
+    <div><div class="emp">${empresa}</div>${cuit?`<div class="cuit">${cuit}</div>`:''}</div>
+    <div class="doc"><h1>${nombre}</h1><div class="f">Emitido: ${fechaHoy} · ${filas.length} registros</div></div>
+  </div>
+  <table><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table>
+  <div class="foot">Generado automáticamente por Zaifi — Gestión Empresarial</div>
+</body></html>`);
+    win.document.close();
+    setTimeout(()=>{ try{ win.focus(); win.print(); }catch(_){} }, 500);
+    toast('▤ Abriendo '+nombre+' para imprimir/PDF');
+  }catch(e){ console.log('pdf page error',e); toast('No se pudo generar el PDF'); }
+}
+
 function exportarResumenPDF(){
   try{
     const p = (typeof getPerfil==='function'? (getPerfil()||{}) : {});
@@ -3132,9 +3186,12 @@ function exportarResumenPDF(){
     const porPagar = (cxp||[]).reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
     const resultado = cobradoTotal - gastosTotal;
     const ticket = facturas.length ? facturadoTotal/facturas.length : 0;
-    const byCli={}; facturas.forEach(f=>{ const k=f.cliente||'—'; byCli[k]=(byCli[k]||0)+(+f.monto||0); });
-    const top = Object.entries(byCli).sort((a,b)=>b[1]-a[1]).slice(0,5);
-    const filasTop = top.length ? top.map(([c,v])=>`<tr><td>${c}</td><td class="r">${money(v)}</td></tr>`).join('') : '<tr><td colspan="2">Sin datos</td></tr>';
+    const bySrv={}, byLog={};
+    facturas.forEach(f=>{ const k=f.cliente||'—'; bySrv[k]=(bySrv[k]||0)+(+f.totalSrv||0); byLog[k]=(byLog[k]||0)+(+f.totalLog||0); });
+    const mkTop = obj => Object.entries(obj).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const topSrv = mkTop(bySrv), topLog = mkTop(byLog);
+    const filasSrv = topSrv.length ? topSrv.map(([c,v])=>`<tr><td>${c}</td><td class="r">${money(v)}</td></tr>`).join('') : '<tr><td colspan="2" style="color:#999">Sin datos de consultoría</td></tr>';
+    const filasLog = topLog.length ? topLog.map(([c,v])=>`<tr><td>${c}</td><td class="r">${money(v)}</td></tr>`).join('') : '<tr><td colspan="2" style="color:#999">Sin datos de logística</td></tr>';
     const fechaHoy = new Date().toLocaleDateString('es-AR');
     const kpi = (label,val,color)=>`<div class="kpi"><div class="kl">${label}</div><div class="kv" style="color:${color||'#151A21'}">${money(val)}</div></div>`;
     const win = window.open('', '_blank');
@@ -3175,8 +3232,10 @@ function exportarResumenPDF(){
   <table><tr><td>Cantidad de facturas</td><td class="r">${facturas.length}</td></tr>
   <tr><td>Ticket promedio</td><td class="r">${money(ticket)}</td></tr>
   <tr><td>Cantidad de clientes</td><td class="r">${(clientes||[]).length}</td></tr></table>
-  <h2>Top clientes por facturación</h2>
-  <table><tr><th>Cliente</th><th class="r">Facturado</th></tr>${filasTop}</table>
+  <h2>Top clientes — Consultoría</h2>
+  <table><tr><th>Cliente</th><th class="r">Facturado consultoría</th></tr>${filasSrv}</table>
+  <h2>Top clientes — Logística</h2>
+  <table><tr><th>Cliente</th><th class="r">Facturado logística</th></tr>${filasLog}</table>
   <div class="foot">Generado automáticamente por Zaifi — Gestión Empresarial</div>
 </body></html>`);
     win.document.close();
