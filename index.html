@@ -267,7 +267,7 @@ tr:hover td{background:#F5F2EC;}
 /* ── BOT ── */
 .bot-container{display:flex;flex-direction:column;height:calc(100vh - 73px);}
 .bot-header{background:var(--z1);padding:16px 24px;display:flex;align-items:center;gap:14px;border-radius:16px 16px 0 0;}
-.bot-av{width:46px;height:46px;background:linear-gradient(135deg,#6C5CE7,#000000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.bot-av{width:46px;height:46px;background:linear-gradient(135deg,#0EA5A4,#000000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
 .bot-name{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:white;}
 .bot-status{font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:6px;margin-top:2px;}
 .online-dot{width:7px;height:7px;background:#25D366;border-radius:50%;animation:blink 2s infinite;}
@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#0EA5A4;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.6 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#0EA5A4;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.8 · ARCA</span>
         </div>
       </div>
     </div>
@@ -855,10 +855,10 @@ tr:hover td{background:#F5F2EC;}
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats-row">
-        <div class="stat-card card-fact">
+        <div class="stat-card card-fact" onclick="verIngresosMes()" style="cursor:pointer;">
           <div class="stat-icon" style="background:#E1F5F4;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0EA5A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
           <div class="stat-val" id="dash-facturacion">$0</div>
-          <div class="stat-label">Facturación del mes</div>
+          <div class="stat-label">Facturación del mes <span style="font-size:10px;color:var(--accent);margin-left:2px;">›</span></div>
         </div>
         <div class="stat-card card-clientes">
           <div class="stat-icon" style="background:#E8F5EE;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A7A52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
@@ -875,10 +875,10 @@ tr:hover td{background:#F5F2EC;}
           <div class="stat-val" style="color:#C0392B;" id="dash-porpagar">$0</div>
           <div class="stat-label">Por pagar <span style="font-size:10px;color:#C07070;margin-left:4px;">→</span></div>
         </div>
-        <div class="stat-card card-gastos">
+        <div class="stat-card card-gastos" onclick="verGastosMes()" style="cursor:pointer;">
           <div class="stat-icon" style="background:#EEF3FA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A4A7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
           <div class="stat-val" style="color:#1A4A7A;" id="dash-gastos">$0</div>
-          <div class="stat-label">Gastos del mes</div>
+          <div class="stat-label">Gastos del mes <span style="font-size:10px;color:var(--accent);margin-left:2px;">›</span></div>
         </div>
       </div>
       <!-- Estado del mes + últimos movimientos -->
@@ -3118,15 +3118,33 @@ function exportarPaginaActual(){
   }catch(e){ console.log('export page error',e); toast('No se pudo exportar'); }
 }
 
+function _val(id){ const e=document.getElementById(id); return e? (e.value||'') : ''; }
+function _cxpFiltradasPDF(){
+  const desde=_val('cxp-desde'), hasta=_val('cxp-hasta'), estadoFiltro=_val('cxp-estado'); const hoy=today();
+  let all=[];
+  cxp.forEach(c=>{ let cc=Object.assign({},c);
+    if(cc.gastoId){const g=gastos.find(gg=>String(gg.id)===String(cc.gastoId));if(g){cc.montoPagado=+(g.montoPagado)||0;cc.estado=g.estado||cc.estado;}}
+    else if(cc.empleadoId){const e=empleados.find(ee=>String(ee.id)===String(cc.empleadoId));if(e){cc.montoPagado=+(e.montoPagado)||0;cc.estado=e.estado==='pagado'?'pagado':'pendiente';}}
+    all.push(cc); });
+  gastos.forEach(g=>{ if(!cxp.find(x=>String(x.gastoId)===String(g.id))) all.push({proveedor:g.descripcion||'Sin nombre',concepto:'Gasto: '+(g.categoria||''),monto:+g.monto||0,montoPagado:+g.montoPagado||0,estado:g.estado==='pagado'?'pagado':'pendiente',fecha:g.fecha||hoy,vencimiento:g.vencimiento||''}); });
+  empleados.forEach(e=>{ if(!cxp.find(x=>String(x.empleadoId)===String(e.id))) all.push({proveedor:e.nombre||'Sin nombre',concepto:'Sueldo: '+(e.rol||''),monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,estado:e.estado==='pagado'?'pagado':'pendiente',fecha:hoy,vencimiento:''}); });
+  return all.filter(x=>{ if(desde&&x.fecha&&x.fecha<desde)return false; if(hasta&&x.fecha&&x.fecha>hasta)return false; if(estadoFiltro&&x.estado!==estadoFiltro)return false; return true; });
+}
 function exportarPaginaPDF(){
   const page = window.__zaifiPage || 'dashboard';
   const pretty = {
-    facturacion: ['Facturas', ()=> (facturas||[]).map(f=>({Numero:f.numero||'',Cliente:f.cliente||'',Tipo:f.tipo||'',Fecha:f.fecha||'',Vencimiento:f.vencimiento||'',Monto:+f.monto||0,Cobrado:+f.montoCobrado||0,Pendiente:Math.max(0,(+f.monto||0)-(+f.montoCobrado||0)),Estado:f.estado||''}))],
+    facturacion: ['Facturas', ()=>{ const desde=_val('fact-desde'),hasta=_val('fact-hasta'),estado=_val('fact-estado'),tipoF=_val('fact-tipo-filter');
+      return facturas.filter(x=>{ if(desde&&x.fecha<desde)return false; if(hasta&&x.fecha>hasta)return false; if(estado&&x.estado!==estado)return false; if(tipoF&&x.tipo!==tipoF)return false; return true; })
+      .map(f=>({Numero:f.numero||'',Cliente:f.cliente||'',Tipo:f.tipo||'',Fecha:f.fecha||'',Vencimiento:f.vencimiento||'',Monto:+f.monto||0,Cobrado:+f.montoCobrado||0,Pendiente:Math.max(0,(+f.monto||0)-(+f.montoCobrado||0)),Estado:f.estado||''})); }],
     clientes: ['Clientes', ()=> (clientes||[]).map(c=>({Nombre:c.nombre||'',Email:c.email||'',Telefono:c.telefono||'',CUIT:c.cuit||'',Condicion:c.condicion||'',Estado:c.estado||''}))],
-    gastos: ['Gastos', ()=> (gastos||[]).map(g=>({Descripcion:g.descripcion||'',Categoria:g.categoria||'',Proveedor:g.proveedor||'',Fecha:g.fecha||'',Vencimiento:g.vencimiento||'',Monto:+g.monto||0,Pagado:+g.montoPagado||0,Estado:g.estado||''}))],
-    cxc: ['Cuentas por Cobrar', ()=> getCxCAll().filter(x=>x.estado!=='cobrado').map(x=>({Cliente:x.cliente||'',Concepto:x.concepto||'',Monto:+x.monto||0,Vencimiento:x.vencimiento||'',Estado:x.estado||''}))],
-    cxp: ['Cuentas por Pagar', ()=> (cxp||[]).map(c=>({Proveedor:c.proveedor||'',Concepto:c.concepto||'',Monto:+c.monto||0,Pagado:+c.montoPagado||0,Vencimiento:c.vencimiento||'',Estado:c.estado||''}))],
-    proveedores: ['Proveedores', ()=> (proveedores||[])],
+    gastos: ['Gastos', ()=>{ const desde=_val('gasto-desde'),hasta=_val('gasto-hasta'),cat=_val('gasto-cat');
+      return gastos.filter(x=>{ if(desde&&x.fecha<desde)return false; if(hasta&&x.fecha>hasta)return false; if(cat&&x.categoria!==cat)return false; return true; })
+      .map(g=>({Descripcion:g.descripcion||'',Categoria:g.categoria||'',Proveedor:g.proveedor||'',Fecha:g.fecha||'',Vencimiento:g.vencimiento||'',Monto:+g.monto||0,Pagado:+g.montoPagado||0,Estado:g.estado||''})); }],
+    cxc: ['Cuentas por Cobrar', ()=>{ const desde=_val('cxc-desde'),hasta=_val('cxc-hasta'),estado=_val('cxc-estado');
+      return getCxCAll().filter(x=>{ if(desde&&x.fecha<desde)return false; if(hasta&&x.fecha>hasta)return false; if(estado&&x.estado!==estado)return false; if(x.estado==='cobrado')return false; return true; })
+      .map(x=>({Cliente:x.cliente||'',Concepto:x.concepto||'',Monto:+x.monto||0,Vencimiento:x.vencimiento||'',Estado:x.estado||''})); }],
+    cxp: ['Cuentas por Pagar', ()=> _cxpFiltradasPDF().map(c=>({Proveedor:c.proveedor||'',Concepto:c.concepto||'',Monto:+c.monto||0,Pagado:+c.montoPagado||0,Vencimiento:c.vencimiento||'',Estado:c.estado||''}))],
+    proveedores: ['Proveedores', ()=>{ const cat=_val('prov-cat'); return (proveedores||[]).filter(p=>!cat||p.categoria===cat); }],
     empleados: ['Empleados', ()=> (empleados||[])],
     catalogo: ['Catálogo', ()=> (catalogo||[])]
   };
@@ -3244,6 +3262,69 @@ function exportarResumenPDF(){
     setTimeout(()=>{ try{ win.focus(); win.print(); }catch(_){} }, 500);
     toast('▤ Abriendo resumen para imprimir/PDF');
   }catch(e){ console.log('pdf error',e); toast('No se pudo generar el resumen'); }
+}
+
+function _openDetalle(html){
+  const c=document.getElementById('modal-content');
+  if(!c) return;
+  c.innerHTML='<style>#modal-content td{padding:8px 10px;border-bottom:0.5px solid var(--border);vertical-align:top;}</style>'+html;
+  document.getElementById('modal').classList.add('open');
+}
+function _nombreMes(m){
+  const MM=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const p=(m||today().slice(0,7)).split('-'); return (MM[(+p[1]||1)-1]||'')+' '+(p[0]||'');
+}
+function verIngresosMes(){
+  const m=today().slice(0,7);
+  const items=facturas.filter(f=>(f.fecha||'').startsWith(m)).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const total=items.reduce((a,f)=>a+(+f.monto||0),0);
+  const cobrado=items.reduce((a,f)=>a+(+f.montoCobrado||0),0);
+  const filas=items.length?items.map(f=>`<tr>
+    <td><div class="td-main">${sanitize(f.cliente||'—')}</div><div class="td-sub">${sanitize((f.numero||'')+(f.tipo?(' · '+f.tipo):''))}</div></td>
+    <td style="font-size:12px;color:var(--text3);white-space:nowrap;">${f.fecha||''}</td>
+    <td style="text-align:right;font-weight:700;white-space:nowrap;">${fmt(+f.monto||0)}</td>
+    <td style="text-align:right;"><span class="badge ${f.estado==='cobrada'?'badge-green':'badge-yellow'}">${f.estado==='cobrada'?'Cobrada':'Pendiente'}</span></td>
+  </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;">Sin ingresos este mes</td></tr>';
+  _openDetalle(`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div><div style="font-size:19px;font-weight:700;color:var(--text);">Ingresos de ${_nombreMes(m)}</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:2px;">${items.length} facturas · cobrado ${fmt(cobrado)}</div></div>
+      <button onclick="closeModal()" style="border:none;background:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">✕</button>
+    </div>
+    <div style="max-height:52vh;overflow:auto;border:0.5px solid var(--border);border-radius:4px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;"><tbody>${filas}</tbody></table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+      <span style="font-size:13px;color:var(--text3);">Total facturado del mes</span>
+      <span style="font-size:20px;font-weight:800;color:var(--text);">${fmt(total)}</span>
+    </div>`);
+}
+function verGastosMes(){
+  const m=today().slice(0,7);
+  const rows=[];
+  gastos.filter(g=>(g.fecha||'').startsWith(m)).forEach(g=>rows.push({tipo:'Gasto',cls:'badge-gray',nombre:g.descripcion||g.categoria||'Gasto',sub:g.categoria||'',monto:+g.monto||0,fecha:g.fecha||''}));
+  empleados.forEach(e=>rows.push({tipo:'Sueldo',cls:'badge-blue',nombre:e.nombre||'Empleado',sub:e.rol||'',monto:+e.sueldo||0,fecha:''}));
+  cxp.filter(c=>!c.gastoId&&!c.empleadoId&&(c.fecha||'').startsWith(m)).forEach(c=>rows.push({tipo:'Por pagar',cls:'badge-yellow',nombre:c.proveedor||c.concepto||'Cuenta por pagar',sub:c.concepto||'',monto:+c.monto||0,fecha:c.fecha||''}));
+  const total=rows.reduce((a,r)=>a+r.monto,0);
+  const filas=rows.length?rows.map(r=>`<tr>
+    <td style="white-space:nowrap;"><span class="badge ${r.cls}">${r.tipo}</span></td>
+    <td><div class="td-main">${sanitize(r.nombre)}</div>${r.sub?`<div class="td-sub">${sanitize(r.sub)}</div>`:''}</td>
+    <td style="font-size:12px;color:var(--text3);white-space:nowrap;">${r.fecha||'—'}</td>
+    <td style="text-align:right;font-weight:700;white-space:nowrap;">${fmt(r.monto)}</td>
+  </tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:24px;">Sin gastos este mes</td></tr>';
+  _openDetalle(`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div><div style="font-size:19px;font-weight:700;color:var(--text);">Gastos de ${_nombreMes(m)}</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:2px;">Gastos + sueldos + cuentas por pagar del mes</div></div>
+      <button onclick="closeModal()" style="border:none;background:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">✕</button>
+    </div>
+    <div style="max-height:52vh;overflow:auto;border:0.5px solid var(--border);border-radius:4px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;"><tbody>${filas}</tbody></table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+      <span style="font-size:13px;color:var(--text3);">Total a pagar del mes</span>
+      <span style="font-size:20px;font-weight:800;color:var(--red);">${fmt(total)}</span>
+    </div>`);
 }
 
 function updateDashboard(){
@@ -5244,7 +5325,7 @@ function generarDocFactura(f, tipoOverride){
   const _po = document.createElement('div');
   _po.id = 'print-modal-overlay';
   _po.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
-  _po.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">${tipoLabel} — ${f.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('factura-print-frame').contentWindow.print()" style="padding:8px 16px;background:#6C5CE7;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="factura-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
+  _po.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">${tipoLabel} — ${f.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('factura-print-frame').contentWindow.print()" style="padding:8px 16px;background:#0EA5A4;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="factura-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
   document.body.appendChild(_po);
   const _frame = document.getElementById('factura-print-frame');
   const win = _frame.contentWindow;
@@ -5718,7 +5799,7 @@ function generarHTMLResumen(r){
   let logRows='';
   (r.envios_data||[]).forEach(e=>{ logRows+=`<tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">${e.fecha}</td><td style="padding:7px 10px;font-size:11px;color:#666;border-bottom:1px solid #f0f0f0;">${e.tracking}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.calle}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.localidad}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.zona}</td><td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:700;border-bottom:1px solid #f0f0f0;">${fmtN(e.tarifa)}</td></tr>`; });
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Resumen ${r.periodo} — ${r.cliente}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #6C5CE7;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#0D0D0D;}.badge-sub{font-size:12px;color:#888880;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#0D0D0D;margin-bottom:3px;}.info-sub{font-size:12px;color:#666660;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#5A5650;text-transform:uppercase;letter-spacing:1px;background:#F5F2EC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#0D0D0D;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#1A7A52;}.banco{background:#F0EDE6;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#0D0D0D;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#666660;}.bv{font-weight:700;color:#0D0D0D;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#888880;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #0EA5A4;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#0D0D0D;}.badge-sub{font-size:12px;color:#888880;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#0D0D0D;margin-bottom:3px;}.info-sub{font-size:12px;color:#666660;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#5A5650;text-transform:uppercase;letter-spacing:1px;background:#F5F2EC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#0D0D0D;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#1A7A52;}.banco{background:#F0EDE6;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#0D0D0D;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#666660;}.bv{font-weight:700;color:#0D0D0D;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#888880;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}
 /* ── LANDING ANIMATIONS ── */
 @keyframes chicken-bob{
   0%,100%{transform:translateY(0px) rotate(-2deg);}
@@ -5776,7 +5857,7 @@ function descargarPDFResumen(r, callback){
   const _po2 = document.createElement('div');
   _po2.id = 'print-modal-overlay';
   _po2.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
-  _po2.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">Resumen — ${r.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('resumen-print-frame').contentWindow.print()" style="padding:8px 16px;background:#6C5CE7;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="resumen-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
+  _po2.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">Resumen — ${r.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('resumen-print-frame').contentWindow.print()" style="padding:8px 16px;background:#0EA5A4;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="resumen-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
   document.body.appendChild(_po2);
   const _frame2 = document.getElementById('resumen-print-frame');
   const win = _frame2.contentWindow;
