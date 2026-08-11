@@ -14,7 +14,7 @@
 :root{
   --bg:#FAFAF9;--white:#FFFFFF;
   --z1:#18181B;--z2:#27272A;
-  --accent:#0EA5A4;--accent2:#34BEBD;--accent-dark:#0B8180;
+  --accent:#8E2434;--accent2:#A83D4D;--accent-dark:#6E1727;
   --green:#3F7A5F;--green-light:#EEF4F0;
   --red:#B24A3F;--red-light:#FAF0EE;
   --blue:#3A5673;--blue-light:#F1F2F4;
@@ -25,14 +25,14 @@
   --radius:4px;--radius-lg:4px;
   --sidebar-bg:#FFFFFF;--sidebar-border:#EFEFED;
   --topbar-bg:#FFFFFF;--topbar-border:#EFEFED;
-  --nav-hover:#F4F4F3;--nav-active:#0EA5A4;--nav-active-text:#FFFFFF;
+  --nav-hover:#F4F4F3;--nav-active:#8E2434;--nav-active-text:#FFFFFF;
   --card-bg:#FFFFFF;--page-bg:#FAFAF9;
   --dark-mode:0;}
 
 [data-theme="dark"]{
   --bg:#2E3038;--white:#383B45;
   --z1:#FFFFFF;--z2:#E0E8F4;
-  --accent:#4FD1CB;--accent2:#3FBFBA;--accent-dark:#2FA9A4;
+  --accent:#D98A97;--accent2:#C97A88;--accent-dark:#B96A78;
   --green:#3FB68F;--green-light:rgba(63,182,143,0.12);
   --red:#E05555;--red-light:rgba(224,85,85,0.12);
   --blue:#4A7FD4;--blue-light:rgba(74,127,212,0.12);
@@ -43,7 +43,7 @@
   --radius:4px;--radius-lg:4px;
   --sidebar-bg:#272A32;--sidebar-border:rgba(0,0,0,0.12);
   --topbar-bg:#2E3038;--topbar-border:rgba(0,0,0,0.10);
-  --nav-hover:rgba(0,0,0,0.10);--nav-active:#4FD1CB;--nav-active-text:#FFFFFF;
+  --nav-hover:rgba(0,0,0,0.10);--nav-active:#D98A97;--nav-active-text:#FFFFFF;
   --card-bg:#383B45;--page-bg:#2E3038;
   --dark-mode:1;}
 
@@ -133,7 +133,7 @@ body{font-family:'Poppins',sans-serif;font-size:14px;background:var(--bg);color:
 .auth-sub{font-size:14px;color:var(--text3);text-align:center;margin-bottom:28px;}
 .auth-input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-family:'Poppins',sans-serif;color:var(--text);outline:none;margin-bottom:14px;transition:border-color 0.2s;}
 .auth-input:focus{border-color:#0D0D0D;}
-.auth-btn{width:100%;padding:14px;background:#0EA5A4;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;margin-top:6px;transition:background 0.2s;}
+.auth-btn{width:100%;padding:14px;background:#8E2434;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;margin-top:6px;transition:background 0.2s;}
 .auth-btn:hover{background:#3D33C4;}
 .auth-switch{text-align:center;margin-top:20px;font-size:14px;color:var(--text3);}
 .auth-switch a{color:#0D0D0D;font-weight:700;cursor:pointer;text-decoration:none;}
@@ -186,7 +186,7 @@ body{font-family:'Poppins',sans-serif;font-size:14px;background:var(--bg);color:
 .stat-card{background:#FFFFFF;border-radius:18px;padding:22px 24px;border:1px solid #E8E4DC;position:relative;overflow:hidden;transition:transform 0.18s,box-shadow 0.18s;cursor:default;}
 .stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(13,13,13,0.09);}
 .stat-card::after{content:'';position:absolute;bottom:-30px;right:-30px;width:100px;height:100px;border-radius:50%;opacity:0.06;}
-.stat-card.card-fact::after{background:#0EA5A4;}
+.stat-card.card-fact::after{background:#8E2434;}
 .stat-card.card-clientes::after{background:#1A7A52;}
 .stat-card.card-cobrar::after{background:#8A6A00;}
 .stat-card.card-pagar::after{background:#C0392B;}
@@ -267,7 +267,7 @@ tr:hover td{background:#F5F2EC;}
 /* ── BOT ── */
 .bot-container{display:flex;flex-direction:column;height:calc(100vh - 73px);}
 .bot-header{background:var(--z1);padding:16px 24px;display:flex;align-items:center;gap:14px;border-radius:16px 16px 0 0;}
-.bot-av{width:46px;height:46px;background:linear-gradient(135deg,#0EA5A4,#000000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.bot-av{width:46px;height:46px;background:linear-gradient(135deg,#8E2434,#000000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;}
 .bot-name{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:white;}
 .bot-status{font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:6px;margin-top:2px;}
 .online-dot{width:7px;height:7px;background:#25D366;border-radius:50%;animation:blink 2s infinite;}
@@ -750,7 +750,7 @@ tr:hover td{background:#F5F2EC;}
     <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <!-- Gallinita grande -->
-        <div style="width:58px;height:58px;background:#0EA5A4;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);">
+        <div style="width:58px;height:58px;background:#8E2434;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);">
           <svg width="38" height="38" viewBox="0 0 88 104" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="43" cy="72" rx="19" ry="15" fill="white"/>
             <rect x="49" y="50" width="8" height="16" rx="4" fill="white"/>
@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#0EA5A4;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.8 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#8E2434;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.9 · ARCA</span>
         </div>
       </div>
     </div>
@@ -856,7 +856,7 @@ tr:hover td{background:#F5F2EC;}
     <div class="page active" id="page-dashboard">
       <div class="stats-row">
         <div class="stat-card card-fact" onclick="verIngresosMes()" style="cursor:pointer;">
-          <div class="stat-icon" style="background:#E1F5F4;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0EA5A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <div class="stat-icon" style="background:#F7E7EA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8E2434" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
           <div class="stat-val" id="dash-facturacion">$0</div>
           <div class="stat-label">Facturación del mes <span style="font-size:10px;color:var(--accent);margin-left:2px;">›</span></div>
         </div>
@@ -2330,7 +2330,7 @@ function renderFacturas(){
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         ${x.estado!=='cobrada'?`<button class="action-btn" style="color:#1A7A52;border-color:#1A7A52;" onclick="marcarCobrada('${x.id}')">$ Registrar cobro</button>`:''}
         ${x.estado==='cobrada'?`<button class="action-btn" style="color:#B83232;" onclick="revertirCobroFactura('${x.id}')">↩ Quitar cobro</button>`:cobrado>0?`<button class="action-btn" onclick="revertirCobroFactura('${x.id}')">↩ Revertir</button>`:''}
-        <button class="action-btn" style="color:#0EA5A4;font-weight:700;" onclick="verDocFactura('${x.id}')">📄 Ver</button>
+        <button class="action-btn" style="color:#8E2434;font-weight:700;" onclick="verDocFactura('${x.id}')">📄 Ver</button>
         <button class="action-btn" onclick="editarItem('facturas','${x.id}')">Editar</button>
         <button class="action-btn" onclick="eliminar('facturas','${x.id}')">Eliminar</button>
       </div>
@@ -2419,7 +2419,7 @@ function verDocFactura(id){
       <div style="font-weight:700;font-size:15px;">${tipoLabel} — ${sanitize(f.cliente)}</div>
       <div style="display:flex;gap:8px;">
         <button id="btn-imprimir-fac" style="padding:8px 16px;background:#0D0D0D;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir</button>
-        <button id="btn-email-fac" style="padding:8px 16px;background:#0EA5A4;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">📧 Enviar email</button>
+        <button id="btn-email-fac" style="padding:8px 16px;background:#8E2434;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">📧 Enviar email</button>
         <button id="btn-cerrar-fac" style="padding:8px 12px;background:#f0f0f0;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button>
       </div>
     </div>
@@ -2467,11 +2467,11 @@ async function enviarFacturaPorEmail(facturaId){
   if(!emailDestino){ toast('❌ El cliente no tiene email registrado'); return; }
   const fmtN = n=>'$'+(Number(n)||0).toLocaleString('es-AR');
   const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;">
-    <h2 style="color:#0EA5A4;">Factura de ${sanitize(_prf.razon||_prf.nombre||'ODSA SRL')}</h2>
+    <h2 style="color:#8E2434;">Factura de ${sanitize(_prf.razon||_prf.nombre||'ODSA SRL')}</h2>
     <p>Estimado/a <b>${sanitize(f.cliente)}</b>, te enviamos el detalle de tu factura:</p>
     <table style="width:100%;border-collapse:collapse;margin:16px 0;">
       <tr style="background:#f5f5f5;"><td style="padding:10px;font-weight:700;">Número</td><td style="padding:10px;">${sanitize(f.numero||'—')}</td></tr>
-      <tr><td style="padding:10px;font-weight:700;">Total</td><td style="padding:10px;font-weight:900;color:#0EA5A4;">${fmtN(f.monto)}</td></tr>
+      <tr><td style="padding:10px;font-weight:700;">Total</td><td style="padding:10px;font-weight:900;color:#8E2434;">${fmtN(f.monto)}</td></tr>
       <tr style="background:#f5f5f5;"><td style="padding:10px;font-weight:700;">Estado</td><td style="padding:10px;">${f.estado==='cobrada'?'✅ Cobrada':'⏳ Pendiente'}</td></tr>
     </table>
     <p style="color:#888;font-size:12px;margin-top:24px;">${sanitize(_prf.razon||_prf.nombre||'ODSA SRL')} · Zaifi Gestión Empresarial</p>
@@ -4696,7 +4696,7 @@ function renderPorRubro(){
   } else {
     html += filas.map((r,idx)=>`
       <tr style="border-left:3px solid ${r.neto>=0?'#1A7A52':'#C0392B'};">
-        <td><span class="td-main" style="cursor:pointer;color:#0EA5A4;font-weight:700;" onclick="verRubroDetalle(${idx})" title="Ver clientes de este rubro">${r.nombre} ›</span></td>
+        <td><span class="td-main" style="cursor:pointer;color:#8E2434;font-weight:700;" onclick="verRubroDetalle(${idx})" title="Ver clientes de este rubro">${r.nombre} ›</span></td>
         <td style="text-align:right;font-weight:700;color:${r.ingreso?'#1A7A52':'#B8B4AC'};">${fmt(r.ingreso)}</td>
         <td style="text-align:right;font-weight:700;color:${r.gasto?'#C0392B':'#B8B4AC'};">${fmt(r.gasto)}</td>
         <td style="text-align:right;font-weight:800;color:${r.neto>=0?'#1A7A52':'#C0392B'};">${fmt(r.neto)}</td>
@@ -4759,7 +4759,7 @@ function verRubroDetalle(idx){
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 24px;">
       <div style="background:#EAF5EF;border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:#1A7A52;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Ingresos</div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#1A7A52;">${fmt(totIng)}</div></div>
       <div style="background:#FBECEC;border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:#C0392B;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Egresos</div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#C0392B;">${fmt(totGas)}</div></div>
-      <div style="background:#E1F5F4;border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:#0EA5A4;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Neto</div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:${neto>=0?'#1A7A52':'#C0392B'};">${fmt(neto)}</div></div>
+      <div style="background:#F7E7EA;border-radius:10px;padding:12px 14px;"><div style="font-size:11px;color:#8E2434;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Neto</div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:${neto>=0?'#1A7A52':'#C0392B'};">${fmt(neto)}</div></div>
     </div>
     <div style="padding:6px 24px 4px;font-size:11px;font-weight:700;color:#1A7A52;text-transform:uppercase;letter-spacing:0.5px;border-top:0.5px solid #F0EDE6;">&#9650; Ingresos por cliente</div>`;
   if(clientes.length){
@@ -5325,7 +5325,7 @@ function generarDocFactura(f, tipoOverride){
   const _po = document.createElement('div');
   _po.id = 'print-modal-overlay';
   _po.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
-  _po.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">${tipoLabel} — ${f.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('factura-print-frame').contentWindow.print()" style="padding:8px 16px;background:#0EA5A4;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="factura-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
+  _po.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">${tipoLabel} — ${f.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('factura-print-frame').contentWindow.print()" style="padding:8px 16px;background:#8E2434;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="factura-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
   document.body.appendChild(_po);
   const _frame = document.getElementById('factura-print-frame');
   const win = _frame.contentWindow;
@@ -5799,7 +5799,7 @@ function generarHTMLResumen(r){
   let logRows='';
   (r.envios_data||[]).forEach(e=>{ logRows+=`<tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">${e.fecha}</td><td style="padding:7px 10px;font-size:11px;color:#666;border-bottom:1px solid #f0f0f0;">${e.tracking}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.calle}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.localidad}</td><td style="padding:7px 10px;font-size:12px;border-bottom:1px solid #f0f0f0;">${e.zona}</td><td style="padding:7px 10px;font-size:12px;text-align:right;font-weight:700;border-bottom:1px solid #f0f0f0;">${fmtN(e.tarifa)}</td></tr>`; });
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Resumen ${r.periodo} — ${r.cliente}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #0EA5A4;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#0D0D0D;}.badge-sub{font-size:12px;color:#888880;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#0D0D0D;margin-bottom:3px;}.info-sub{font-size:12px;color:#666660;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#5A5650;text-transform:uppercase;letter-spacing:1px;background:#F5F2EC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#0D0D0D;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#1A7A52;}.banco{background:#F0EDE6;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#0D0D0D;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#666660;}.bv{font-weight:700;color:#0D0D0D;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#888880;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;background:white;color:#111;padding:30px;}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #8E2434;padding-bottom:20px;margin-bottom:24px;}.logo{height:64px;object-fit:contain;}.badge{text-align:right;}.badge-title{font-size:22px;font-weight:900;color:#0D0D0D;}.badge-sub{font-size:12px;color:#888880;margin-top:4px;}.info-row{display:flex;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;}.info-box{flex:1;padding:16px 20px;}.info-box:first-child{border-right:1px solid #e2e8f0;}.info-label{font-size:10px;font-weight:700;color:#888880;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}.info-val{font-size:15px;font-weight:700;color:#0D0D0D;margin-bottom:3px;}.info-sub{font-size:12px;color:#666660;margin-top:2px;}.sec{font-size:11px;font-weight:700;color:#5A5650;text-transform:uppercase;letter-spacing:1px;background:#F5F2EC;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 16px;}.sep{margin-top:16px;}table{width:100%;border-collapse:collapse;}th{padding:9px 14px;background:#0D0D0D;color:white;font-size:11px;text-align:left;}.totales{border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-top:20px;}.tot-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:14px;}.tot-final{display:flex;justify-content:space-between;padding:14px 0 0;font-size:22px;font-weight:900;}.amt{color:#1A7A52;}.banco{background:#F0EDE6;border-radius:12px;padding:16px 20px;margin-top:16px;}.banco-title{font-size:10px;font-weight:700;color:#0D0D0D;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}.banco-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}.bk{color:#666660;}.bv{font-weight:700;color:#0D0D0D;}.footer{margin-top:24px;text-align:center;font-size:11px;color:#888880;border-top:1px solid #e2e8f0;padding-top:14px;}@media print{body{padding:0;}}
 /* ── LANDING ANIMATIONS ── */
 @keyframes chicken-bob{
   0%,100%{transform:translateY(0px) rotate(-2deg);}
@@ -5857,7 +5857,7 @@ function descargarPDFResumen(r, callback){
   const _po2 = document.createElement('div');
   _po2.id = 'print-modal-overlay';
   _po2.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
-  _po2.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">Resumen — ${r.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('resumen-print-frame').contentWindow.print()" style="padding:8px 16px;background:#0EA5A4;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="resumen-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
+  _po2.innerHTML = `<div style="width:100%;max-width:920px;background:white;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:90vh;"><div style="padding:12px 16px;background:#0D0D0D;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;"><span style="color:white;font-weight:700;font-size:14px;">Resumen — ${r.cliente}</span><div style="display:flex;gap:8px;"><button onclick="document.getElementById('resumen-print-frame').contentWindow.print()" style="padding:8px 16px;background:#8E2434;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🖨 Imprimir / PDF</button><button onclick="document.getElementById('print-modal-overlay').remove()" style="padding:8px 14px;background:#444;color:white;border:none;border-radius:8px;cursor:pointer;font-size:18px;">✕</button></div></div><iframe id="resumen-print-frame" style="flex:1;border:none;width:100%;"></iframe></div>`;
   document.body.appendChild(_po2);
   const _frame2 = document.getElementById('resumen-print-frame');
   const win = _frame2.contentWindow;
@@ -6677,7 +6677,7 @@ body, input, select, textarea, button, .nav-item, td, th, .form-input{
 th{ text-transform:uppercase !important; font-size:10px !important; letter-spacing:.8px !important; }
 .stat-val, .kv, td{ font-variant-numeric:tabular-nums; }
 /* ===== Minimalista v11.9.5 — cuadrado + acento de color ===== */
-.stat-icon{ background:#E1F5F4 !important; box-shadow:none !important; }
+.stat-icon{ background:#F7E7EA !important; box-shadow:none !important; }
 .stat-icon svg{ stroke:var(--accent) !important; }
 .stat-val{ font-weight:600 !important; }
 .stat-card, .table-card, .card{ box-shadow:none !important; border:0.5px solid var(--border) !important; }
