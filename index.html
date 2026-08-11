@@ -14,7 +14,7 @@
 :root{
   --bg:#FAFAF9;--white:#FFFFFF;
   --z1:#18181B;--z2:#27272A;
-  --accent:#232323;--accent2:#3F3F46;--accent-dark:#111111;
+  --accent:#4F5BD5;--accent2:#6B75E0;--accent-dark:#3A45B0;
   --green:#3F7A5F;--green-light:#EEF4F0;
   --red:#B24A3F;--red-light:#FAF0EE;
   --blue:#3A5673;--blue-light:#F1F2F4;
@@ -22,17 +22,17 @@
   --text:#18181B;--text2:#52525B;--text3:#A1A1AA;
   --border:#ECECEA;--shadow:0 1px 2px rgba(0,0,0,0.03);
   --shadow-lg:0 6px 24px rgba(0,0,0,0.06);
-  --radius:8px;--radius-lg:12px;
+  --radius:4px;--radius-lg:4px;
   --sidebar-bg:#FFFFFF;--sidebar-border:#EFEFED;
   --topbar-bg:#FFFFFF;--topbar-border:#EFEFED;
-  --nav-hover:#F4F4F3;--nav-active:#18181B;--nav-active-text:#FFFFFF;
+  --nav-hover:#F4F4F3;--nav-active:#4F5BD5;--nav-active-text:#FFFFFF;
   --card-bg:#FFFFFF;--page-bg:#FAFAF9;
   --dark-mode:0;}
 
 [data-theme="dark"]{
   --bg:#2E3038;--white:#383B45;
   --z1:#FFFFFF;--z2:#E0E8F4;
-  --accent:#5B8FD4;--accent2:#4A7FD4;--accent-dark:#3E6FB8;
+  --accent:#8B93F0;--accent2:#7079E0;--accent-dark:#6069D0;
   --green:#3FB68F;--green-light:rgba(63,182,143,0.12);
   --red:#E05555;--red-light:rgba(224,85,85,0.12);
   --blue:#4A7FD4;--blue-light:rgba(74,127,212,0.12);
@@ -40,10 +40,10 @@
   --text:#F0F2F5;--text2:#C8D0DC;--text3:#9AA0AA;
   --border:rgba(0,0,0,0.12);--shadow:0 1px 12px rgba(0,0,0,0.15);
   --shadow-lg:0 6px 32px rgba(0,0,0,0.25);
-  --radius:12px;--radius-lg:16px;
+  --radius:4px;--radius-lg:4px;
   --sidebar-bg:#272A32;--sidebar-border:rgba(0,0,0,0.12);
   --topbar-bg:#2E3038;--topbar-border:rgba(0,0,0,0.10);
-  --nav-hover:rgba(0,0,0,0.10);--nav-active:#5B8FD4;--nav-active-text:#FFFFFF;
+  --nav-hover:rgba(0,0,0,0.10);--nav-active:#8B93F0;--nav-active-text:#FFFFFF;
   --card-bg:#383B45;--page-bg:#2E3038;
   --dark-mode:1;}
 
@@ -750,7 +750,7 @@ tr:hover td{background:#F5F2EC;}
     <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <!-- Gallinita grande -->
-        <div style="width:58px;height:58px;background:#18181B;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);">
+        <div style="width:58px;height:58px;background:#4F5BD5;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);">
           <svg width="38" height="38" viewBox="0 0 88 104" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="43" cy="72" rx="19" ry="15" fill="white"/>
             <rect x="49" y="50" width="8" height="16" rx="4" fill="white"/>
@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#18181B;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.4 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#4F5BD5;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.5 · ARCA</span>
         </div>
       </div>
     </div>
@@ -6587,15 +6587,18 @@ body, input, select, textarea, button, .nav-item, td, th, .form-input{
 /* Tablas más formales */
 th{ text-transform:uppercase !important; font-size:10px !important; letter-spacing:.8px !important; }
 .stat-val, .kv, td{ font-variant-numeric:tabular-nums; }
-/* ===== Minimalista v11.9.4 — sobrio, sin exagerar ===== */
-.stat-icon{ background:#F4F4F3 !important; box-shadow:none !important; }
-.stat-icon svg{ stroke:#52525B !important; }
+/* ===== Minimalista v11.9.5 — cuadrado + acento de color ===== */
+.stat-icon{ background:#EEF0FE !important; box-shadow:none !important; }
+.stat-icon svg{ stroke:var(--accent) !important; }
 .stat-val{ font-weight:600 !important; }
 .stat-card, .table-card, .card{ box-shadow:none !important; border:0.5px solid var(--border) !important; }
 [style*="F5F2EC"]{ background:#FAFAF9 !important; border-color:#EFEFED !important; }
 [style*="FBF0F0"]{ background:#FAFAF9 !important; border-color:#EFEFED !important; }
 [style*="DDD9D0"]{ border-color:#EFEFED !important; }
 [style*="EDD9D9"]{ border-color:#EFEFED !important; }
+/* Esquinas cuadradas en todo (sin tocar círculos) */
+.stat-card,.table-card,.card,.stat-icon,.nav-item,.nav-section-label,button,input,select,textarea,.form-input,.modal,.badge{ border-radius:4px !important; }
+[style*="border-radius"]:not([style*="50%"]){ border-radius:4px !important; }
 </style>
 
 </body>
