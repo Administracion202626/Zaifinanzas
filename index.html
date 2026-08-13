@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.13 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.14 · ARCA</span>
         </div>
       </div>
     </div>
@@ -2932,14 +2932,15 @@ function renderCxP(){
 
   let allCxp=[];
   cxp.forEach(c=>{
-    if(c.gastoId){const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));if(g){c.montoPagado=+(g.montoPagado)||0;c.estado=g.estado||c.estado;}}
-    else if(c.empleadoId){const e=empleados.find(ee=>String(ee.id)===String(c.empleadoId));if(e){c.montoPagado=+(e.montoPagado)||0;c.estado=e.estado==='pagado'?'pagado':'pendiente';c.fechaPago=e.fechaPago||c.fechaPago;}}
+    if(c.gastoId){const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));if(g){c.montoPagado=+(g.montoPagado)||0;c.estado=((+g.montoPagado||0)>=(+g.monto||0)&&(+g.monto||0)>0)?'pagado':'pendiente';}}
+    else if(c.empleadoId){const e=empleados.find(ee=>String(ee.id)===String(c.empleadoId));if(e){c.montoPagado=+(e.montoPagado)||0;c.estado=((+e.montoPagado||0)>=(+e.sueldo||0)&&(+e.sueldo||0)>0)?'pagado':'pendiente';c.fechaPago=e.fechaPago||c.fechaPago;}}
+    else { c.estado=((+c.montoPagado||0)>=(+c.monto||0)&&(+c.monto||0)>0)?'pagado':'pendiente'; }
     allCxp.push(c);
   });
   gastos.forEach(g=>{
     if(!cxp.find(x=>String(x.gastoId)===String(g.id))){
       allCxp.push({id:'gas_'+g.id,proveedor:g.descripcion||'Sin nombre',concepto:'Gasto: '+(g.categoria||''),
-        monto:+g.monto||0,montoPagado:+g.montoPagado||0,estado:g.estado==='pagado'?'pagado':'pendiente',
+        monto:+g.monto||0,montoPagado:+g.montoPagado||0,estado:((+g.montoPagado||0)>=(+g.monto||0)&&(+g.monto||0)>0)?'pagado':'pendiente',
         fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
     }
   });
@@ -2947,7 +2948,7 @@ function renderCxP(){
     if(!cxp.find(x=>String(x.empleadoId)===String(e.id))){
       allCxp.push({id:'emp_'+e.id,proveedor:e.nombre||'Sin nombre',concepto:'Sueldo: '+(e.rol||''),
         monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,fechaPago:e.fechaPago||'',
-        estado:e.estado==='pagado'?'pagado':'pendiente',fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
+        estado:((+e.montoPagado||0)>=(+e.sueldo||0)&&(+e.sueldo||0)>0)?'pagado':'pendiente',fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
     }
   });
   let f=allCxp.filter(x=>{
