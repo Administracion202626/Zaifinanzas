@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.11 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.13 · ARCA</span>
         </div>
       </div>
     </div>
@@ -1731,6 +1731,16 @@ async function loadSupa(tabla){
   const data = await supaFetch(`zaifi_global?tabla=eq.${encodeURIComponent(tabla)}&select=data`);
   return (data||[]).map(r=>r.data);
 }
+// Elimina registros duplicados por id (secuela del bug viejo de guardado).
+// Conserva la última copia de cada id; los que no tienen id se dejan tal cual.
+function _dedupById(arr){
+  if(!Array.isArray(arr)) return arr;
+  const seen=new Map();
+  arr.forEach(x=>{ if(x && x.id!=null) seen.set(String(x.id), x); });
+  const conId=[...seen.values()];
+  const sinId=arr.filter(x=>!x || x.id==null);
+  return conId.concat(sinId);
+}
 
 async function saveSupa(tabla, arr){
   // IMPORTANTE: NO borramos la tabla completa. Solo tocamos los registros que este
@@ -1998,8 +2008,8 @@ async function loadDataFromSupa(){
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
-      // Always overwrite localStorage so all users see shared data
-      localStorage.setItem(dbKey(t), JSON.stringify(data||[]));
+      // Always overwrite localStorage so all users see shared data (de-duplicado por id)
+      localStorage.setItem(dbKey(t), JSON.stringify(_dedupById(data)||[]));
     }catch(e){ console.log('Error loading',t,e); }
   });
   await Promise.all(promises);
@@ -2683,8 +2693,10 @@ function confirmarPagoEmp(id){
   const monto = parseFloat(document.getElementById('mp_monto').value)||0;
   const fecha = document.getElementById('mp_fecha').value||today();
   const notas = document.getElementById('mp_notas').value.trim();
-  e.estado='pagado'; e.montoPagado=monto; e.fechaPago=fecha; if(notas) e.notasPago=notas;
-  save('empleados',empleados); closeModal(); renderEmpleados(); toast('Pago registrado');
+  e.montoPagado = Math.min((+e.montoPagado||0)+monto, +e.sueldo||0);
+  e.estado = e.montoPagado >= (+e.sueldo||0) ? 'pagado' : 'pendiente';
+  e.fechaPago=fecha; if(notas) e.notasPago=notas;
+  save('empleados',empleados); closeModal(); renderEmpleados(); renderCxP(); updateDashboard(); toast('Pago registrado');
 }
 function revertirPagoEmp(id){
   const e = empleados.find(x=>x.id===id); if(!e) return;
@@ -2944,9 +2956,9 @@ function renderCxP(){
     if(estadoFiltro&&x.estado!==estadoFiltro)return false;
     return true;
   });
-  const totalPorPagar=f.filter(x=>x.estado!=='pagado').reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
+  const totalPorPagar=f.filter(x=>(+x.monto||0)>(+x.montoPagado||0)).reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
   const totalPagado=f.reduce((a,x)=>a+(+x.montoPagado||0),0);
-  const _rowsSemana=f.filter(x=>x.estado!=='pagado'&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
+  const _rowsSemana=f.filter(x=>(+x.monto||0)>(+x.montoPagado||0)&&x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
   const totalSemana=_rowsSemana.reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
   document.getElementById('cxp-total').textContent=fmt(totalPorPagar);
   document.getElementById('cxp-semana').textContent=fmt(totalSemana);
@@ -2954,14 +2966,15 @@ function renderCxP(){
   document.getElementById('cxp-count').textContent=f.length+' registros';
   const tb=document.getElementById('cxp-tbody');
   tb.innerHTML=f.length?f.map(x=>{
-        const total    = +x.monto||0;
+    const total    = +x.monto||0;
     const pagado   = +x.montoPagado||0;
     const porPagar = Math.max(0, total - pagado);
-    const vencido  = x.vencimiento&&x.vencimiento<hoy&&x.estado!=='pagado';
-    const esParcial= pagado>0 && x.estado!=='pagado';
+    const estaPagado = total>0 && pagado>=total;
+    const vencido  = x.vencimiento&&x.vencimiento<hoy&&!estaPagado;
+    const esParcial= pagado>0 && !estaPagado;
 
     let badgeColor, badgeBg, label;
-    if(x.estado==='pagado'){ badgeColor='#1A7A52'; badgeBg='#ECFDF5'; label='✓ Pagado'; }
+    if(estaPagado)         { badgeColor='#1A7A52'; badgeBg='#ECFDF5'; label='✓ Pagado'; }
     else if(esParcial)     { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Parcial'; }
     else if(vencido)       { badgeColor='#B83232'; badgeBg='#FEF2F2'; label='Vencido'; }
     else                   { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Por pagar'; }
@@ -2969,11 +2982,11 @@ function renderCxP(){
     const tipoBadge=x.gastoId?'<span class="badge badge-gray" style="margin-right:4px;">Gasto</span>':x.empleadoId?'<span class="badge badge-blue" style="margin-right:4px;">Sueldo</span>':'';
 
     // Botón 💲 y menú ⋯
-    const btnPagar = x.estado!=='pagado'
+    const btnPagar = !estaPagado
       ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">💲</button>`
       : '';
     const menuItems = [
-      x.estado==='pagado' ? `<div class="ctx-item" style="color:#B83232" onclick="revertirPagoCxP('${x.id}');closeCtx()">↩ Revertir pago</div>` : '',
+      estaPagado ? `<div class="ctx-item" style="color:#B83232" onclick="revertirPagoCxP('${x.id}');closeCtx()">↩ Revertir pago</div>` : '',
       `<div class="ctx-item" onclick="editarCxCxP('cxp','${x.id}','${x.gastoId||''}','${x.empleadoId||''}');closeCtx()">✏️ Editar</div>`,
       !x._readonly ? `<div class="ctx-item" style="color:#B83232" onclick="eliminar('cxp','${x.id}');closeCtx()">🗑 Eliminar</div>` : ''
     ].filter(Boolean).join('');
@@ -4830,7 +4843,7 @@ function renderLineaCritica(){
   const lineaCritica = totalGastosMes + totalSueldos + totalCxpMes;
 
   // Consultoría facturada en el mes — SOLO totalSrv (sin logística/envíos/mt3)
-  const factMes = facturas.filter(f=>(f.fecha||'').slice(0,7)===ym);
+  const factMes = _dedupById(facturas.filter(f=>(f.fecha||'').slice(0,7)===ym));
   const consultoriaMes = factMes.reduce((a,f)=>a+(+f.totalSrv||0)*_rate(f),0);
   const facturasConsultoria = factMes.filter(f=>(+f.totalSrv||0)>0);
   const nConsultorias = facturasConsultoria.length; // cantidad de facturas de consultoría del mes
