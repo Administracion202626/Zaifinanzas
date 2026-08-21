@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.14 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.15 · ARCA</span>
         </div>
       </div>
     </div>
@@ -1120,6 +1120,9 @@ tr:hover td{background:#F5F2EC;}
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Servicios</span><span style="font-weight:700;" id="fac-tot-srv">$0</span></div>
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Logística</span><span style="font-weight:700;" id="fac-tot-log">$0</span></div>
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Subtotal</span><span style="font-weight:700;" id="fac-subtotal">$0</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:15px;"><span style="color:#666660;">Descuento</span>
+              <div style="display:flex;align-items:center;gap:4px;"><span style="color:#B83232;font-weight:700;">−$</span><input type="number" id="fac-descuento" min="0" step="any" placeholder="0" oninput="recalcTotalesFac()" style="width:130px;text-align:right;border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:14px;font-weight:700;color:#B83232;font-family:inherit;"/></div>
+            </div>
             <div id="fac-iva-block">
               <div style="padding:10px 0;border-bottom:1px solid #F1F5F9;">
                 <div style="font-size:12px;color:#888880;font-weight:600;margin-bottom:8px;">¿Aplicar IVA?</div>
@@ -2463,6 +2466,7 @@ function verDocFactura(id){
         </div>
         ${srvRows?`<table style="width:100%;border-collapse:collapse;margin-bottom:16px;"><thead><tr style="background:#1A1A2E;color:white;"><th style="padding:9px 14px;text-align:left;font-size:11px;">Descripción</th><th style="padding:9px 14px;text-align:right;font-size:11px;">Monto</th></tr></thead><tbody>${srvRows}</tbody></table>`:''}
         <div style="border-top:2px solid #eee;padding-top:12px;">
+          ${(+f.descuento||0)>0?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#555;"><span>Subtotal</span><span>${fmtN(f.subtotal)}</span></div><div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#B83232;"><span>Descuento</span><span>−${fmtN(f.descuento)}</span></div>`:''}
           ${esFacA?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#555;"><span>Neto gravado</span><span>${fmtN(f.neto)}</span></div><div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#555;"><span>IVA (21%)</span><span>${fmtN(f.ivaM)}</span></div>`:''}
           <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:20px;font-weight:900;"><span>TOTAL</span><span style="color:${colorPrimary};">${fmtN(f.monto)}</span></div>
         </div>
@@ -5159,11 +5163,13 @@ function nuevaFacturaFull(editId){
     document.getElementById('fac-cliente').value = fEdit.cliente||'';
     document.getElementById('fac-estado-form').value = fEdit.estado||'pendiente';
     const _mSel=document.getElementById('fac-moneda'); if(_mSel){ _mSel.value = fEdit.moneda||'ARS'; document.getElementById('fac-cotiz-info').style.display = _mSel.value==='MXN'?'block':'none'; }
+    { const _d=document.getElementById('fac-descuento'); if(_d) _d.value = (+fEdit.descuento||0)>0 ? fEdit.descuento : ''; }
     document.getElementById('fac-form-title').textContent = 'Editar factura';
     autocompletarClienteFac();
   } else {
     document.getElementById('fac-tipo').value = 'A';
     const _mSel2=document.getElementById('fac-moneda'); if(_mSel2){ _mSel2.value='ARS'; document.getElementById('fac-cotiz-info').style.display='none'; }
+    { const _d=document.getElementById('fac-descuento'); if(_d) _d.value=''; }
     actualizarNumFac();
     document.getElementById('fac-form-title').textContent = 'Nueva factura';
   }
@@ -5268,20 +5274,22 @@ function recalcTotalesFac(){
   const totalSrv = facServicios.reduce((a,s)=>a+(+s.monto||0),0);
   const totalLog = facEnvios.reduce((a,e)=>a+(+e.tarifa||0),0);
   const subtotal = totalSrv + totalLog;
+  const descuento = Math.max(0, +(document.getElementById('fac-descuento')?.value)||0);
+  const base = Math.max(0, subtotal - descuento);
   const modoEl = document.querySelector('input[name="fac-iva-modo"]:checked');
   const modo = modoEl ? modoEl.value : 'sin-iva';
 
-  let neto=0, iva=0, total=subtotal;
+  let neto=0, iva=0, total=base;
   if(modo==='incluido'){
-    neto  = Math.round(subtotal/1.21*100)/100;
-    iva   = Math.round((subtotal-neto)*100)/100;
-    total = subtotal;
+    neto  = Math.round(base/1.21*100)/100;
+    iva   = Math.round((base-neto)*100)/100;
+    total = base;
   } else if(modo==='agregar'){
-    neto  = subtotal;
-    iva   = Math.round(subtotal*0.21*100)/100;
-    total = subtotal + iva;
+    neto  = base;
+    iva   = Math.round(base*0.21*100)/100;
+    total = base + iva;
   } else {
-    total = subtotal; // sin IVA
+    total = base; // sin IVA
   }
 
   ['fac-subtotal-srv','fac-tot-srv'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt(totalSrv);});
@@ -5308,22 +5316,24 @@ function guardarFacturaFull(){
   const totalSrv = facServicios.reduce((a,s)=>a+(+s.monto||0),0);
   const totalLog = facEnvios.reduce((a,e)=>a+(+e.tarifa||0),0);
   const subtotal = totalSrv+totalLog;
+  const descuento = Math.max(0, +(document.getElementById('fac-descuento')?.value)||0);
+  const base = Math.max(0, subtotal - descuento);
   const modoEl   = document.querySelector('input[name="fac-iva-modo"]:checked');
   const modoIva  = modoEl ? modoEl.value : 'sin-iva';
-  let neto=0, ivaM=0, monto=subtotal;
+  let neto=0, ivaM=0, monto=base;
   if(modoIva==='incluido'){
-    neto  = Math.round(subtotal/1.21*100)/100;
-    ivaM  = Math.round((subtotal-neto)*100)/100;
-    monto = subtotal;
+    neto  = Math.round(base/1.21*100)/100;
+    ivaM  = Math.round((base-neto)*100)/100;
+    monto = base;
   } else if(modoIva==='agregar'){
-    neto  = subtotal;
-    ivaM  = Math.round(subtotal*0.21*100)/100;
-    monto = subtotal + ivaM;
+    neto  = base;
+    ivaM  = Math.round(base*0.21*100)/100;
+    monto = base + ivaM;
   } else {
-    monto = subtotal;
+    monto = base;
   }
 
-  const obj = {id:facEditId||uid(),tipo,numero,cliente,fecha:fecha||today(),vencimiento,estado,monto,montoCobrado:facEditId?(facturas.find(x=>x.id===facEditId)?.montoCobrado||0):0,servicios:facServicios,envios_data:facEnvios,totalSrv,totalLog,subtotal,neto,ivaM,cuit:cli.cuit,condicion:cli.condicion,domicilio:cli.domicilio,moneda,cotizacion};
+  const obj = {id:facEditId||uid(),tipo,numero,cliente,fecha:fecha||today(),vencimiento,estado,monto,montoCobrado:facEditId?(facturas.find(x=>x.id===facEditId)?.montoCobrado||0):0,servicios:facServicios,envios_data:facEnvios,totalSrv,totalLog,subtotal,descuento,neto,ivaM,cuit:cli.cuit,condicion:cli.condicion,domicilio:cli.domicilio,moneda,cotizacion};
   if(facEditId){ const i=facturas.findIndex(x=>x.id===facEditId); if(i>=0)facturas[i]=obj; }
   else {
     facturas.push(obj);
