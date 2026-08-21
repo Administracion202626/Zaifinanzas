@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.15 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.16 · ARCA</span>
         </div>
       </div>
     </div>
@@ -2677,11 +2677,15 @@ function renderEmpleados(){
 
 function marcarPagoEmp(id){
   const e = empleados.find(x=>x.id===id); if(!e) return;
+  const total    = +e.sueldo||0;
+  const yaPagado = +e.montoPagado||0;
+  const porPagar = Math.max(0, total - yaPagado);
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar pago de sueldo</div>
-    <div class="modal-sub">${sanitize(e.nombre)} — ${fmt(e.sueldo)}</div>
-    <div class="form-group"><label class="form-label">Monto pagado ($)</label>
-      <input class="form-input" id="mp_monto" type="number" value="${e.sueldo||0}"/></div>
+    <div class="modal-sub">${sanitize(e.nombre)} — ${fmt(total)}</div>
+    ${yaPagado>0?`<div style="font-size:12px;color:#8A6A00;background:#FEFCE8;padding:8px 12px;border-radius:8px;margin-bottom:12px;">Ya pagado: <b>${fmt(yaPagado)}</b> — Queda: <b>${fmt(porPagar)}</b></div>`:''}
+    <div class="form-group"><label class="form-label">Monto a pagar ahora ($)</label>
+      <input class="form-input" id="mp_monto" type="number" value="${porPagar||total}" min="1"/></div>
     <div class="form-group"><label class="form-label">Fecha de pago</label>
       <input class="form-input" id="mp_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
@@ -2695,12 +2699,14 @@ function marcarPagoEmp(id){
 function confirmarPagoEmp(id){
   const e = empleados.find(x=>x.id===id); if(!e) return;
   const monto = parseFloat(document.getElementById('mp_monto').value)||0;
+  if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
   const fecha = document.getElementById('mp_fecha').value||today();
   const notas = document.getElementById('mp_notas').value.trim();
-  e.montoPagado = Math.min((+e.montoPagado||0)+monto, +e.sueldo||0);
-  e.estado = e.montoPagado >= (+e.sueldo||0) ? 'pagado' : 'pendiente';
+  const tope = (+e.sueldo||0)>0 ? (+e.sueldo||0) : ((+e.montoPagado||0)+monto);
+  e.montoPagado = Math.min((+e.montoPagado||0)+monto, tope);
+  e.estado = ((+e.sueldo||0)>0 && e.montoPagado >= (+e.sueldo||0)) ? 'pagado' : 'pendiente';
   e.fechaPago=fecha; if(notas) e.notasPago=notas;
-  save('empleados',empleados); closeModal(); renderEmpleados(); renderCxP(); updateDashboard(); toast('Pago registrado');
+  save('empleados',empleados); closeModal(); renderEmpleados(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function revertirPagoEmp(id){
   const e = empleados.find(x=>x.id===id); if(!e) return;
