@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.16 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.19 · ARCA</span>
         </div>
       </div>
     </div>
@@ -841,8 +841,10 @@ tr:hover td{background:#F5F2EC;}
 </div>
 
 <!-- MAIN -->
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="main">
   <div class="topbar">
+    <button id="hamburger-btn" onclick="toggleSidebar()" title="Menú" style="display:none;border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 11px;font-size:18px;cursor:pointer;line-height:1;margin-right:10px;">☰</button>
     <div class="topbar-title" id="topbar-title">Home</div>
     <div class="topbar-right">
         <button onclick="exportarPaginaPDF()" id="btn-export-page" title="Exportar esta pantalla a PDF" style="border:1px solid var(--accent);background:var(--white);color:var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;">⤓ Exportar a PDF</button><button onclick="recargarDesdeSupa()" title="Recargar datos desde Supabase" style="border:1px solid #1A7A52;background:#1A7A52;color:white;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;">↻ Recargar</button><button onclick="toggleDarkMode()" id="theme-btn" title="Cambiar tema" style="border:1px solid var(--border);background:var(--white);color:var(--text);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.2s;"><span id="theme-icon">🌙</span><span id="theme-label">Oscuro</span></button>
@@ -2369,6 +2371,7 @@ function marcarCobrada(id, monto){
   }
   // Open modal to ask for amount and date
   const pendiente = Math.max(0, f.monto - (f.montoCobrado||0));
+  _resetComprobante(f);
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar cobro</div>
     <div class="modal-sub">${f.numero||'Factura'} — ${f.cliente} | Total: ${fmt(f.monto)}${f.montoCobrado>0?' | Ya cobrado: '+fmt(f.montoCobrado):''}</div>
@@ -2378,6 +2381,7 @@ function marcarCobrada(id, monto){
       <input class="form-input" id="fc_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
       <input class="form-input" id="fc_notas" type="text" placeholder="Ej: transferencia recibida"/></div>
+    ${_comprobanteFieldHTML()}
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn modal-btn-primary" onclick="confirmarCobroFactura('${id}')">Confirmar cobro</button>
@@ -2392,6 +2396,7 @@ function confirmarCobroFactura(id){
   const notas = document.getElementById('fc_notas').value.trim();
   if(notas) f.notasCobro = (f.notasCobro?f.notasCobro+' | ':'')+notas;
   f.fechaCobro = fecha;
+  _aplicarComprobante(f);
   closeModal();
   _aplicarCobroFactura(f, monto);
 }
@@ -2597,6 +2602,7 @@ function pagarGasto(id){
   const total    = +x.monto||0;
   const yaPagado = +x.montoPagado||0;
   const porPagar = Math.max(0, total - yaPagado);
+  _resetComprobante(x);
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar pago</div>
     <div class="modal-sub">${sanitize(x.descripcion)}${x.proveedor?' — '+x.proveedor:''}</div>
@@ -2607,6 +2613,7 @@ function pagarGasto(id){
       <input class="form-input" id="gp_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
       <input class="form-input" id="gp_notas" type="text" placeholder="Ej: transferencia, cheque..."/></div>
+    ${_comprobanteFieldHTML()}
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn modal-btn-primary" onclick="confirmarPagoGasto('${id}')">Confirmar pago</button>
@@ -2622,6 +2629,7 @@ function confirmarPagoGasto(id){
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
+  _aplicarComprobante(x);
   // Guardar en localStorage Y Supabase
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
@@ -2680,6 +2688,7 @@ function marcarPagoEmp(id){
   const total    = +e.sueldo||0;
   const yaPagado = +e.montoPagado||0;
   const porPagar = Math.max(0, total - yaPagado);
+  _resetComprobante(e);
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar pago de sueldo</div>
     <div class="modal-sub">${sanitize(e.nombre)} — ${fmt(total)}</div>
@@ -2690,6 +2699,7 @@ function marcarPagoEmp(id){
       <input class="form-input" id="mp_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
       <input class="form-input" id="mp_notas" type="text" placeholder="Ej: transferencia banco Galicia"/></div>
+    ${_comprobanteFieldHTML()}
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn modal-btn-primary" onclick="confirmarPagoEmp('${id}')">Confirmar pago</button>
@@ -2706,6 +2716,7 @@ function confirmarPagoEmp(id){
   e.montoPagado = Math.min((+e.montoPagado||0)+monto, tope);
   e.estado = ((+e.sueldo||0)>0 && e.montoPagado >= (+e.sueldo||0)) ? 'pagado' : 'pendiente';
   e.fechaPago=fecha; if(notas) e.notasPago=notas;
+  _aplicarComprobante(e);
   save('empleados',empleados); closeModal(); renderEmpleados(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function revertirPagoEmp(id){
@@ -2866,39 +2877,39 @@ function abrirDetalleCxP(tipo){
   const _hoyDate=new Date();const _diaSemana=_hoyDate.getDay()||7;const _finSemana=new Date(_hoyDate);_finSemana.setDate(_hoyDate.getDate()+(7-_diaSemana));const en7=_finSemana.toISOString().split('T')[0];
   let titulo, items;
 
-  // Construir lista igual que renderCxP
+  // Construir lista igual que renderCxP (estado por montos reales)
   const todasLasRows = [];
   gastos.forEach(g=>{
     const pagado=+(g.montoPagado)||0;
     const porPagar=Math.max(0,(+g.monto||0)-pagado);
     todasLasRows.push({proveedor:g.descripcion,concepto:'Gasto: '+(g.categoria||''),
-      monto:+g.monto||0,pagado,porPagar,estado:g.estado||'pendiente',
+      monto:+g.monto||0,pagado,porPagar,estado:(porPagar<=0&&(+g.monto||0)>0)?'pagado':'pendiente',
       fecha:g.fecha||hoy,vencimiento:g.vencimiento||''});
   });
   empleados.forEach(e=>{
     const pagado=+(e.montoPagado)||0;
     const porPagar=Math.max(0,(+e.sueldo||0)-pagado);
     todasLasRows.push({proveedor:e.nombre,concepto:'Sueldo: '+(e.rol||''),
-      monto:+e.sueldo||0,pagado,porPagar,estado:e.estado==='pagado'?'pagado':'pendiente',
+      monto:+e.sueldo||0,pagado,porPagar,estado:(porPagar<=0&&(+e.sueldo||0)>0)?'pagado':'pendiente',
       fecha:hoy,vencimiento:''});
   });
   cxp.filter(c=>!c.gastoId&&!c.empleadoId).forEach(c=>{
     const pagado=+(c.montoPagado)||0;
     const porPagar=Math.max(0,(+c.monto||0)-pagado);
     todasLasRows.push({proveedor:c.proveedor,concepto:c.concepto||'',
-      monto:+c.monto||0,pagado,porPagar,estado:c.estado||'pendiente',
+      monto:+c.monto||0,pagado,porPagar,estado:(porPagar<=0&&(+c.monto||0)>0)?'pagado':'pendiente',
       fecha:c.fecha||hoy,vencimiento:c.vencimiento||''});
   });
 
   if(tipo==='pendiente'){
     titulo='Por pagar';
-    items=todasLasRows.filter(x=>x.estado!=='pagado'&&x.porPagar>0);
+    items=todasLasRows.filter(x=>x.porPagar>0);
   } else if(tipo==='semana'){
     titulo='Vence esta semana';
-    items=todasLasRows.filter(x=>x.estado!=='pagado'&&x.vencimiento>=hoy&&x.vencimiento<=en7);
+    items=todasLasRows.filter(x=>x.porPagar>0&&x.vencimiento>=hoy&&x.vencimiento<=en7);
   } else {
     titulo='Ya pagado';
-    items=todasLasRows.filter(x=>x.estado==='pagado'||x.pagado>0);
+    items=todasLasRows.filter(x=>x.pagado>0);
   }
 
   const totalMostrado = items.reduce((a,x)=>a+(tipo==='pagado'?x.pagado:x.porPagar),0);
@@ -2996,6 +3007,10 @@ function renderCxP(){
     const btnPagar = !estaPagado
       ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">💲</button>`
       : '';
+    const _recComp = x.gastoId?gastos.find(g=>String(g.id)===String(x.gastoId)) : x.empleadoId?empleados.find(e=>String(e.id)===String(x.empleadoId)) : cxp.find(c=>c.id===x.id);
+    const btnComp = (_recComp && _recComp.comprobante)
+      ? `<button title="Ver comprobante" style="border:none;background:none;cursor:pointer;font-size:16px;padding:2px 4px;" onclick="_verComprobanteDe('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">📎</button>`
+      : '';
     const menuItems = [
       estaPagado ? `<div class="ctx-item" style="color:#B83232" onclick="revertirPagoCxP('${x.id}');closeCtx()">↩ Revertir pago</div>` : '',
       `<div class="ctx-item" onclick="editarCxCxP('cxp','${x.id}','${x.gastoId||''}','${x.empleadoId||''}');closeCtx()">✏️ Editar</div>`,
@@ -3011,6 +3026,7 @@ function renderCxP(){
     <td style="font-weight:800;color:${porPagar>0?'#B83232':'#888880'};">${porPagar>0?fmt(porPagar):'—'}</td>
     <td><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${badgeBg};color:${badgeColor};">${label}</span></td>
     <td style="text-align:right;">
+      ${btnComp}
       ${btnPagar}
       <div style="position:relative;display:inline-block;">
         <button title="Más acciones" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="toggleCtx(event,'ctx_${x.id}')">⋯</button>
@@ -3028,6 +3044,7 @@ function pagarCxP(id, montoSug, labelSug){
   const total    = +r.monto||0;
   const yaPagado = +r.montoPagado||0;
   const porPagar = Math.max(0, total - yaPagado);
+  _resetComprobante(r);
   document.getElementById('modal-content').innerHTML = `
     <div class="modal-title">Registrar pago</div>
     <div class="modal-sub">${label}${r.concepto?' — '+r.concepto:''}</div>
@@ -3038,6 +3055,7 @@ function pagarCxP(id, montoSug, labelSug){
       <input class="form-input" id="cp_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
       <input class="form-input" id="cp_notas" type="text" placeholder="Ej: transferencia, cheque..."/></div>
+    ${_comprobanteFieldHTML()}
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
       <button class="modal-btn modal-btn-primary" onclick="confirmarPagoCxP('${id}')">Confirmar pago</button>
@@ -3053,6 +3071,7 @@ function confirmarPagoCxP(id){
   const notas   = document.getElementById('cp_notas').value.trim();
   if(notas) r.notasPago = (r.notasPago?r.notasPago+' | ':'')+notas;
   r.estado = r.montoPagado >= (+r.monto||0) ? 'pagado' : 'pendiente';
+  _aplicarComprobante(r);
   save('cxp',cxp); closeModal(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function revertirPagoCxP(id){
@@ -3379,6 +3398,66 @@ async function actualizarCotizacionMXN(){
 function _rate(f){ return (f && f.moneda==='MXN') ? (+f.cotizacion||COTIZ_MXN_ARS||0) : 1; }
 function montoArs(f){ return (+f.monto||0)*_rate(f); }
 try{ actualizarCotizacionMXN(); }catch(e){}
+
+/* ===== Comprobante de pago/cobro (foto o PDF, guardado dentro de Zaifi) ===== */
+let _comprobantePendiente = null; // {data, nombre, tipo}
+function _resetComprobante(rec){
+  _comprobantePendiente = (rec && rec.comprobante) ? {data:rec.comprobante, nombre:rec.comprobanteNombre||'comprobante', tipo:rec.comprobanteTipo||''} : null;
+}
+function _comprobanteFieldHTML(){
+  const has = !!_comprobantePendiente;
+  return `<div class="form-group"><label class="form-label">Comprobante (opcional — foto o PDF)</label>
+    <input type="file" id="comp_file" accept="image/*,application/pdf" onchange="_onComprobanteChange(this)" style="font-size:13px;width:100%;"/>
+    <div id="comp_status" style="font-size:12px;margin-top:6px;color:var(--text2);">${has?('📎 '+sanitize(_comprobantePendiente.nombre)+' — <a href="#" onclick="_verComprobantePendiente();return false;" style="color:var(--accent);font-weight:600;">ver</a> · <a href="#" onclick="_quitarComprobante();return false;" style="color:#B83232;font-weight:600;">quitar</a>'):'Podés adjuntar una foto o PDF del comprobante.'}</div>
+  </div>`;
+}
+function _onComprobanteChange(input){
+  const file = input.files && input.files[0]; if(!file) return;
+  const status = document.getElementById('comp_status');
+  if(file.type==='application/pdf'){
+    if(file.size > 4*1024*1024){ if(status) status.innerHTML='<span style="color:#B83232;">El PDF es muy grande (máx 4MB).</span>'; input.value=''; return; }
+    const r=new FileReader();
+    r.onload=()=>{ _comprobantePendiente={data:r.result, nombre:file.name, tipo:'application/pdf'}; if(status) status.innerHTML='📎 '+sanitize(file.name)+' listo'; };
+    r.readAsDataURL(file);
+  } else if(file.type && file.type.startsWith('image/')){
+    const r=new FileReader();
+    r.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=1400; let w=img.width, h=img.height;
+        if(w>max||h>max){ const s=Math.min(max/w,max/h); w=Math.round(w*s); h=Math.round(h*s); }
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        const data=c.toDataURL('image/jpeg',0.7);
+        _comprobantePendiente={data, nombre:(file.name.replace(/\.[^.]+$/,'')||'comprobante')+'.jpg', tipo:'image/jpeg'};
+        if(status) status.innerHTML='📎 '+sanitize(file.name)+' listo';
+      };
+      img.onerror=()=>{ if(status) status.innerHTML='<span style="color:#B83232;">No se pudo procesar la imagen.</span>'; };
+      img.src=r.result;
+    };
+    r.readAsDataURL(file);
+  } else {
+    if(status) status.innerHTML='<span style="color:#B83232;">Formato no permitido (solo imagen o PDF).</span>'; input.value='';
+  }
+}
+function _quitarComprobante(){ _comprobantePendiente=null; const s=document.getElementById('comp_status'); if(s) s.textContent='Comprobante quitado.'; const f=document.getElementById('comp_file'); if(f) f.value=''; }
+function _verComprobantePendiente(){ if(_comprobantePendiente) _verComprobante(_comprobantePendiente.data,_comprobantePendiente.tipo,_comprobantePendiente.nombre); }
+function _verComprobante(data,tipo,nombre){
+  try{
+    const arr=data.split(','); const mime=(arr[0].match(/:(.*?);/)||[])[1]||tipo||'application/octet-stream';
+    const bstr=atob(arr[1]); let n=bstr.length; const u8=new Uint8Array(n); while(n--) u8[n]=bstr.charCodeAt(n);
+    const url=URL.createObjectURL(new Blob([u8],{type:mime})); window.open(url,'_blank');
+  }catch(e){ console.log('ver comprobante error',e); toast('No se pudo abrir el comprobante'); }
+}
+function _aplicarComprobante(rec){
+  if(_comprobantePendiente){ rec.comprobante=_comprobantePendiente.data; rec.comprobanteNombre=_comprobantePendiente.nombre; rec.comprobanteTipo=_comprobantePendiente.tipo; }
+  else { delete rec.comprobante; delete rec.comprobanteNombre; delete rec.comprobanteTipo; }
+}
+function _verComprobanteDe(id, gastoId, empleadoId){
+  let rec = gastoId?gastos.find(g=>String(g.id)===String(gastoId)) : empleadoId?empleados.find(e=>String(e.id)===String(empleadoId)) : cxp.find(x=>x.id===id);
+  if(rec && rec.comprobante) _verComprobante(rec.comprobante, rec.comprobanteTipo, rec.comprobanteNombre);
+  else toast('No hay comprobante adjunto');
+}
 
 function updateDashboard(){
   // Home enfocado en el MES EN CURSO (facturación, gastos y ganancia del mes actual)
@@ -3788,6 +3867,16 @@ function closeCtx(){
   document.querySelectorAll('[id^="ctx_"],[id^="gtx_"]').forEach(el=>el.style.display='none');
 }
 document.addEventListener('click', closeCtx);
+function toggleSidebar(){
+  const sb=document.querySelector('.sidebar'); const ov=document.getElementById('sidebar-overlay');
+  if(sb) sb.classList.toggle('mobile-open');
+  if(ov) ov.classList.toggle('show');
+}
+function _closeSidebarMobile(){
+  const sb=document.querySelector('.sidebar'); const ov=document.getElementById('sidebar-overlay');
+  if(sb) sb.classList.remove('mobile-open');
+  if(ov) ov.classList.remove('show');
+}
 function toggleNavSection(el){
   const sec = el.parentElement;
   if(sec && sec.classList.contains('nav-section')) sec.classList.toggle('collapsed');
@@ -3799,6 +3888,7 @@ function goTo(page,el){
   if(el)el.classList.add('active');
   const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa'};
   window.__zaifiPage=page;
+  try{ _closeSidebarMobile(); }catch(e){}
   document.getElementById('topbar-title').textContent=titles[page]||page;
   if(page==='estadisticas') renderEstadisticas();
   if(page==='cuentacorriente') initCuentaCorriente();
@@ -6741,6 +6831,32 @@ body, input, select, textarea, button, .nav-item, td, th, .form-input{
 /* Tablas más formales */
 th{ text-transform:uppercase !important; font-size:10px !important; letter-spacing:.8px !important; }
 .stat-val, .kv, td{ font-variant-numeric:tabular-nums; }
+/* ===== Versión mobile (responsive) ===== */
+#sidebar-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:99; }
+#sidebar-overlay.show{ display:block; }
+@media (max-width:820px){
+  #hamburger-btn{ display:inline-block !important; }
+  .sidebar{ transform:translateX(-100%); transition:transform .25s ease; box-shadow:0 0 40px rgba(0,0,0,0.2); }
+  .sidebar.mobile-open{ transform:translateX(0); }
+  .main{ margin-left:0 !important; }
+  .topbar{ padding:10px 14px !important; flex-wrap:wrap; gap:8px; }
+  .topbar-title{ font-size:18px !important; }
+  .topbar-right{ flex-wrap:wrap; gap:6px !important; width:100%; }
+  .topbar-right button{ padding:6px 10px !important; font-size:12px !important; }
+  .content{ padding:16px 12px !important; }
+  /* Grillas de tarjetas: apiladas */
+  .stats-grid, .sum-grid, .dash-grid, [class*="grid-3"], [class*="grid-4"]{ grid-template-columns:1fr !important; }
+  /* Tablas: scroll horizontal para no romper el layout */
+  .table-card table, .content table{ min-width:640px; }
+  .table-card, .tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  /* Modales full-width */
+  .modal{ padding:20px !important; width:94% !important; max-width:94% !important; }
+  .form-row, .form-grid{ grid-template-columns:1fr !important; }
+}
+@media (max-width:480px){
+  .topbar-title{ font-size:16px !important; }
+  .stat-val{ font-size:22px !important; }
+}
 /* ===== Minimalista v11.9.5 — cuadrado + acento de color ===== */
 .stat-icon{ background:#ECEEDA !important; box-shadow:none !important; }
 .stat-icon svg{ stroke:var(--accent) !important; }
