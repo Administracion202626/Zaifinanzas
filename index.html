@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.19 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.20 · ARCA</span>
         </div>
       </div>
     </div>
@@ -6844,8 +6844,9 @@ th{ text-transform:uppercase !important; font-size:10px !important; letter-spaci
   .topbar-right{ flex-wrap:wrap; gap:6px !important; width:100%; }
   .topbar-right button{ padding:6px 10px !important; font-size:12px !important; }
   .content{ padding:16px 12px !important; }
-  /* Grillas de tarjetas: apiladas */
-  .stats-grid, .sum-grid, .dash-grid, [class*="grid-3"], [class*="grid-4"]{ grid-template-columns:1fr !important; }
+  /* Grillas de tarjetas: apiladas en una columna */
+  .stats-row, .dash-grid, .catalog-grid, .landing-features, .sum-grid, [class*="grid-3"], [class*="grid-4"]{ grid-template-columns:1fr !important; }
+  .content [style*="grid-template-columns"]{ grid-template-columns:1fr !important; }
   /* Tablas: scroll horizontal para no romper el layout */
   .table-card table, .content table{ min-width:640px; }
   .table-card, .tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
