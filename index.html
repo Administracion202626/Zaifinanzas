@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.20 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.21 · ARCA</span>
         </div>
       </div>
     </div>
@@ -6847,9 +6847,21 @@ th{ text-transform:uppercase !important; font-size:10px !important; letter-spaci
   /* Grillas de tarjetas: apiladas en una columna */
   .stats-row, .dash-grid, .catalog-grid, .landing-features, .sum-grid, [class*="grid-3"], [class*="grid-4"]{ grid-template-columns:1fr !important; }
   .content [style*="grid-template-columns"]{ grid-template-columns:1fr !important; }
-  /* Tablas: scroll horizontal para no romper el layout */
-  .table-card table, .content table{ min-width:640px; }
-  .table-card, .tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  /* Tablas → tarjetas apiladas con etiquetas (en vez de scroll horizontal) */
+  .content table{ min-width:0 !important; display:block; }
+  .content table thead{ display:none; }
+  .content table tbody{ display:block; }
+  .content table tr{ display:block; border:1px solid var(--border); border-radius:8px; margin-bottom:12px; padding:10px 14px; background:var(--card-bg); }
+  .content table td{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:5px 0 !important; border:none !important; text-align:right; min-width:0; }
+  .content table td:first-child{ display:block; text-align:left; border-bottom:1px solid var(--border) !important; padding-bottom:8px !important; margin-bottom:4px; }
+  .content table td:last-child{ justify-content:flex-end; }
+  .content table td::before{ content:""; font-size:11px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:.4px; text-align:left; white-space:nowrap; }
+  .content table td:first-child::before, .content table td:last-child::before{ display:none; }
+  /* Etiquetas por tabla */
+  #cxc-tbody td:nth-child(2)::before{content:"Emisión";} #cxc-tbody td:nth-child(3)::before{content:"Vencimiento";} #cxc-tbody td:nth-child(4)::before{content:"Monto";} #cxc-tbody td:nth-child(5)::before{content:"Estado";}
+  #cxp-tbody td:nth-child(2)::before{content:"Emisión";} #cxp-tbody td:nth-child(3)::before{content:"Vencimiento";} #cxp-tbody td:nth-child(4)::before{content:"Total";} #cxp-tbody td:nth-child(5)::before{content:"Pagado";} #cxp-tbody td:nth-child(6)::before{content:"Por pagar";} #cxp-tbody td:nth-child(7)::before{content:"Estado";}
+  #gastos-tbody td:nth-child(2)::before{content:"Proveedor";} #gastos-tbody td:nth-child(3)::before{content:"Categoría";} #gastos-tbody td:nth-child(4)::before{content:"Fecha";} #gastos-tbody td:nth-child(5)::before{content:"Vencimiento";} #gastos-tbody td:nth-child(6)::before{content:"Total";} #gastos-tbody td:nth-child(7)::before{content:"Pagado";} #gastos-tbody td:nth-child(8)::before{content:"Por pagar";} #gastos-tbody td:nth-child(9)::before{content:"Estado";}
+  #clients-tbody td:nth-child(2)::before{content:"CUIT / Cond.";} #clients-tbody td:nth-child(3)::before{content:"Sector";} #clients-tbody td:nth-child(4)::before{content:"Estado";}
   /* Modales full-width */
   .modal{ padding:20px !important; width:94% !important; max-width:94% !important; }
   .form-row, .form-grid{ grid-template-columns:1fr !important; }
