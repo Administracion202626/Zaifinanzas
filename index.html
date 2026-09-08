@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.21 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.22 · ARCA</span>
         </div>
       </div>
     </div>
@@ -856,6 +856,7 @@ tr:hover td{background:#F5F2EC;}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
+      <div id="alertas-panel"></div>
       <div class="stats-row">
         <div class="stat-card card-fact" onclick="verIngresosMes()" style="cursor:pointer;">
           <div class="stat-icon" style="background:#ECEEDA;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6E7C3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
@@ -2204,6 +2205,7 @@ async function loadApp(user){
   renderAll();
   goTo('dashboard', document.querySelector('.nav-item'));
   setTimeout(applyPrivacy, 100);
+  setTimeout(()=>{ try{ mostrarAlertasPopup(); }catch(e){} }, 900);
   // Verificar sesión cada 60 segundos
   setInterval(()=>{
     if(!getSession()){
@@ -3459,6 +3461,60 @@ function _verComprobanteDe(id, gastoId, empleadoId){
   else toast('No hay comprobante adjunto');
 }
 
+/* ===== Centro de alertas (próximos 7 días + vencidas) ===== */
+function _cxpTodas(){
+  const rows=[];
+  gastos.forEach(g=>{const p=+(g.montoPagado)||0; rows.push({nombre:g.descripcion||'Gasto',porPagar:Math.max(0,(+g.monto||0)-p),vencimiento:g.vencimiento||''});});
+  empleados.forEach(e=>{const p=+(e.montoPagado)||0; rows.push({nombre:e.nombre||'Sueldo',porPagar:Math.max(0,(+e.sueldo||0)-p),vencimiento:''});});
+  cxp.filter(c=>!c.gastoId&&!c.empleadoId).forEach(c=>{const p=+(c.montoPagado)||0; rows.push({nombre:c.proveedor||c.concepto||'Cuenta',porPagar:Math.max(0,(+c.monto||0)-p),vencimiento:c.vencimiento||''});});
+  return rows;
+}
+function getAlertas(){
+  const hoy=today();
+  const d=new Date(); d.setDate(d.getDate()+7); const en7=d.toISOString().split('T')[0];
+  const facPend = facturas.filter(f=>f.estado!=='cobrada').map(f=>({venc:f.vencimiento||'', saldo:Math.max(0, montoArs(f)-(+f.montoCobrado||0)*_rate(f))})).filter(x=>x.saldo>0.5);
+  const cxpAll = _cxpTodas().filter(x=>x.porPagar>0.5);
+  const sumF=a=>a.reduce((s,x)=>s+x.saldo,0);
+  const sumC=a=>a.reduce((s,x)=>s+x.porPagar,0);
+  const cs=facPend.filter(x=>x.venc&&x.venc>=hoy&&x.venc<=en7);
+  const vc=facPend.filter(x=>x.venc&&x.venc<hoy);
+  const ps=cxpAll.filter(x=>x.vencimiento&&x.vencimiento>=hoy&&x.vencimiento<=en7);
+  const vp=cxpAll.filter(x=>x.vencimiento&&x.vencimiento<hoy);
+  return {
+    cobrarSemana:{n:cs.length,monto:sumF(cs)}, vencCobrar:{n:vc.length,monto:sumF(vc)},
+    pagarSemana:{n:ps.length,monto:sumC(ps)}, vencPagar:{n:vp.length,monto:sumC(vp)}
+  };
+}
+function renderAlertasPanel(){
+  const el=document.getElementById('alertas-panel'); if(!el) return;
+  const a=getAlertas();
+  const pill=(bg,bd,col,txt,dest)=>`<div onclick="goTo('${dest}',document.querySelector('[onclick*=${dest}]'))" style="cursor:pointer;background:${bg};border:1px solid ${bd};color:${col};border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;">${txt}</div>`;
+  const pills=[];
+  if(a.vencCobrar.n) pills.push(pill('#FDF0EF','#F3D6D3','#B23A32',`⚠️ ${a.vencCobrar.n} vencida(s) sin cobrar · ${fmt(a.vencCobrar.monto)}`,'cxc'));
+  if(a.vencPagar.n)  pills.push(pill('#FDF0EF','#F3D6D3','#B23A32',`🔴 ${a.vencPagar.n} vencida(s) sin pagar · ${fmt(a.vencPagar.monto)}`,'cxp'));
+  if(a.cobrarSemana.n) pills.push(pill('#EAF0E9','#CFE0CB','#1A7A52',`💰 Cobrás esta semana · ${fmt(a.cobrarSemana.monto)} (${a.cobrarSemana.n})`,'cxc'));
+  if(a.pagarSemana.n)  pills.push(pill('#FBF6E6','#EBDFA8','#8A6A00',`📤 Pagás esta semana · ${fmt(a.pagarSemana.monto)} (${a.pagarSemana.n})`,'cxp'));
+  el.innerHTML = pills.length ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">${pills.join('')}</div>` : '';
+}
+function mostrarAlertasPopup(){
+  try{ if(sessionStorage.getItem('alertasVistas')) return; }catch(e){}
+  const a=getAlertas();
+  const linea=(col,txt)=>`<div style="display:flex;gap:8px;align-items:center;background:${col.bg};border:1px solid ${col.bd};color:${col.c};border-radius:8px;padding:10px 12px;font-size:13px;">${txt}</div>`;
+  const items=[];
+  if(a.vencCobrar.n) items.push(linea({bg:'#FDF0EF',bd:'#F3D6D3',c:'#B23A32'},`⚠️ <b>${a.vencCobrar.n}</b> factura(s) vencida(s) sin cobrar — <b>${fmt(a.vencCobrar.monto)}</b>`));
+  if(a.vencPagar.n)  items.push(linea({bg:'#FDF0EF',bd:'#F3D6D3',c:'#B23A32'},`🔴 <b>${a.vencPagar.n}</b> cuenta(s) vencida(s) sin pagar — <b>${fmt(a.vencPagar.monto)}</b>`));
+  if(a.cobrarSemana.n) items.push(linea({bg:'#EAF0E9',bd:'#CFE0CB',c:'#1A7A52'},`💰 Cobrás esta semana: <b>${fmt(a.cobrarSemana.monto)}</b> (${a.cobrarSemana.n})`));
+  if(a.pagarSemana.n)  items.push(linea({bg:'#FBF6E6',bd:'#EBDFA8',c:'#8A6A00'},`📤 Pagás esta semana: <b>${fmt(a.pagarSemana.monto)}</b> (${a.pagarSemana.n})`));
+  if(!items.length) return;
+  try{ sessionStorage.setItem('alertasVistas','1'); }catch(e){}
+  const mc=document.getElementById('modal-content'); if(!mc) return;
+  mc.innerHTML=`<div class="modal-title">Resumen de la semana</div>
+    <div class="modal-sub">Lo que se viene en los próximos 7 días</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:16px 0;">${items.join('')}</div>
+    <div class="modal-btns"><button class="modal-btn modal-btn-primary" onclick="closeModal()">Entendido</button></div>`;
+  document.getElementById('modal').classList.add('open');
+}
+
 function updateDashboard(){
   // Home enfocado en el MES EN CURSO (facturación, gastos y ganancia del mes actual)
   const _mesCur = today().substring(0,7);
@@ -3572,6 +3628,7 @@ function updateDashboard(){
       }).join('');
     }
   }
+  try{ renderAlertasPanel(); }catch(e){}
 }
 
 function eliminar(tipo,id){
