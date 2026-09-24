@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.25 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.26 · ARCA</span>
         </div>
       </div>
     </div>
@@ -1070,7 +1070,7 @@ tr:hover td{background:#F5F2EC;}
             <div class="form-group">
               <label class="form-label">Cuenta donde se cobra</label>
               <input class="form-input" id="fac-cuenta" list="fac-cuenta-list" value="ODSA" placeholder="ODSA / Francisco García"/>
-              <datalist id="fac-cuenta-list"><option value="ODSA"><option value="Francisco García"></datalist>
+              <datalist id="fac-cuenta-list"><option value="ODSA"><option value="Francisco García"><option value="Efectivo"></datalist>
               <div style="font-size:11px;color:var(--text3);margin-top:4px;">Al marcar la factura como cobrada, entra como ingreso en esta cuenta de la Caja.</div>
             </div>
           </div>
@@ -3577,7 +3577,7 @@ function _registrarEnCaja(mov){
   try{ renderCaja(); }catch(e){}
 }
 function _cuentasCaja(){
-  const base=['ODSA','Francisco García'];
+  const base=['ODSA','Francisco García','Efectivo'];
   const fromData=(caja||[]).map(m=>m.cuenta||'ODSA');
   return [...new Set(base.concat(fromData))];
 }
