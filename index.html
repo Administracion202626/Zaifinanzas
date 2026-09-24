@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.22 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.24 · ARCA</span>
         </div>
       </div>
     </div>
@@ -799,6 +799,7 @@ tr:hover td{background:#F5F2EC;}
     <div class="nav-links">
       <div class="nav-item" onclick="goTo('proveedores',this)"><span class="ni">◧</span>Proveedores</div>
       <div class="nav-item" onclick="goTo('gastos',this)"><span class="ni">◫</span>Gastos</div>
+      <div class="nav-item" onclick="goTo('caja',this)"><span class="ni">▣</span>Caja / Conciliación</div>
       <div class="nav-item" id="nav-empleados" onclick="goTo('empleados',this)"><span class="ni">◉</span>Empleados</div>
       <div class="nav-item" onclick="goTo('cxp',this)"><span class="ni" style="color:#B83232;font-size:9px;font-weight:900;background:#FBF0F0;border-radius:4px;padding:2px 4px;width:auto;">CxP</span>Cuentas por Pagar</div>
     </div>
@@ -1187,6 +1188,34 @@ tr:hover td{background:#F5F2EC;}
     </div>
 
     <!-- CxP -->
+    <div class="page" id="page-caja">
+      <div style="background:linear-gradient(135deg,#2B2A24,#3A382F);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+        <div style="font-size:30px;">▣</div>
+        <div><div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;color:#fff;">Caja / Cuentas</div><div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:2px;">ODSA y Francisco García (Galicia). Cada cuenta con su saldo, más el total.</div></div>
+      </div>
+      <div id="caja-summary" class="stats-row" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:16px;"></div>
+      <div id="caja-cuentas" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+      <div class="table-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:18px 22px;border-bottom:1px solid var(--border);">
+          <div><div style="font-size:16px;font-weight:700;">Movimientos de caja</div><div style="font-size:13px;color:var(--text3);">Entradas y salidas de ODSA</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="arqueoCaja()" style="border:1px solid var(--accent);background:var(--white);color:var(--accent);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">⚖ Conciliar</button>
+            <button onclick="nuevoMovimientoCaja()" style="border:none;background:var(--accent);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Nuevo movimiento</button>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:12px 22px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Concepto</th>
+            <th style="text-align:left;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Fecha</th>
+            <th style="text-align:right;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Ingreso</th>
+            <th style="text-align:right;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Egreso</th>
+            <th style="text-align:right;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Saldo</th>
+            <th style="text-align:right;padding:12px 22px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Acciones</th>
+          </tr></thead>
+          <tbody id="caja-tbody"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="page" id="page-cxp">
       <div class="summary-banner">
         <div class="sum-card red" onclick="abrirDetalleCxP('pendiente')" style="cursor:pointer;transition:transform 0.15s;"><div class="sum-label">Por pagar</div><div class="sum-val" id="cxp-total">$0</div><div class="sum-count" id="cxp-count">0 registros</div></div>
@@ -2010,7 +2039,7 @@ async function logAudit(accion, detalle=''){
 }
 
 async function loadDataFromSupa(){
-  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos'];
+  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos','caja'];
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
@@ -2021,7 +2050,7 @@ async function loadDataFromSupa(){
   await Promise.all(promises);
 }
 
-let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc;
+let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc,caja;
 
 function loadData(){
   clientes   =load('clientes');
@@ -2035,6 +2064,7 @@ function loadData(){
   resumenes   =load('resumenes');
   bancosPropios=load('bancosPropios');
   bancosTerc  =load('bancosTerc');
+  caja        =load('caja');
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
@@ -2270,6 +2300,7 @@ function renderAll(){
   renderClientes(); renderCatalogo(); renderFacturas(); renderGastos();
   renderEmpleados(); renderProveedores(); renderCxC(); renderCxP();
   renderResumenes(); renderBancos();
+  try{ renderCaja(); }catch(e){}
   updateDashboard();
 }
 
@@ -3515,6 +3546,149 @@ function mostrarAlertasPopup(){
   document.getElementById('modal').classList.add('open');
 }
 
+/* ===== Caja / Conciliación (multi-cuenta) ===== */
+let cajaEditId=null;
+function _cuentasCaja(){
+  const base=['ODSA','Francisco García'];
+  const fromData=(caja||[]).map(m=>m.cuenta||'ODSA');
+  return [...new Set(base.concat(fromData))];
+}
+function seleccionarCuentaCaja(c){ window.__cajaCuenta=c; renderCaja(); }
+function _saldoCaja(cuenta){
+  return (caja||[]).filter(m=>!cuenta||cuenta==='Todas'||(m.cuenta||'ODSA')===cuenta)
+    .reduce((s,m)=>s+(m.tipo==='ingreso'?(+m.monto||0):-(+m.monto||0)),0);
+}
+function renderCaja(){
+  const cont=document.getElementById('caja-tbody'); if(!cont) return;
+  const cuentas=_cuentasCaja();
+  const filtro = window.__cajaCuenta || 'Todas';
+  const movsAll=[...(caja||[])].sort((a,b)=>((a.fecha||'')+String(a.id)).localeCompare((b.fecha||'')+String(b.id)));
+  const running={}; cuentas.forEach(c=>running[c]=0);
+  const rowsData=[];
+  movsAll.forEach(m=>{
+    const cu=m.cuenta||'ODSA';
+    if(running[cu]===undefined) running[cu]=0;
+    const ing=m.tipo==='ingreso'?(+m.monto||0):0, egr=m.tipo==='egreso'?(+m.monto||0):0;
+    running[cu]+=ing-egr;
+    rowsData.push({m,cu,ing,egr,saldoCuenta:running[cu],enFiltro:(filtro==='Todas'||cu===filtro)});
+  });
+  const saldoDe={}; cuentas.forEach(c=>saldoDe[c]=running[c]||0);
+  const total=Object.values(saldoDe).reduce((a,b)=>a+b,0);
+  // Tarjetas resumen (saldo por cuenta + total)
+  const sum=document.getElementById('caja-summary');
+  if(sum){
+    let cards=cuentas.map(c=>`<div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Saldo ${sanitize(c)}</div><div class="stat-val">${fmt(saldoDe[c]||0)}</div></div>`).join('');
+    cards+=`<div class="stat-card" style="border:1.5px solid var(--accent);"><div style="font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Saldo total</div><div class="stat-val" style="color:var(--accent);">${fmt(total)}</div></div>`;
+    sum.innerHTML=cards;
+  }
+  // Chips de filtro por cuenta
+  const chipsEl=document.getElementById('caja-cuentas');
+  if(chipsEl){
+    const chip=(label,val)=>`<div onclick="seleccionarCuentaCaja('${String(val).replace(/'/g,"\\'")}')" style="cursor:pointer;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid ${filtro===val?'var(--accent)':'var(--border)'};background:${filtro===val?'var(--accent)':'var(--white)'};color:${filtro===val?'#fff':'var(--text2)'};">${sanitize(label)}</div>`;
+    chipsEl.innerHTML = chip('Todas','Todas')+cuentas.map(c=>chip(c,c)).join('');
+  }
+  // Filas
+  const rows=rowsData.filter(r=>r.enFiltro).map(r=>{
+    const m=r.m;
+    const tag = filtro==='Todas' ? `<span style="font-size:10px;font-weight:700;background:var(--nav-hover);color:var(--text2);border-radius:4px;padding:1px 6px;margin-left:6px;">${sanitize(m.cuenta||'ODSA')}</span>` : '';
+    return `<tr>
+      <td><div class="td-main">${sanitize(m.concepto||'—')}${tag}</div><div class="td-sub">${sanitize(m.medio||'')}</div></td>
+      <td style="padding:12px;font-size:13px;color:var(--text3);white-space:nowrap;">${m.fecha||''}</td>
+      <td style="padding:12px;text-align:right;color:#1A7A52;font-weight:700;white-space:nowrap;">${r.ing?fmt(r.ing):'—'}</td>
+      <td style="padding:12px;text-align:right;color:#B83232;font-weight:700;white-space:nowrap;">${r.egr?fmt(r.egr):'—'}</td>
+      <td style="padding:12px;text-align:right;font-weight:700;white-space:nowrap;">${fmt(r.saldoCuenta)}</td>
+      <td style="padding:12px 22px;text-align:right;white-space:nowrap;">
+        <button title="Editar" style="border:none;background:none;cursor:pointer;font-size:15px;padding:2px 4px;" onclick="editarMovimientoCaja('${m.id}')">✏️</button>
+        <button title="Eliminar" style="border:none;background:none;cursor:pointer;font-size:15px;padding:2px 4px;" onclick="eliminarMovimientoCaja('${m.id}')">🗑</button>
+      </td></tr>`;
+  });
+  cont.innerHTML = rows.length ? rows.reverse().join('') : '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:28px;">Sin movimientos en esta cuenta. Cargá el saldo inicial como un ingreso.</td></tr>';
+}
+function _cuentaOptionsHTML(){
+  return _cuentasCaja().map(c=>`<option value="${sanitize(c)}">`).join('');
+}
+function nuevoMovimientoCaja(){
+  cajaEditId=null;
+  const cuentaDef = (window.__cajaCuenta && window.__cajaCuenta!=='Todas') ? window.__cajaCuenta : 'ODSA';
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-title">Nuevo movimiento de caja</div>
+    <div class="form-group"><label class="form-label">Cuenta</label>
+      <input class="form-input" id="cj_cuenta" list="cj_cuenta_list" value="${sanitize(cuentaDef)}" placeholder="ODSA / Francisco García / otra"/>
+      <datalist id="cj_cuenta_list">${_cuentaOptionsHTML()}</datalist>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Elegí una o escribí una cuenta nueva.</div></div>
+    <div class="form-group"><label class="form-label">Tipo</label>
+      <select class="form-select" id="cj_tipo"><option value="ingreso">Ingreso (entra plata)</option><option value="egreso">Egreso (sale plata)</option></select></div>
+    <div class="form-group"><label class="form-label">Concepto</label><input class="form-input" id="cj_concepto" placeholder="Ej: Cobro cliente / Pago proveedor / Saldo inicial"/></div>
+    <div class="form-group"><label class="form-label">Monto ($)</label><input class="form-input" id="cj_monto" type="number" min="1"/></div>
+    <div class="form-group"><label class="form-label">Medio</label><select class="form-select" id="cj_medio"><option>Transferencia</option><option>Efectivo</option><option>Cheque</option><option>Otro</option></select></div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="cj_fecha" type="date" value="${today()}"/></div>
+    <div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn modal-btn-primary" onclick="guardarMovimientoCaja()">Guardar</button></div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function editarMovimientoCaja(id){
+  const m=(caja||[]).find(x=>x.id===id); if(!m) return;
+  nuevoMovimientoCaja(); cajaEditId=id;
+  const t=document.querySelector('#modal-content .modal-title'); if(t) t.textContent='Editar movimiento';
+  document.getElementById('cj_cuenta').value=m.cuenta||'ODSA';
+  document.getElementById('cj_tipo').value=m.tipo||'ingreso';
+  document.getElementById('cj_concepto').value=m.concepto||'';
+  document.getElementById('cj_monto').value=m.monto||'';
+  document.getElementById('cj_medio').value=m.medio||'Transferencia';
+  document.getElementById('cj_fecha').value=m.fecha||today();
+}
+function guardarMovimientoCaja(){
+  const cuenta=(document.getElementById('cj_cuenta').value||'ODSA').trim()||'ODSA';
+  const tipo=document.getElementById('cj_tipo').value;
+  const concepto=document.getElementById('cj_concepto').value.trim();
+  const monto=parseFloat(document.getElementById('cj_monto').value)||0;
+  const medio=document.getElementById('cj_medio').value;
+  const fecha=document.getElementById('cj_fecha').value||today();
+  if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
+  if(!concepto){ toast('⚠️ Poné un concepto'); return; }
+  if(!Array.isArray(caja)) caja=[];
+  if(cajaEditId){ const m=caja.find(x=>x.id===cajaEditId); if(m) Object.assign(m,{cuenta,tipo,concepto,monto,medio,fecha}); }
+  else { caja.push({id:uid(),cuenta,tipo,concepto,monto,medio,fecha}); }
+  save('caja',caja); cajaEditId=null; closeModal(); renderCaja(); toast('Movimiento guardado');
+}
+function eliminarMovimientoCaja(id){
+  if(!confirm('¿Eliminar este movimiento?')) return;
+  caja=(caja||[]).filter(x=>x.id!==id); save('caja',caja); deleteSupaRecord('caja',id); renderCaja(); toast('🗑 Eliminado');
+}
+function arqueoCaja(){
+  const cuentaDef = (window.__cajaCuenta && window.__cajaCuenta!=='Todas') ? window.__cajaCuenta : 'ODSA';
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-title">Conciliar caja (arqueo)</div>
+    <div class="form-group"><label class="form-label">Cuenta a conciliar</label>
+      <input class="form-input" id="arq_cuenta" list="cj_cuenta_list" value="${sanitize(cuentaDef)}" oninput="_calcArqueo()"/>
+      <datalist id="cj_cuenta_list">${_cuentaOptionsHTML()}</datalist></div>
+    <div id="arq_saldo" class="modal-sub" style="margin-bottom:10px;"></div>
+    <div class="form-group"><label class="form-label">¿Cuánto hay realmente en esa cuenta? ($)</label><input class="form-input" id="arq_real" type="number" oninput="_calcArqueo()"/></div>
+    <div id="arq_diff" style="font-size:14px;font-weight:700;margin:10px 0;"></div>
+    <div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cerrar</button><button class="modal-btn modal-btn-primary" onclick="_registrarAjusteArqueo()">Registrar ajuste</button></div>`;
+  document.getElementById('modal').classList.add('open');
+  _calcArqueo();
+}
+function _calcArqueo(){
+  const cuenta=(document.getElementById('arq_cuenta')?.value||'ODSA').trim()||'ODSA';
+  const saldo=_saldoCaja(cuenta);
+  const sEl=document.getElementById('arq_saldo'); if(sEl) sEl.innerHTML='Saldo de <b>'+sanitize(cuenta)+'</b> según el sistema: <b>'+fmt(saldo)+'</b>';
+  const inp=document.getElementById('arq_real'); const el=document.getElementById('arq_diff'); if(!inp||!el) return;
+  if(!inp.value){ el.textContent=''; return; }
+  const diff=(parseFloat(inp.value)||0)-saldo;
+  if(Math.abs(diff)<0.5) el.innerHTML='<span style="color:#1A7A52;">✓ Coincide. La cuenta está conciliada.</span>';
+  else if(diff>0) el.innerHTML='<span style="color:#8A6A00;">Sobran '+fmt(diff)+' (hay más que lo registrado).</span>';
+  else el.innerHTML='<span style="color:#B83232;">Faltan '+fmt(-diff)+' (hay menos que lo registrado).</span>';
+}
+function _registrarAjusteArqueo(){
+  const cuenta=(document.getElementById('arq_cuenta')?.value||'ODSA').trim()||'ODSA';
+  const inp=document.getElementById('arq_real'); if(!inp||!inp.value){ toast('Ingresá el monto real'); return; }
+  const diff=(parseFloat(inp.value)||0)-_saldoCaja(cuenta);
+  if(Math.abs(diff)<0.5){ toast('La cuenta ya coincide'); closeModal(); return; }
+  if(!Array.isArray(caja)) caja=[];
+  caja.push({id:uid(), cuenta, tipo:diff>0?'ingreso':'egreso', concepto:'Ajuste por arqueo', monto:Math.abs(diff), medio:'Otro', fecha:today()});
+  save('caja',caja); closeModal(); renderCaja(); toast('Ajuste de '+fmt(Math.abs(diff))+' registrado en '+cuenta);
+}
+
 function updateDashboard(){
   // Home enfocado en el MES EN CURSO (facturación, gastos y ganancia del mes actual)
   const _mesCur = today().substring(0,7);
@@ -3943,7 +4117,7 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa',caja:'Caja / Conciliación'};
   window.__zaifiPage=page;
   try{ _closeSidebarMobile(); }catch(e){}
   document.getElementById('topbar-title').textContent=titles[page]||page;
@@ -3955,6 +4129,7 @@ function goTo(page,el){
   if(page==='lineacritica') renderLineaCritica();
   if(page==='porrubro') renderPorRubro();
   if(page==='invitaciones') renderInvitaciones();
+  if(page==='caja') renderCaja();
 }
 function clearFilter(p){
   const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat']};
@@ -6919,6 +7094,7 @@ th{ text-transform:uppercase !important; font-size:10px !important; letter-spaci
   #cxp-tbody td:nth-child(2)::before{content:"Emisión";} #cxp-tbody td:nth-child(3)::before{content:"Vencimiento";} #cxp-tbody td:nth-child(4)::before{content:"Total";} #cxp-tbody td:nth-child(5)::before{content:"Pagado";} #cxp-tbody td:nth-child(6)::before{content:"Por pagar";} #cxp-tbody td:nth-child(7)::before{content:"Estado";}
   #gastos-tbody td:nth-child(2)::before{content:"Proveedor";} #gastos-tbody td:nth-child(3)::before{content:"Categoría";} #gastos-tbody td:nth-child(4)::before{content:"Fecha";} #gastos-tbody td:nth-child(5)::before{content:"Vencimiento";} #gastos-tbody td:nth-child(6)::before{content:"Total";} #gastos-tbody td:nth-child(7)::before{content:"Pagado";} #gastos-tbody td:nth-child(8)::before{content:"Por pagar";} #gastos-tbody td:nth-child(9)::before{content:"Estado";}
   #clients-tbody td:nth-child(2)::before{content:"CUIT / Cond.";} #clients-tbody td:nth-child(3)::before{content:"Sector";} #clients-tbody td:nth-child(4)::before{content:"Estado";}
+  #caja-tbody td:nth-child(2)::before{content:"Fecha";} #caja-tbody td:nth-child(3)::before{content:"Ingreso";} #caja-tbody td:nth-child(4)::before{content:"Egreso";} #caja-tbody td:nth-child(5)::before{content:"Saldo";}
   /* Modales full-width */
   .modal{ padding:20px !important; width:94% !important; max-width:94% !important; }
   .form-row, .form-grid{ grid-template-columns:1fr !important; }
