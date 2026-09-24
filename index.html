@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.24 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.25 · ARCA</span>
         </div>
       </div>
     </div>
@@ -1066,6 +1066,12 @@ tr:hover td{background:#F5F2EC;}
                 <option value="MXN">Peso mexicano (MXN)</option>
               </select>
               <div id="fac-cotiz-info" style="display:none;font-size:11px;color:var(--text3);margin-top:6px;">Cotización no disponible aún</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cuenta donde se cobra</label>
+              <input class="form-input" id="fac-cuenta" list="fac-cuenta-list" value="ODSA" placeholder="ODSA / Francisco García"/>
+              <datalist id="fac-cuenta-list"><option value="ODSA"><option value="Francisco García"></datalist>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">Al marcar la factura como cobrada, entra como ingreso en esta cuenta de la Caja.</div>
             </div>
           </div>
           <div id="fac-cliente-info" style="margin:0 24px 20px;background:#F5F2EC;border-radius:10px;padding:12px 14px;font-size:13px;color:#666660;display:none;">
@@ -2430,6 +2436,10 @@ function confirmarCobroFactura(id){
   if(notas) f.notasCobro = (f.notasCobro?f.notasCobro+' | ':'')+notas;
   f.fechaCobro = fecha;
   _aplicarComprobante(f);
+  // Impacta como INGRESO en la cuenta de la factura (convertido a ARS si es MXN)
+  _registrarEnCaja({cuenta:f.cuentaCaja||'ODSA', tipo:'ingreso',
+    concepto:'Cobro '+(f.numero||'factura')+' · '+(f.cliente||''),
+    monto: monto*_rate(f), fecha, facturaId:f.id});
   closeModal();
   _aplicarCobroFactura(f, monto);
 }
@@ -2646,6 +2656,9 @@ function pagarGasto(id){
       <input class="form-input" id="gp_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
       <input class="form-input" id="gp_notas" type="text" placeholder="Ej: transferencia, cheque..."/></div>
+    <div class="form-group"><label class="form-label">Cuenta de la que sale</label>
+      <input class="form-input" id="gp_cuenta" list="cj_cuenta_list" value="${(window.__cajaCuenta&&window.__cajaCuenta!=='Todas')?window.__cajaCuenta:'ODSA'}"/>
+      <datalist id="cj_cuenta_list">${_cuentaOptionsHTML()}</datalist></div>
     ${_comprobanteFieldHTML()}
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -2663,6 +2676,7 @@ function confirmarPagoGasto(id){
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
   _aplicarComprobante(x);
+  { const _cu=(document.getElementById('gp_cuenta')?.value||'ODSA').trim()||'ODSA'; const _fp=document.getElementById('gp_fecha')?.value||today(); _registrarEnCaja({cuenta:_cu,tipo:'egreso',concepto:'Pago '+(x.descripcion||'gasto'),monto,fecha:_fp,gastoId:x.id}); }
   // Guardar en localStorage Y Supabase
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
@@ -2732,6 +2746,9 @@ function marcarPagoEmp(id){
       <input class="form-input" id="mp_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
       <input class="form-input" id="mp_notas" type="text" placeholder="Ej: transferencia banco Galicia"/></div>
+    <div class="form-group"><label class="form-label">Cuenta de la que sale</label>
+      <input class="form-input" id="mp_cuenta" list="cj_cuenta_list" value="${(window.__cajaCuenta&&window.__cajaCuenta!=='Todas')?window.__cajaCuenta:'ODSA'}"/>
+      <datalist id="cj_cuenta_list">${_cuentaOptionsHTML()}</datalist></div>
     ${_comprobanteFieldHTML()}
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -2750,6 +2767,7 @@ function confirmarPagoEmp(id){
   e.estado = ((+e.sueldo||0)>0 && e.montoPagado >= (+e.sueldo||0)) ? 'pagado' : 'pendiente';
   e.fechaPago=fecha; if(notas) e.notasPago=notas;
   _aplicarComprobante(e);
+  { const _cu=(document.getElementById('mp_cuenta')?.value||'ODSA').trim()||'ODSA'; _registrarEnCaja({cuenta:_cu,tipo:'egreso',concepto:'Sueldo '+(e.nombre||''),monto,fecha,empleadoId:e.id}); }
   save('empleados',empleados); closeModal(); renderEmpleados(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function revertirPagoEmp(id){
@@ -3088,6 +3106,9 @@ function pagarCxP(id, montoSug, labelSug){
       <input class="form-input" id="cp_fecha" type="date" value="${today()}"/></div>
     <div class="form-group"><label class="form-label">Notas (opcional)</label>
       <input class="form-input" id="cp_notas" type="text" placeholder="Ej: transferencia, cheque..."/></div>
+    <div class="form-group"><label class="form-label">Cuenta de la que sale</label>
+      <input class="form-input" id="cp_cuenta" list="cj_cuenta_list" value="${(window.__cajaCuenta&&window.__cajaCuenta!=='Todas')?window.__cajaCuenta:'ODSA'}"/>
+      <datalist id="cj_cuenta_list">${_cuentaOptionsHTML()}</datalist></div>
     ${_comprobanteFieldHTML()}
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -3105,6 +3126,7 @@ function confirmarPagoCxP(id){
   if(notas) r.notasPago = (r.notasPago?r.notasPago+' | ':'')+notas;
   r.estado = r.montoPagado >= (+r.monto||0) ? 'pagado' : 'pendiente';
   _aplicarComprobante(r);
+  { const _cu=(document.getElementById('cp_cuenta')?.value||'ODSA').trim()||'ODSA'; const _fp=document.getElementById('cp_fecha')?.value||today(); _registrarEnCaja({cuenta:_cu,tipo:'egreso',concepto:'Pago '+(r.proveedor||r.concepto||'cuenta'),monto,fecha:_fp}); }
   save('cxp',cxp); closeModal(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
 }
 function revertirPagoCxP(id){
@@ -3548,6 +3570,12 @@ function mostrarAlertasPopup(){
 
 /* ===== Caja / Conciliación (multi-cuenta) ===== */
 let cajaEditId=null;
+function _registrarEnCaja(mov){
+  if(!Array.isArray(caja)) caja=[];
+  caja.push(Object.assign({id:uid(), medio:'Transferencia', fecha:today()}, mov));
+  save('caja',caja);
+  try{ renderCaja(); }catch(e){}
+}
 function _cuentasCaja(){
   const base=['ODSA','Francisco García'];
   const fromData=(caja||[]).map(m=>m.cuenta||'ODSA');
@@ -5492,12 +5520,14 @@ function nuevaFacturaFull(editId){
     document.getElementById('fac-estado-form').value = fEdit.estado||'pendiente';
     const _mSel=document.getElementById('fac-moneda'); if(_mSel){ _mSel.value = fEdit.moneda||'ARS'; document.getElementById('fac-cotiz-info').style.display = _mSel.value==='MXN'?'block':'none'; }
     { const _d=document.getElementById('fac-descuento'); if(_d) _d.value = (+fEdit.descuento||0)>0 ? fEdit.descuento : ''; }
+    { const _cc=document.getElementById('fac-cuenta'); if(_cc) _cc.value = fEdit.cuentaCaja||'ODSA'; }
     document.getElementById('fac-form-title').textContent = 'Editar factura';
     autocompletarClienteFac();
   } else {
     document.getElementById('fac-tipo').value = 'A';
     const _mSel2=document.getElementById('fac-moneda'); if(_mSel2){ _mSel2.value='ARS'; document.getElementById('fac-cotiz-info').style.display='none'; }
     { const _d=document.getElementById('fac-descuento'); if(_d) _d.value=''; }
+    { const _cc=document.getElementById('fac-cuenta'); if(_cc) _cc.value='ODSA'; }
     actualizarNumFac();
     document.getElementById('fac-form-title').textContent = 'Nueva factura';
   }
@@ -5637,6 +5667,7 @@ function guardarFacturaFull(){
   const estado  = document.getElementById('fac-estado-form').value;
   const moneda  = document.getElementById('fac-moneda')?.value||'ARS';
   const cotizacion = moneda==='MXN' ? (COTIZ_MXN_ARS||0) : 1;
+  const cuentaCaja = (document.getElementById('fac-cuenta')?.value||'ODSA').trim()||'ODSA';
   if(!cliente){ toast('⚠️ Seleccioná un cliente'); return; }
   if(!facServicios.length&&!facEnvios.length){ toast('⚠️ Agregá al menos un servicio o envío'); return; }
 
@@ -5661,7 +5692,7 @@ function guardarFacturaFull(){
     monto = base;
   }
 
-  const obj = {id:facEditId||uid(),tipo,numero,cliente,fecha:fecha||today(),vencimiento,estado,monto,montoCobrado:facEditId?(facturas.find(x=>x.id===facEditId)?.montoCobrado||0):0,servicios:facServicios,envios_data:facEnvios,totalSrv,totalLog,subtotal,descuento,neto,ivaM,cuit:cli.cuit,condicion:cli.condicion,domicilio:cli.domicilio,moneda,cotizacion};
+  const obj = {id:facEditId||uid(),tipo,numero,cliente,fecha:fecha||today(),vencimiento,estado,monto,montoCobrado:facEditId?(facturas.find(x=>x.id===facEditId)?.montoCobrado||0):0,servicios:facServicios,envios_data:facEnvios,totalSrv,totalLog,subtotal,descuento,neto,ivaM,cuit:cli.cuit,condicion:cli.condicion,domicilio:cli.domicilio,moneda,cotizacion,cuentaCaja};
   if(facEditId){ const i=facturas.findIndex(x=>x.id===facEditId); if(i>=0)facturas[i]=obj; }
   else {
     facturas.push(obj);
