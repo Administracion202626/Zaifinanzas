@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.26 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.27 · ARCA</span>
         </div>
       </div>
     </div>
@@ -3773,10 +3773,11 @@ function updateDashboard(){
       clientesEl.innerHTML='<div style="font-size:12px;color:#888880;">Sin clientes activos</div>';
     } else {
       clientesEl.innerHTML=activos.map(cl=>{
-        const fCl=factsMes.filter(f=>f.cliente===cl.nombre);
+        const cn=(cl.nombre||'').trim().toLowerCase();
+        const fCl=facturas.filter(f=>(f.cliente||'').trim().toLowerCase()===cn);
         const tieneFactura=fCl.length>0;
-        const cobrada=fCl.every(f=>f.estado==='cobrada')&&fCl.length>0;
-        const pendCl=fCl.filter(f=>f.estado!=='cobrada').reduce((a,f)=>a+(+f.monto||0),0);
+        const pendCl=fCl.filter(f=>f.estado!=='cobrada').reduce((a,f)=>a+Math.max(0, montoArs(f)-(+f.montoCobrado||0)*_rate(f)),0);
+        const cobrada=tieneFactura && pendCl<=0.5;
         let dot,label,color;
         if(!tieneFactura){dot='○';label='Sin factura';color='#B0AA9E';}
         else if(cobrada){dot='●';label='Al día';color='#1A7A52';}
