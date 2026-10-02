@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.28 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.30 · ARCA</span>
         </div>
       </div>
     </div>
@@ -885,6 +885,7 @@ tr:hover td{background:#F5F2EC;}
           <div class="stat-label">Gastos del mes <span style="font-size:10px;color:var(--accent);margin-left:2px;">›</span></div>
         </div>
       </div>
+      <div id="comparativa-panel" style="margin-bottom:20px;"></div>
       <!-- Estado del mes + últimos movimientos -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;">
 
@@ -3722,6 +3723,84 @@ function _registrarAjusteArqueo(){
   save('caja',caja); closeModal(); renderCaja(); toast('Ajuste de '+fmt(Math.abs(diff))+' registrado en '+cuenta);
 }
 
+/* ===== Comparativa mensual (este mes vs anterior) ===== */
+function _ingresosMes(ym){
+  return (facturas||[]).filter(f=>(f.fecha||'').startsWith(ym)).reduce((a,f)=>a+montoArs(f),0);
+}
+function _gastosMesTotal(ym){
+  const g=(gastos||[]).filter(x=>(x.fecha||'').startsWith(ym)).reduce((a,x)=>a+(+x.monto||0),0);
+  const s=(empleados||[]).reduce((a,e)=>a+(+e.sueldo||0),0);
+  const c=(cxp||[]).filter(x=>!x.gastoId&&!x.empleadoId&&(x.fecha||'').startsWith(ym)).reduce((a,x)=>a+(+x.monto||0),0);
+  return g+s+c;
+}
+function _ingresosPorCliente(ym){
+  const m={}; (facturas||[]).filter(f=>(f.fecha||'').startsWith(ym)).forEach(f=>{ const k=(f.cliente||'—'); m[k]=(m[k]||0)+montoArs(f); }); return m;
+}
+function _gastosPorRubro(ym){
+  const m={};
+  (gastos||[]).filter(g=>(g.fecha||'').startsWith(ym)).forEach(g=>{ const k=(g.categoria||g.descripcion||'Gasto'); m[k]=(m[k]||0)+(+g.monto||0); });
+  (cxp||[]).filter(c=>!c.gastoId&&!c.empleadoId&&(c.fecha||'').startsWith(ym)).forEach(c=>{ const k=(c.proveedor||c.concepto||'Cuenta'); m[k]=(m[k]||0)+(+c.monto||0); });
+  return m;
+}
+function _driversHTML(actMap, prevMap, subirBueno){
+  const keys=[...new Set([...Object.keys(actMap||{}),...Object.keys(prevMap||{})])];
+  const rows=keys.map(k=>({k, a:actMap[k]||0, p:prevMap[k]||0, diff:(actMap[k]||0)-(prevMap[k]||0)}))
+    .filter(r=>Math.abs(r.diff)>0.5).sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff)).slice(0,6);
+  if(!rows.length) return '<div style="font-size:13px;color:var(--text3);">Sin cambios significativos.</div>';
+  return rows.map(r=>{
+    let etiqueta = r.p===0?'nuevo' : r.a===0?'sin actividad' : (r.diff>0?'subió':'bajó');
+    const bueno=(r.diff>0)===subirBueno; const color=bueno?'#1A7A52':'#B83232'; const sign=r.diff>0?'+':'−';
+    return `<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${sanitize(r.k)} <span style="font-size:10px;color:var(--text3);">(${etiqueta})</span></span>
+      <span style="font-weight:700;color:${color};white-space:nowrap;">${sign}${fmt(Math.abs(r.diff))}</span></div>`;
+  }).join('');
+}
+function renderComparativa(){
+  const el=document.getElementById('comparativa-panel'); if(!el) return;
+  const ymAct=today().slice(0,7);
+  const d=new Date(today()+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()-1);
+  const ymPrev=d.toISOString().slice(0,7);
+  const ingAct=_ingresosMes(ymAct), ingPrev=_ingresosMes(ymPrev);
+  const gasAct=_gastosMesTotal(ymAct), gasPrev=_gastosMesTotal(ymPrev);
+  const resAct=ingAct-gasAct, resPrev=ingPrev-gasPrev;
+  const bloque=(label,act,prev,subirEsBueno)=>{
+    const diff=act-prev;
+    const pct = prev!==0 ? (diff/Math.abs(prev)*100) : (act!==0?100:0);
+    const neutro = Math.abs(diff)<0.5;
+    const bueno = diff>0===subirEsBueno;
+    const color = neutro?'var(--text3)':(bueno?'#1A7A52':'#B83232');
+    const arrow = neutro?'→':(diff>0?'▲':'▼');
+    return `<div class="stat-card">
+      <div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">${label}</div>
+      <div class="stat-val" style="font-size:22px;">${fmt(act)}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px;">Mes anterior: ${fmt(prev)}</div>
+      <div style="font-size:13px;font-weight:700;color:${color};margin-top:4px;">${arrow} ${fmt(Math.abs(diff))} (${(pct>=0?'+':'')}${pct.toFixed(0)}%)</div>
+    </div>`;
+  };
+  const ingCliA=_ingresosPorCliente(ymAct), ingCliP=_ingresosPorCliente(ymPrev);
+  const gasRubA=_gastosPorRubro(ymAct), gasRubP=_gastosPorRubro(ymPrev);
+  el.innerHTML = `
+    <div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;">Comparativa mensual</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">${_nombreMes(ymPrev)} vs ${_nombreMes(ymAct)}</div>
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+      ${bloque('Ingresos', ingAct, ingPrev, true)}
+      ${bloque('Gastos', gasAct, gasPrev, false)}
+      ${bloque('Resultado', resAct, resPrev, true)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div class="table-card" style="padding:16px 18px;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px;">¿Por qué cambiaron los ingresos?</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Por cliente, vs ${_nombreMes(ymPrev)}</div>
+        ${_driversHTML(ingCliA, ingCliP, true)}
+      </div>
+      <div class="table-card" style="padding:16px 18px;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px;">¿Por qué cambiaron los gastos?</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Por rubro/proveedor, vs ${_nombreMes(ymPrev)}</div>
+        ${_driversHTML(gasRubA, gasRubP, false)}
+      </div>
+    </div>`;
+}
+
 function updateDashboard(){
   // Home enfocado en el MES EN CURSO (facturación, gastos y ganancia del mes actual)
   const _mesCur = today().substring(0,7);
@@ -3837,6 +3916,7 @@ function updateDashboard(){
     }
   }
   try{ renderAlertasPanel(); }catch(e){}
+  try{ renderComparativa(); }catch(e){}
 }
 
 function eliminar(tipo,id){
