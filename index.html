@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.27 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.28 · ARCA</span>
         </div>
       </div>
     </div>
@@ -1001,6 +1001,7 @@ tr:hover td{background:#F5F2EC;}
           <label>Hasta</label><input type="date" id="fact-hasta" onchange="renderFacturas()">
           <select id="fact-estado" onchange="renderFacturas()"><option value="">Todos los estados</option><option value="cobrada">Cobrada</option><option value="pendiente">Pendiente</option><option value="vencida">Vencida</option></select>
           <select id="fact-tipo-filter" onchange="renderFacturas()"><option value="">Todos los tipos</option><option value="A">Factura A</option><option value="B">Factura B</option><option value="C">Factura C</option><option value="interna">Interno</option><option value="presupuesto">Presupuesto</option></select>
+          <input type="text" id="fact-buscar" placeholder="🔍 Buscar cliente o N°..." oninput="renderFacturas()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;min-width:180px;">
           <button class="filter-clear" onclick="clearFilter('facturacion')">Limpiar</button>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
@@ -1237,7 +1238,7 @@ tr:hover td{background:#F5F2EC;}
       <div class="table-card">
         <div class="table-head">
           <div><div class="th-title">Cuentas por Pagar</div><div class="th-sub">Lo que debés pagar</div></div>
-          <div style="display:flex;gap:10px;"><div class="search-box"><span>🔍</span><input placeholder="Buscar..." oninput="searchTable(this,'cxp-tbody')"/></div><button class="tb-btn tb-btn-primary" onclick="openModal('add-cxp')">+ Nueva cuenta</button></div>
+          <div style="display:flex;gap:10px;"><div class="search-box"><span>🔍</span><input id="cxp-buscar" placeholder="Buscar por nombre..." oninput="renderCxP()"/></div><button class="tb-btn tb-btn-primary" onclick="openModal('add-cxp')">+ Nueva cuenta</button></div>
         </div>
         <table><thead><tr><th>Proveedor / Concepto</th><th>Emisión</th><th>Vencimiento</th><th>Total</th><th>Pagado</th><th>Por pagar</th><th>Estado</th><th style="width:72px;"></th></tr></thead>
         <tbody id="cxp-tbody"></tbody></table>
@@ -2341,11 +2342,13 @@ function renderFacturas(){
   const hasta=document.getElementById('fact-hasta').value;
   const estado=document.getElementById('fact-estado').value;
   const tipoF=(document.getElementById('fact-tipo-filter')||{}).value||'';
+  const q=(document.getElementById('fact-buscar')?.value||'').trim().toLowerCase();
   let f=facturas.filter(x=>{
     if(desde&&x.fecha<desde)return false;
     if(hasta&&x.fecha>hasta)return false;
     if(estado&&x.estado!==estado)return false;
     if(tipoF&&x.tipo!==tipoF)return false;
+    if(q && !(((x.cliente||'')+' '+(x.numero||'')).toLowerCase().includes(q))) return false;
     return true;
   });
   document.getElementById('fact-cobrado').textContent=fmt(f.filter(x=>x.estado==='cobrada').reduce((a,x)=>a+(+x.monto||0),0));
@@ -3023,10 +3026,12 @@ function renderCxP(){
         estado:((+e.montoPagado||0)>=(+e.sueldo||0)&&(+e.sueldo||0)>0)?'pagado':'pendiente',fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
     }
   });
+  const q=(document.getElementById('cxp-buscar')?.value||'').trim().toLowerCase();
   let f=allCxp.filter(x=>{
     if(desde&&x.fecha&&x.fecha<desde)return false;
     if(hasta&&x.fecha&&x.fecha>hasta)return false;
     if(estadoFiltro&&x.estado!==estadoFiltro)return false;
+    if(q && !(((x.proveedor||'')+' '+(x.concepto||'')).toLowerCase().includes(q))) return false;
     return true;
   });
   const totalPorPagar=f.filter(x=>(+x.monto||0)>(+x.montoPagado||0)).reduce((a,x)=>a+Math.max(0,(+x.monto||0)-(+x.montoPagado||0)),0);
@@ -4161,7 +4166,7 @@ function goTo(page,el){
   if(page==='caja') renderCaja();
 }
 function clearFilter(p){
-  const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat']};
+  const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter','fact-buscar'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat']};
   (m[p]||[]).forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const fn={gastos:renderGastos,facturacion:renderFacturas,cxc:renderCxC,cxp:renderCxP,proveedores:renderProveedores};
   if(fn[p])fn[p]();
