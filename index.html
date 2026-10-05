@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.30 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.32 · ARCA</span>
         </div>
       </div>
     </div>
@@ -801,6 +801,7 @@ tr:hover td{background:#F5F2EC;}
       <div class="nav-item" onclick="goTo('gastos',this)"><span class="ni">◫</span>Gastos</div>
       <div class="nav-item" onclick="goTo('caja',this)"><span class="ni">▣</span>Caja / Conciliación</div>
       <div class="nav-item" id="nav-empleados" onclick="goTo('empleados',this)"><span class="ni">◉</span>Empleados</div>
+      <div class="nav-item" onclick="goTo('licencias',this)"><span class="ni">✈</span>Licencias</div>
       <div class="nav-item" onclick="goTo('cxp',this)"><span class="ni" style="color:#B83232;font-size:9px;font-weight:900;background:#FBF0F0;border-radius:4px;padding:2px 4px;width:auto;">CxP</span>Cuentas por Pagar</div>
     </div>
   </div>
@@ -1196,6 +1197,33 @@ tr:hover td{background:#F5F2EC;}
     </div>
 
     <!-- CxP -->
+    <div class="page" id="page-licencias">
+      <div class="filter-bar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;">
+        <select id="lic-emp" onchange="renderLicencias()"><option value="">Todos los empleados</option></select>
+        <select id="lic-tipo" onchange="renderLicencias()"><option value="">Todos los tipos</option><option>Vacaciones</option><option>Enfermedad</option><option>Estudio</option><option>Maternidad/Paternidad</option><option>Trámite personal</option><option>Fallecimiento familiar</option><option>Matrimonio</option><option>Mudanza</option><option>Otro</option></select>
+        <label style="font-size:13px;color:var(--text3);">Desde</label><input type="date" id="lic-desde" onchange="renderLicencias()">
+        <label style="font-size:13px;color:var(--text3);">Hasta</label><input type="date" id="lic-hasta" onchange="renderLicencias()">
+        <button class="filter-clear" onclick="clearFilter('licencias')">Limpiar</button>
+      </div>
+      <div class="table-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:18px 22px;border-bottom:1px solid var(--border);">
+          <div><div style="font-size:16px;font-weight:700;">Licencias</div><div style="font-size:13px;color:var(--text3);" id="lic-count">0 licencias</div></div>
+          <div style="display:flex;gap:10px;"><div class="search-box"><span>🔍</span><input placeholder="Buscar..." oninput="searchTable(this,'licencias-tbody')"/></div><button class="tb-btn tb-btn-primary" onclick="abrirModalLicencia()">+ Nueva licencia</button></div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:12px 22px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Empleado</th>
+            <th style="text-align:left;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Tipo</th>
+            <th style="text-align:left;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Desde</th>
+            <th style="text-align:left;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Hasta</th>
+            <th style="text-align:right;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Días</th>
+            <th style="text-align:left;padding:12px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Estado</th>
+            <th style="text-align:right;padding:12px 22px;font-size:11px;color:#888880;text-transform:uppercase;letter-spacing:.5px;">Acciones</th>
+          </tr></thead>
+          <tbody id="licencias-tbody"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="page" id="page-caja">
       <div style="background:linear-gradient(135deg,#2B2A24,#3A382F);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
         <div style="font-size:30px;">▣</div>
@@ -2047,7 +2075,7 @@ async function logAudit(accion, detalle=''){
 }
 
 async function loadDataFromSupa(){
-  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos','caja'];
+  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos','caja','licencias'];
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
@@ -2058,7 +2086,7 @@ async function loadDataFromSupa(){
   await Promise.all(promises);
 }
 
-let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc,caja;
+let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc,caja,licencias;
 
 function loadData(){
   clientes   =load('clientes');
@@ -2073,6 +2101,7 @@ function loadData(){
   bancosPropios=load('bancosPropios');
   bancosTerc  =load('bancosTerc');
   caja        =load('caja');
+  licencias   =load('licencias');
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
@@ -2309,6 +2338,7 @@ function renderAll(){
   renderEmpleados(); renderProveedores(); renderCxC(); renderCxP();
   renderResumenes(); renderBancos();
   try{ renderCaja(); }catch(e){}
+  try{ renderLicencias(); }catch(e){}
   updateDashboard();
 }
 
@@ -3574,6 +3604,96 @@ function mostrarAlertasPopup(){
   document.getElementById('modal').classList.add('open');
 }
 
+/* ===== Licencias de empleados ===== */
+let licEditId=null;
+function _diasLic(l){ if(!l.desde||!l.hasta) return 0; const n=Math.round((new Date(l.hasta+'T00:00:00')-new Date(l.desde+'T00:00:00'))/86400000)+1; return n>0?n:0; }
+function _estadoLic(l){
+  const hoy=today();
+  if(l.desde&&hoy<l.desde) return {t:'Programada',c:'#8A6A00',bg:'#FBF6E6'};
+  if(l.hasta&&hoy>l.hasta) return {t:'Finalizada',c:'#888',bg:'#F0F0F0'};
+  return {t:'En curso',c:'#1A7A52',bg:'#EAF0E9'};
+}
+function renderLicencias(){
+  const selF=document.getElementById('lic-emp');
+  if(selF){ const cur=selF.value; selF.innerHTML='<option value="">Todos los empleados</option>'+(empleados||[]).map(e=>`<option value="${sanitize(e.nombre)}">${sanitize(e.nombre)}</option>`).join(''); selF.value=cur; }
+  const cont=document.getElementById('licencias-tbody'); if(!cont) return;
+  const fEmp=document.getElementById('lic-emp')?.value||'';
+  const fTipo=document.getElementById('lic-tipo')?.value||'';
+  const fDesde=document.getElementById('lic-desde')?.value||'';
+  const fHasta=document.getElementById('lic-hasta')?.value||'';
+  let lista=(licencias||[]).filter(l=>{
+    if(fEmp && l.empleado!==fEmp) return false;
+    if(fTipo && l.tipo!==fTipo) return false;
+    if(fDesde && (l.hasta||l.desde||'') < fDesde) return false;
+    if(fHasta && (l.desde||'') > fHasta) return false;
+    return true;
+  }).sort((a,b)=>(b.desde||'').localeCompare(a.desde||''));
+  cont.innerHTML = lista.length ? lista.map(l=>{ const e=_estadoLic(l); const dias=_diasLic(l);
+    return `<tr>
+      <td><div class="td-main">${sanitize(l.empleado||'—')}</div>${l.observaciones?`<div class="td-sub">${sanitize(l.observaciones)}</div>`:''}</td>
+      <td style="padding:12px;font-size:13px;">${sanitize(l.tipo||'')}</td>
+      <td style="padding:12px;font-size:13px;color:var(--text3);white-space:nowrap;">${l.desde||''}</td>
+      <td style="padding:12px;font-size:13px;color:var(--text3);white-space:nowrap;">${l.hasta||''}</td>
+      <td style="padding:12px;text-align:right;font-weight:700;">${dias||'—'}</td>
+      <td style="padding:12px;"><span class="badge" style="background:${e.bg};color:${e.c};font-size:11px;font-weight:700;border-radius:4px;padding:3px 8px;">${e.t}</span></td>
+      <td style="padding:12px 22px;text-align:right;white-space:nowrap;">
+        <button title="Editar" style="border:none;background:none;cursor:pointer;font-size:15px;padding:2px 4px;" onclick="editarLicencia('${l.id}')">✏️</button>
+        <button title="Eliminar" style="border:none;background:none;cursor:pointer;font-size:15px;padding:2px 4px;" onclick="eliminarLicencia('${l.id}')">🗑</button>
+      </td></tr>`; }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:28px;">Sin licencias cargadas. Tocá "+ Nueva licencia".</td></tr>';
+  const cEl=document.getElementById('lic-count'); if(cEl) cEl.textContent=lista.length+' licencia'+(lista.length===1?'':'s');
+}
+function abrirModalLicencia(){
+  licEditId=null;
+  const opts=(empleados||[]).map(e=>`<option value="${sanitize(e.nombre)}">${sanitize(e.nombre)}</option>`).join('');
+  document.getElementById('modal-content').innerHTML=`
+    <div class="modal-title">Nueva licencia</div>
+    <div class="form-group"><label class="form-label">Empleado</label><select class="form-select" id="lic_empleado"><option value="">Elegir...</option>${opts}</select></div>
+    <div class="form-group"><label class="form-label">Tipo de licencia</label><select class="form-select" id="lic_tipo"><option>Vacaciones</option><option>Enfermedad</option><option>Estudio</option><option>Maternidad/Paternidad</option><option>Trámite personal</option><option>Fallecimiento familiar</option><option>Matrimonio</option><option>Mudanza</option><option>Otro</option></select></div>
+    <div class="form-group"><label class="form-label">Desde</label><input class="form-input" id="lic_desde" type="date" value="${today()}" oninput="_calcDiasLic()"/></div>
+    <div class="form-group"><label class="form-label">Hasta</label><input class="form-input" id="lic_hasta" type="date" value="${today()}" oninput="_calcDiasLic()"/></div>
+    <div id="lic_dias" style="font-size:13px;color:var(--text3);margin-bottom:10px;"></div>
+    <div class="form-group"><label class="form-label">Observaciones (opcional)</label><input class="form-input" id="lic_obs" placeholder="Ej: con goce de sueldo"/></div>
+    <div class="modal-btns"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button><button class="modal-btn modal-btn-primary" onclick="guardarLicencia()">Guardar</button></div>`;
+  document.getElementById('modal').classList.add('open'); _calcDiasLic();
+}
+function _calcDiasLic(){
+  const d=document.getElementById('lic_desde')?.value, h=document.getElementById('lic_hasta')?.value, el=document.getElementById('lic_dias');
+  if(!el) return;
+  if(d&&h){ const n=Math.round((new Date(h+'T00:00:00')-new Date(d+'T00:00:00'))/86400000)+1;
+    if(n>0){ el.textContent='Duración: '+n+' día'+(n===1?'':'s'); el.style.color='var(--text3)'; }
+    else { el.textContent='⚠️ "Hasta" no puede ser antes que "Desde"'; el.style.color='#B83232'; }
+  } else el.textContent='';
+}
+function editarLicencia(id){
+  const l=(licencias||[]).find(x=>x.id===id); if(!l) return;
+  abrirModalLicencia(); licEditId=id;
+  const t=document.querySelector('#modal-content .modal-title'); if(t) t.textContent='Editar licencia';
+  document.getElementById('lic_empleado').value=l.empleado||'';
+  document.getElementById('lic_tipo').value=l.tipo||'Vacaciones';
+  document.getElementById('lic_desde').value=l.desde||today();
+  document.getElementById('lic_hasta').value=l.hasta||today();
+  document.getElementById('lic_obs').value=l.observaciones||'';
+  _calcDiasLic();
+}
+function guardarLicencia(){
+  const empleado=document.getElementById('lic_empleado').value;
+  const tipo=document.getElementById('lic_tipo').value;
+  const desde=document.getElementById('lic_desde').value;
+  const hasta=document.getElementById('lic_hasta').value;
+  const observaciones=document.getElementById('lic_obs').value.trim();
+  if(!empleado){ toast('⚠️ Elegí un empleado'); return; }
+  if(!desde||!hasta){ toast('⚠️ Completá las fechas'); return; }
+  if(hasta<desde){ toast('⚠️ "Hasta" no puede ser antes que "Desde"'); return; }
+  if(!Array.isArray(licencias)) licencias=[];
+  if(licEditId){ const l=licencias.find(x=>x.id===licEditId); if(l) Object.assign(l,{empleado,tipo,desde,hasta,observaciones}); }
+  else { licencias.push({id:uid(),empleado,tipo,desde,hasta,observaciones}); }
+  save('licencias',licencias); licEditId=null; closeModal(); renderLicencias(); toast('Licencia guardada');
+}
+function eliminarLicencia(id){
+  if(!confirm('¿Eliminar esta licencia?')) return;
+  licencias=(licencias||[]).filter(x=>x.id!==id); save('licencias',licencias); deleteSupaRecord('licencias',id); renderLicencias(); toast('🗑 Licencia eliminada');
+}
+
 /* ===== Caja / Conciliación (multi-cuenta) ===== */
 let cajaEditId=null;
 function _registrarEnCaja(mov){
@@ -3724,22 +3844,23 @@ function _registrarAjusteArqueo(){
 }
 
 /* ===== Comparativa mensual (este mes vs anterior) ===== */
-function _ingresosMes(ym){
-  return (facturas||[]).filter(f=>(f.fecha||'').startsWith(ym)).reduce((a,f)=>a+montoArs(f),0);
+function _enMD(f,ym,dd){ return f && f.startsWith(ym) && (!dd || f.slice(8,10)<=dd); }
+function _ingresosMes(ym,dd){
+  return (facturas||[]).filter(f=>_enMD(f.fecha||'',ym,dd)).reduce((a,f)=>a+montoArs(f),0);
 }
-function _gastosMesTotal(ym){
-  const g=(gastos||[]).filter(x=>(x.fecha||'').startsWith(ym)).reduce((a,x)=>a+(+x.monto||0),0);
+function _gastosMesTotal(ym,dd){
+  const g=(gastos||[]).filter(x=>_enMD(x.fecha||'',ym,dd)).reduce((a,x)=>a+(+x.monto||0),0);
   const s=(empleados||[]).reduce((a,e)=>a+(+e.sueldo||0),0);
-  const c=(cxp||[]).filter(x=>!x.gastoId&&!x.empleadoId&&(x.fecha||'').startsWith(ym)).reduce((a,x)=>a+(+x.monto||0),0);
+  const c=(cxp||[]).filter(x=>!x.gastoId&&!x.empleadoId&&_enMD(x.fecha||'',ym,dd)).reduce((a,x)=>a+(+x.monto||0),0);
   return g+s+c;
 }
-function _ingresosPorCliente(ym){
-  const m={}; (facturas||[]).filter(f=>(f.fecha||'').startsWith(ym)).forEach(f=>{ const k=(f.cliente||'—'); m[k]=(m[k]||0)+montoArs(f); }); return m;
+function _ingresosPorCliente(ym,dd){
+  const m={}; (facturas||[]).filter(f=>_enMD(f.fecha||'',ym,dd)).forEach(f=>{ const k=(f.cliente||'—'); m[k]=(m[k]||0)+montoArs(f); }); return m;
 }
-function _gastosPorRubro(ym){
+function _gastosPorRubro(ym,dd){
   const m={};
-  (gastos||[]).filter(g=>(g.fecha||'').startsWith(ym)).forEach(g=>{ const k=(g.categoria||g.descripcion||'Gasto'); m[k]=(m[k]||0)+(+g.monto||0); });
-  (cxp||[]).filter(c=>!c.gastoId&&!c.empleadoId&&(c.fecha||'').startsWith(ym)).forEach(c=>{ const k=(c.proveedor||c.concepto||'Cuenta'); m[k]=(m[k]||0)+(+c.monto||0); });
+  (gastos||[]).filter(g=>_enMD(g.fecha||'',ym,dd)).forEach(g=>{ const k=(g.categoria||g.descripcion||'Gasto'); m[k]=(m[k]||0)+(+g.monto||0); });
+  (cxp||[]).filter(c=>!c.gastoId&&!c.empleadoId&&_enMD(c.fecha||'',ym,dd)).forEach(c=>{ const k=(c.proveedor||c.concepto||'Cuenta'); m[k]=(m[k]||0)+(+c.monto||0); });
   return m;
 }
 function _driversHTML(actMap, prevMap, subirBueno){
@@ -3758,10 +3879,11 @@ function _driversHTML(actMap, prevMap, subirBueno){
 function renderComparativa(){
   const el=document.getElementById('comparativa-panel'); if(!el) return;
   const ymAct=today().slice(0,7);
+  const dd=today().slice(8,10); // día de hoy: compara "a la misma altura" de cada mes
   const d=new Date(today()+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()-1);
   const ymPrev=d.toISOString().slice(0,7);
-  const ingAct=_ingresosMes(ymAct), ingPrev=_ingresosMes(ymPrev);
-  const gasAct=_gastosMesTotal(ymAct), gasPrev=_gastosMesTotal(ymPrev);
+  const ingAct=_ingresosMes(ymAct,dd), ingPrev=_ingresosMes(ymPrev,dd);
+  const gasAct=_gastosMesTotal(ymAct,dd), gasPrev=_gastosMesTotal(ymPrev,dd);
   const resAct=ingAct-gasAct, resPrev=ingPrev-gasPrev;
   const bloque=(label,act,prev,subirEsBueno)=>{
     const diff=act-prev;
@@ -3777,11 +3899,11 @@ function renderComparativa(){
       <div style="font-size:13px;font-weight:700;color:${color};margin-top:4px;">${arrow} ${fmt(Math.abs(diff))} (${(pct>=0?'+':'')}${pct.toFixed(0)}%)</div>
     </div>`;
   };
-  const ingCliA=_ingresosPorCliente(ymAct), ingCliP=_ingresosPorCliente(ymPrev);
-  const gasRubA=_gastosPorRubro(ymAct), gasRubP=_gastosPorRubro(ymPrev);
+  const ingCliA=_ingresosPorCliente(ymAct,dd), ingCliP=_ingresosPorCliente(ymPrev,dd);
+  const gasRubA=_gastosPorRubro(ymAct,dd), gasRubP=_gastosPorRubro(ymPrev,dd);
   el.innerHTML = `
     <div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;">Comparativa mensual</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">${_nombreMes(ymPrev)} vs ${_nombreMes(ymAct)}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Del 1 al ${parseInt(dd,10)} · ${_nombreMes(ymPrev)} vs ${_nombreMes(ymAct)} <span style="color:var(--accent);">(a la misma altura del mes)</span></div>
     <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
       ${bloque('Ingresos', ingAct, ingPrev, true)}
       ${bloque('Gastos', gasAct, gasPrev, false)}
@@ -4231,7 +4353,7 @@ function goTo(page,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa',caja:'Caja / Conciliación'};
+  const titles={dashboard:'Home',clientes:'Clientes',catalogo:'Catálogo de Servicios',facturacion:'Facturación',proveedores:'Proveedores',empleados:'Empleados',gastos:'Gastos',cxc:'Cuentas por Cobrar',cxp:'Cuentas por Pagar',bot:'Zaifi IA',resumenes:'Resúmenes de clientes',estadisticas:'Estadísticas',agenda:'Agenda mensual',recordatorios:'Recordatorios',bancos:'Datos Bancarios',vencimientos:'Vencimientos',estadocuenta:'Estado de cuenta',rentabilidad:'Rentabilidad por cliente',proyeccion:'Proyección financiera',lineacritica:'Línea crítica del mes',porrubro:'Ingresos y gastos por rubro',invitaciones:'Solicitudes de acceso',cuentacorriente:'Cuenta Corriente por cliente',perfil:'Perfil de la empresa',caja:'Caja / Conciliación',licencias:'Licencias'};
   window.__zaifiPage=page;
   try{ _closeSidebarMobile(); }catch(e){}
   document.getElementById('topbar-title').textContent=titles[page]||page;
@@ -4244,11 +4366,12 @@ function goTo(page,el){
   if(page==='porrubro') renderPorRubro();
   if(page==='invitaciones') renderInvitaciones();
   if(page==='caja') renderCaja();
+  if(page==='licencias') renderLicencias();
 }
 function clearFilter(p){
-  const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter','fact-buscar'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat']};
+  const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter','fact-buscar'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat'],licencias:['lic-emp','lic-tipo','lic-desde','lic-hasta']};
   (m[p]||[]).forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  const fn={gastos:renderGastos,facturacion:renderFacturas,cxc:renderCxC,cxp:renderCxP,proveedores:renderProveedores};
+  const fn={gastos:renderGastos,facturacion:renderFacturas,cxc:renderCxC,cxp:renderCxP,proveedores:renderProveedores,licencias:renderLicencias};
   if(fn[p])fn[p]();
 }
 function searchTable(input,id){const q=input.value.toLowerCase();document.querySelectorAll(`#${id} tr`).forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none';});}
@@ -7212,6 +7335,7 @@ th{ text-transform:uppercase !important; font-size:10px !important; letter-spaci
   #gastos-tbody td:nth-child(2)::before{content:"Proveedor";} #gastos-tbody td:nth-child(3)::before{content:"Categoría";} #gastos-tbody td:nth-child(4)::before{content:"Fecha";} #gastos-tbody td:nth-child(5)::before{content:"Vencimiento";} #gastos-tbody td:nth-child(6)::before{content:"Total";} #gastos-tbody td:nth-child(7)::before{content:"Pagado";} #gastos-tbody td:nth-child(8)::before{content:"Por pagar";} #gastos-tbody td:nth-child(9)::before{content:"Estado";}
   #clients-tbody td:nth-child(2)::before{content:"CUIT / Cond.";} #clients-tbody td:nth-child(3)::before{content:"Sector";} #clients-tbody td:nth-child(4)::before{content:"Estado";}
   #caja-tbody td:nth-child(2)::before{content:"Fecha";} #caja-tbody td:nth-child(3)::before{content:"Ingreso";} #caja-tbody td:nth-child(4)::before{content:"Egreso";} #caja-tbody td:nth-child(5)::before{content:"Saldo";}
+  #licencias-tbody td:nth-child(2)::before{content:"Tipo";} #licencias-tbody td:nth-child(3)::before{content:"Desde";} #licencias-tbody td:nth-child(4)::before{content:"Hasta";} #licencias-tbody td:nth-child(5)::before{content:"Días";} #licencias-tbody td:nth-child(6)::before{content:"Estado";}
   /* Modales full-width */
   .modal{ padding:20px !important; width:94% !important; max-width:94% !important; }
   .form-row, .form-grid{ grid-template-columns:1fr !important; }
