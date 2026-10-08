@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.32 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.33 · ARCA</span>
         </div>
       </div>
     </div>
@@ -3059,6 +3059,9 @@ function renderCxP(){
   });
   const q=(document.getElementById('cxp-buscar')?.value||'').trim().toLowerCase();
   let f=allCxp.filter(x=>{
+    const pp=Math.max(0,(+x.monto||0)-(+x.montoPagado||0));
+    // Por defecto (sin filtro de estado) ocultamos lo que ya está 100% pagado
+    if(!estadoFiltro && (+x.monto||0)>0 && pp<=0.5) return false;
     if(desde&&x.fecha&&x.fecha<desde)return false;
     if(hasta&&x.fecha&&x.fecha>hasta)return false;
     if(estadoFiltro&&x.estado!==estadoFiltro)return false;
