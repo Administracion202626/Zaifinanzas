@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.33 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.35 · ARCA</span>
         </div>
       </div>
     </div>
@@ -1298,13 +1298,25 @@ tr:hover td{background:#F5F2EC;}
           <div><div class="th-title">Empleados</div><div class="th-sub" id="emp-count">0 empleados</div></div>
           <div style="display:flex;gap:10px;"><div class="search-box"><span>🔍</span><input placeholder="Buscar..." oninput="searchTable(this,'empleados-tbody')"/></div><button class="tb-btn tb-btn-primary" onclick="openModal('add-empleado')">+ Nuevo empleado</button></div>
         </div>
-        <table><thead><tr><th>Empleado</th><th>Rol</th><th>Empresa</th><th>Sueldo</th><th>Estado pago</th><th>Acciones</th></tr></thead>
+        <table><thead><tr><th>Empleado</th><th>Rol</th><th>Empresa</th><th>Sueldo (referencia)</th><th>Acciones</th></tr></thead>
         <tbody id="empleados-tbody"></tbody></table>
       </div>
     </div>
 
     <!-- GASTOS -->
     <div class="page" id="page-gastos">
+      <div class="table-card" id="gm-card" style="margin-bottom:18px;">
+        <div class="table-head">
+          <div><div class="th-title">Gastos del mes</div><div class="th-sub" id="gm-sub">Todo lo que hay por pagar y lo que ya se pagó</div></div>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+            <input type="month" id="gm-mes" class="form-input" style="width:auto;padding:7px 10px;" onchange="renderGastosMes()">
+            <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="gm-prev" checked onchange="renderGastosMes()"> Incluir pendientes de meses anteriores</label>
+          </div>
+        </div>
+        <div id="gm-resumen" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px 24px;"></div>
+        <table><thead><tr><th>Concepto</th><th>Emisión</th><th>Vencimiento</th><th>Total</th><th>Pagado</th><th>Por pagar</th><th>Estado</th><th style="width:72px;"></th></tr></thead>
+        <tbody id="gm-tbody"></tbody></table>
+      </div>
       <div class="filter-bar">
         <label>Desde</label><input type="date" id="gasto-desde" onchange="renderGastos()">
         <label>Hasta</label><input type="date" id="gasto-hasta" onchange="renderGastos()">
@@ -1321,6 +1333,17 @@ tr:hover td{background:#F5F2EC;}
         </div>
         <table><thead><tr><th>Descripción</th><th>Proveedor</th><th>Categoría</th><th>Fecha</th><th>Vencimiento</th><th>Total</th><th>Pagado</th><th>Por pagar</th><th>Estado</th><th style="width:72px;"></th></tr></thead>
         <tbody id="gastos-tbody"></tbody></table>
+      </div>
+      <div class="table-card" id="hp-card" style="margin-top:18px;">
+        <div class="table-head">
+          <div><div class="th-title">Historial de pagos</div><div class="th-sub" id="hp-sub">Cada pago con su fecha y hora</div></div>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+            <input type="month" id="hp-mes" class="form-input" style="width:auto;padding:7px 10px;" onchange="renderHistorialPagos()">
+            <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="hp-todo" onchange="renderHistorialPagos()"> Todos los meses</label>
+          </div>
+        </div>
+        <table><thead><tr><th>Fecha de pago</th><th>Concepto</th><th>A quién</th><th>Cuenta</th><th style="text-align:right;">Monto</th><th>Estado</th></tr></thead>
+        <tbody id="hp-tbody"></tbody></table>
       </div>
     </div>
 
@@ -2075,7 +2098,7 @@ async function logAudit(accion, detalle=''){
 }
 
 async function loadDataFromSupa(){
-  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos','caja','licencias'];
+  const tables = ['clientes','facturas','gastos','empleados','proveedores','catalogo','cxc','cxp','bancosPropios','bancosTerc','perfil_empresa','resumenes','recordatorios','rentcostos','caja','licencias','pagos'];
   const promises = tables.map(async t=>{
     try{
       const data = await loadSupa(t);
@@ -2086,7 +2109,7 @@ async function loadDataFromSupa(){
   await Promise.all(promises);
 }
 
-let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc,caja,licencias;
+let clientes,facturas,gastos,empleados,proveedores,catalogo,cxc,cxp,resumenes,bancosPropios,bancosTerc,caja,licencias,pagos;
 
 function loadData(){
   clientes   =load('clientes');
@@ -2102,6 +2125,7 @@ function loadData(){
   bancosTerc  =load('bancosTerc');
   caja        =load('caja');
   licencias   =load('licencias');
+  pagos       =load('pagos');
 }
 
 function fmt(n){ return '$'+(Number(n)||0).toLocaleString('es-AR'); }
@@ -2704,17 +2728,21 @@ function confirmarPagoGasto(id){
   const x = gastos.find(g=>g.id===id); if(!x) return;
   const monto = parseFloat(document.getElementById('gp_monto').value)||0;
   if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
+  const _antesP = +x.montoPagado||0;
   x.montoPagado = Math.min((+x.montoPagado||0)+monto, +x.monto||0);
   x.fechaPago   = document.getElementById('gp_fecha').value||today();
   const notas   = document.getElementById('gp_notas').value.trim();
   if(notas) x.notasPago = (x.notasPago?x.notasPago+' | ':'')+notas;
   x.estado = x.montoPagado >= (+x.monto||0) ? 'pagado' : 'pendiente';
   _aplicarComprobante(x);
-  { const _cu=(document.getElementById('gp_cuenta')?.value||'ODSA').trim()||'ODSA'; const _fp=document.getElementById('gp_fecha')?.value||today(); _registrarEnCaja({cuenta:_cu,tipo:'egreso',concepto:'Pago '+(x.descripcion||'gasto'),monto,fecha:_fp,gastoId:x.id}); }
+  { const _cu=(document.getElementById('gp_cuenta')?.value||'ODSA').trim()||'ODSA'; const _fp=document.getElementById('gp_fecha')?.value||today();
+    var _aplic=(+x.montoPagado||0)-_antesP;
+    const _pid=_registrarPago({refTipo:'gasto',refId:x.id,tipo:_esSueldoGasto(x)?'Sueldo':'Gasto',concepto:x.descripcion||'Gasto',proveedor:x.proveedor||'',monto:_aplic,montoIngresado:monto,fecha:_fp,cuenta:_cu,notas});
+    _registrarEnCaja({cuenta:_cu,tipo:'egreso',concepto:'Pago '+(x.descripcion||'gasto'),monto,fecha:_fp,gastoId:x.id,pagoId:_pid}); }
   // Guardar en localStorage Y Supabase
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
-  closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
+  closeModal(); renderGastos(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(_aplic)+' registrado'+(monto-_aplic>0.5?' (el saldo era menor a lo ingresado)':''));
 }
 function eliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
@@ -2729,6 +2757,7 @@ function eliminarPagoGasto(id){
 }
 function confirmarEliminarPagoGasto(id){
   const x = gastos.find(g=>String(g.id)===String(id)); if(!x) return;
+  _marcarPagosRevertidos('gasto', x.id);
   x.montoPagado=0; x.estado='pendiente'; delete x.fechaPago; delete x.notasPago;
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('Supabase error:',e));
@@ -2748,6 +2777,7 @@ function revertirPagoGasto(id){
 }
 function confirmarRevertirGasto(id){
   const x = gastos.find(g=>g.id===id); if(!x) return;
+  _marcarPagosRevertidos('gasto', x.id);
   x.estado='pendiente'; x.montoPagado=0; delete x.fechaPago; delete x.notasPago;
   localStorage.setItem(dbKey('gastos'), JSON.stringify(gastos));
   saveSupa('gastos', gastos).catch(e=>console.log('err:',e));
@@ -2757,10 +2787,9 @@ function confirmarRevertirGasto(id){
 function renderEmpleados(){
   const tb=document.getElementById('empleados-tbody');
   tb.innerHTML=empleados.length?empleados.map(e=>`
-    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#5B7EBF;">${e.nombre[0].toUpperCase()}</div><div><div class="td-main">${sanitize(e.nombre)}</div><div class="td-sub">${e.email||''}</div></div></div></td>
-    <td>${e.rol||'—'}</td><td><span class="badge badge-gray">${e.empresa||'—'}</span></td><td style="font-weight:800;">${fmt(e.sueldo)}</td>
-    <td><span class="badge ${e.estado==='pagado'?'badge-green':'badge-yellow'}">${e.estado==='pagado'?'✓ Pagado':'⏳ Pendiente'}</span></td>
-    <td><div class="action-btns">${e.estado!=='pagado'?`<button class="action-btn" style="color:var(--green)" onclick="marcarPagoEmp('${e.id}')">Pagar</button>`:`<button class="action-btn" style="color:#B83232" onclick="revertirPagoEmp('${e.id}')">Revertir</button>`}<button class="action-btn" onclick="editarItem('empleados','${e.id}')">Editar</button><button class="action-btn" onclick="eliminar('empleados','${e.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay empleados →');
+    <tr><td><div style="display:flex;align-items:center;gap:12px;"><div class="client-av" style="background:#5B7EBF;">${(e.nombre||'?')[0].toUpperCase()}</div><div><div class="td-main">${sanitize(e.nombre)}</div><div class="td-sub">${e.email||''}</div></div></div></td>
+    <td>${e.rol||'—'}</td><td><span class="badge badge-gray">${e.empresa||'—'}</span></td><td style="font-weight:800;">${(+e.sueldo||0)>0?fmt(e.sueldo):'—'}</td>
+    <td><div class="action-btns"><button class="action-btn" onclick="editarItem('empleados','${e.id}')">Editar</button><button class="action-btn" onclick="eliminar('empleados','${e.id}')">Eliminar</button></div></td></tr>`).join(''):empty('No hay empleados →');
   document.getElementById('emp-count').textContent=empleados.length+' empleado'+(empleados.length!==1?'s':'');
 }
 
@@ -2819,6 +2848,140 @@ function confirmarRevertirEmp(id){
   const e = empleados.find(x=>x.id===id); if(!e) return;
   e.estado='pendiente'; delete e.montoPagado; delete e.fechaPago; delete e.notasPago;
   save('empleados',empleados); closeModal(); renderEmpleados(); toast('Pago revertido');
+}
+
+/* ===== v11.9.35: sueldos manuales + Gastos del mes + Historial de pagos ===== */
+// Un "sueldo" es una cuenta por pagar que cargás vos (o una vieja ligada a un empleado).
+function _esSueldoCxp(c){ return !!(c && (c.empleadoId || /sueldo|salario/i.test((c.proveedor||'')+' '+(c.concepto||'')))); }
+function _esSueldoGasto(g){ return !!(g && /sueldo|empleado|aguinaldo/i.test((g.categoria||'')+' '+(g.proveedor||''))); }
+function _fechaAR(f){ const m=String(f||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m?(m[3]+'/'+m[2]+'/'+m[1]):(f||'—'); }
+function _fechaHoraAR(iso){
+  try{ const d=new Date(iso); if(isNaN(d)) return ''; return d.toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; }
+}
+
+// Registra un pago en el historial (queda guardado en la nube, con fecha y hora).
+function _registrarPago(p){
+  if(!Array.isArray(pagos)) pagos=[];
+  let s=null; try{ s=getSession(); }catch(e){}
+  const reg=Object.assign({id:uid(), fecha:today(), creado:new Date().toISOString(), usuario:(s&&s.email)||'', estado:'registrado'}, p);
+  pagos.push(reg);
+  save('pagos',pagos);
+  return reg.id;
+}
+// Si se revierte/elimina un pago, el historial NO lo borra: lo marca como revertido.
+function _marcarPagosRevertidos(refTipo, refId){
+  if(!Array.isArray(pagos)) return;
+  const ts=new Date().toISOString(); let cambio=false;
+  pagos.forEach(p=>{
+    if(p.estado!=='revertido' && p.refTipo===refTipo && String(p.refId)===String(refId)){ p.estado='revertido'; p.revertido=ts; cambio=true; }
+  });
+  if(cambio) save('pagos',pagos);
+}
+
+// Gastos + cuentas por pagar (incluye sueldos) en una sola lista.
+function _filasGastosUnificadas(){
+  const rows=[];
+  const est=(total,pagado)=> (total>0 && total-pagado<=0.5) ? 'pagado' : (pagado>0 ? 'parcial' : 'pendiente');
+  (gastos||[]).forEach(g=>{
+    const total=+g.monto||0, pagado=+g.montoPagado||0;
+    rows.push({origen:'gasto', id:g.id, tipo:_esSueldoGasto(g)?'Sueldo':'Gasto', nombre:g.descripcion||g.categoria||'Gasto', sub:(g.proveedor?g.proveedor+' · ':'')+(g.categoria||''), fecha:g.fecha||'', vencimiento:g.vencimiento||'', total, pagado, porPagar:Math.max(0,total-pagado), estado:est(total,pagado)});
+  });
+  (cxp||[]).forEach(c=>{
+    if(c.gastoId) return; // es el espejo de un gasto: ya está en la lista de arriba
+    const total=+c.monto||0, pagado=+c.montoPagado||0;
+    rows.push({origen:'cxp', id:c.id, tipo:_esSueldoCxp(c)?'Sueldo':'Por pagar', nombre:c.proveedor||c.concepto||'Cuenta por pagar', sub:c.concepto||'', fecha:c.fecha||'', vencimiento:c.vencimiento||'', total, pagado, porPagar:Math.max(0,total-pagado), estado:est(total,pagado)});
+  });
+  return rows;
+}
+
+function renderGastosMes(){
+  const tb=document.getElementById('gm-tbody'); if(!tb) return;
+  const mesEl=document.getElementById('gm-mes'); let ym=mesEl&&mesEl.value;
+  if(!ym){ ym=today().slice(0,7); if(mesEl) mesEl.value=ym; }
+  const incPrev=!!(document.getElementById('gm-prev')&&document.getElementById('gm-prev').checked);
+  const hoy=today(), ini=ym+'-01';
+  const all=_filasGastosUnificadas();
+  const delMes=all.filter(r=>String(r.fecha||'').slice(0,7)===ym).map(r=>Object.assign({},r,{_prev:false}));
+  const previos=incPrev ? all.filter(r=>r.fecha && r.fecha<ini && r.porPagar>0.5).map(r=>Object.assign({},r,{_prev:true})) : [];
+  const rows=delMes.concat(previos).sort((a,b)=>{
+    const ap=a.porPagar>0.5?0:1, bp=b.porPagar>0.5?0:1;
+    if(ap!==bp) return ap-bp;
+    if(ap===0) return String(a.vencimiento||a.fecha).localeCompare(String(b.vencimiento||b.fecha));
+    return String(b.fecha).localeCompare(String(a.fecha));
+  });
+  const totalMes=delMes.reduce((a,r)=>a+r.total,0);
+  const pagadoMes=delMes.reduce((a,r)=>a+r.pagado,0);
+  const porPagarTot=rows.reduce((a,r)=>a+r.porPagar,0);
+  const porPagarPrev=previos.reduce((a,r)=>a+r.porPagar,0);
+  const tile=(lbl,val,extra,color)=>`<div class="stat-card"><div style="font-size:11px;color:#888880;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">${lbl}</div><div class="stat-val"${color?` style="color:${color}"`:''}>${fmt(val)}</div>${extra?`<div style="font-size:11px;color:var(--text3);margin-top:4px;">${extra}</div>`:''}</div>`;
+  const res=document.getElementById('gm-resumen');
+  if(res) res.innerHTML = tile('Total de '+_nombreMes(ym),totalMes,delMes.length+' registro'+(delMes.length!==1?'s':''))
+    + tile('Ya pagado',pagadoMes,'de lo cargado en el mes','#1A7A52')
+    + tile('Por pagar',porPagarTot,porPagarPrev>0.5?('incluye '+fmt(porPagarPrev)+' de meses anteriores'):'','#B83232');
+  const sub=document.getElementById('gm-sub'); if(sub) sub.textContent='Todo lo que hay por pagar y lo que ya se pagó — '+_nombreMes(ym);
+  const coin='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="currentColor" stroke-width="1.2"/><text x="7" y="10.5" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor" font-family="sans-serif">$</text></svg>';
+  tb.innerHTML = rows.length ? rows.map(r=>{
+    const vencido=r.vencimiento && r.vencimiento<hoy && r.porPagar>0.5;
+    let bg,col,label;
+    if(r.estado==='pagado'){ bg='#ECFDF5'; col='#1A7A52'; label='✓ Pagado'; }
+    else if(r.estado==='parcial'){ bg='#FEFCE8'; col='#8A6A00'; label='Parcial'; }
+    else if(vencido){ bg='#FEF2F2'; col='#B83232'; label='Vencido'; }
+    else { bg='#FEFCE8'; col='#8A6A00'; label='Por pagar'; }
+    const tipoCls=r.tipo==='Sueldo'?'badge-blue':(r.tipo==='Gasto'?'badge-gray':'badge-yellow');
+    const fn=r.origen==='gasto'?'pagarGasto':'pagarCxP';
+    const btn=r.porPagar>0.5?`<button title="Registrar pago" onclick="${fn}('${r.id}')" style="display:inline-flex;align-items:center;gap:5px;border:1px solid #C8E6D4;background:#F0FAF4;color:#1A7A52;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">${coin} Pagar</button>`:'';
+    return `<tr style="border-bottom:1px solid #F0EDE6;">
+      <td style="padding:12px 14px;"><div class="td-main"><span class="badge ${tipoCls}" style="margin-right:6px;">${r.tipo}</span>${sanitize(r.nombre)}${r._prev?' <span class="badge badge-gray" style="margin-left:4px;">Mes anterior</span>':''}</div>${r.sub?`<div class="td-sub">${sanitize(r.sub)}</div>`:''}</td>
+      <td style="padding:12px 14px;color:var(--text3);font-size:12px;">${_fechaAR(r.fecha)}</td>
+      <td style="padding:12px 14px;font-size:12px;color:${vencido?'#B83232':'var(--text3)'};font-weight:${vencido?'700':'400'};">${r.vencimiento?_fechaAR(r.vencimiento):'—'}</td>
+      <td style="padding:12px 14px;font-size:13px;font-weight:600;color:#555;">${fmt(r.total)}</td>
+      <td style="padding:12px 14px;font-size:13px;font-weight:600;color:#1A7A52;">${r.pagado>0?fmt(r.pagado):'—'}</td>
+      <td style="padding:12px 14px;font-size:13px;font-weight:800;color:${r.porPagar>0.5?'#B83232':'#C0BDB8'};">${r.porPagar>0.5?fmt(r.porPagar):'—'}</td>
+      <td style="padding:12px 14px;"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${bg};color:${col};">${label}</span></td>
+      <td style="padding:12px 10px;text-align:right;white-space:nowrap;">${btn}</td></tr>`;
+  }).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:28px;">No hay gastos cargados en ${_nombreMes(ym)}.</td></tr>`;
+}
+
+function renderHistorialPagos(){
+  const tb=document.getElementById('hp-tbody'); if(!tb) return;
+  const mesEl=document.getElementById('hp-mes'); let ym=mesEl&&mesEl.value;
+  if(!ym){ ym=today().slice(0,7); if(mesEl) mesEl.value=ym; }
+  const todo=!!(document.getElementById('hp-todo')&&document.getElementById('hp-todo').checked);
+  if(mesEl) mesEl.disabled=todo;
+  const enRango=f=> todo || String(f||'').slice(0,7)===ym;
+  const rows=[];
+  (pagos||[]).forEach(p=>{
+    if(!enRango(p.fecha)) return;
+    rows.push({fecha:p.fecha||'', ts:p.creado||'', concepto:p.concepto||'', quien:p.proveedor||'', tipo:p.tipo||'Pago', cuenta:p.cuenta||'', monto:+p.monto||0,
+      ingresado:+p.montoIngresado||0, notas:p.notas||'', usuario:p.usuario||'', estado:p.estado==='revertido'?'revertido':'ok', revertido:p.revertido||''});
+  });
+  // Pagos de antes del historial: salen de los egresos de Caja que no vienen de un pago nuevo
+  (caja||[]).forEach(m=>{
+    if(m.tipo!=='egreso' || m.pagoId) return;
+    if(!enRango(m.fecha)) return;
+    rows.push({fecha:m.fecha||'', ts:'', concepto:m.concepto||'Egreso de caja', quien:'', tipo:'Caja', cuenta:m.cuenta||'ODSA', monto:+m.monto||0, ingresado:0, notas:'', usuario:'', estado:'anterior', revertido:''});
+  });
+  rows.sort((a,b)=>(String(b.fecha)+String(b.ts)).localeCompare(String(a.fecha)+String(a.ts)));
+  const total=rows.filter(r=>r.estado!=='revertido').reduce((a,r)=>a+r.monto,0);
+  const sub=document.getElementById('hp-sub');
+  if(sub) sub.textContent = rows.length+' pago'+(rows.length!==1?'s':'')+' · Total pagado: '+fmt(total)+(todo?'':' · '+_nombreMes(ym));
+  tb.innerHTML = rows.length ? rows.map(r=>{
+    const tipoCls=r.tipo==='Sueldo'?'badge-blue':(r.tipo==='Gasto'?'badge-gray':(r.tipo==='Caja'?'badge-gray':'badge-yellow'));
+    let est;
+    if(r.estado==='revertido') est=`<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:#FEF2F2;color:#B83232;">↩ Revertido</span><div style="font-size:11px;color:var(--text3);margin-top:3px;">${_fechaHoraAR(r.revertido)}</div>`;
+    else if(r.estado==='anterior') est=`<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:#F0EDE6;color:#666660;">Registro anterior</span>`;
+    else est=`<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:#ECFDF5;color:#1A7A52;">✓ Registrado</span>`;
+    const quien=r.quien?sanitize(r.quien):'—';
+    const regLine = r.ts ? `<div style="font-size:11px;color:var(--text3);margin-top:2px;">Registrado ${_fechaHoraAR(r.ts)}${r.usuario?' · '+sanitize(r.usuario):''}</div>` : '';
+    const extra = (r.ingresado && Math.abs(r.ingresado-r.monto)>0.5) ? `<div style="font-size:11px;color:#8A6A00;">Ingresaste ${fmt(r.ingresado)}; se aplicó ${fmt(r.monto)}</div>` : '';
+    return `<tr style="border-bottom:1px solid #F0EDE6;${r.estado==='revertido'?'opacity:.55;':''}">
+      <td style="padding:12px 14px;white-space:nowrap;"><div style="font-weight:600;">${_fechaAR(r.fecha)}</div>${regLine}</td>
+      <td style="padding:12px 14px;"><div class="td-main"><span class="badge ${tipoCls}" style="margin-right:6px;">${sanitize(r.tipo)}</span>${sanitize(r.concepto)}</div>${r.notas?`<div class="td-sub">${sanitize(r.notas)}</div>`:''}</td>
+      <td style="padding:12px 14px;">${quien}</td>
+      <td style="padding:12px 14px;"><span class="badge badge-gray">${sanitize(r.cuenta||'—')}</span></td>
+      <td style="padding:12px 14px;text-align:right;font-weight:700;white-space:nowrap;${r.estado==='revertido'?'text-decoration:line-through;':''}">${fmt(r.monto)}${extra}</td>
+      <td style="padding:12px 14px;">${est}</td></tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:28px;">No hay pagos en ${todo?'el historial':_nombreMes(ym)}.</td></tr>`;
 }
 
 function renderProveedores(){
@@ -2971,13 +3134,6 @@ function abrirDetalleCxP(tipo){
       monto:+g.monto||0,pagado,porPagar,estado:(porPagar<=0&&(+g.monto||0)>0)?'pagado':'pendiente',
       fecha:g.fecha||hoy,vencimiento:g.vencimiento||''});
   });
-  empleados.forEach(e=>{
-    const pagado=+(e.montoPagado)||0;
-    const porPagar=Math.max(0,(+e.sueldo||0)-pagado);
-    todasLasRows.push({proveedor:e.nombre,concepto:'Sueldo: '+(e.rol||''),
-      monto:+e.sueldo||0,pagado,porPagar,estado:(porPagar<=0&&(+e.sueldo||0)>0)?'pagado':'pendiente',
-      fecha:hoy,vencimiento:''});
-  });
   cxp.filter(c=>!c.gastoId&&!c.empleadoId).forEach(c=>{
     const pagado=+(c.montoPagado)||0;
     const porPagar=Math.max(0,(+c.monto||0)-pagado);
@@ -3039,7 +3195,6 @@ function renderCxP(){
   let allCxp=[];
   cxp.forEach(c=>{
     if(c.gastoId){const g=gastos.find(gg=>String(gg.id)===String(c.gastoId));if(g){c.montoPagado=+(g.montoPagado)||0;c.estado=((+g.montoPagado||0)>=(+g.monto||0)&&(+g.monto||0)>0)?'pagado':'pendiente';}}
-    else if(c.empleadoId){const e=empleados.find(ee=>String(ee.id)===String(c.empleadoId));if(e){c.montoPagado=+(e.montoPagado)||0;c.estado=((+e.montoPagado||0)>=(+e.sueldo||0)&&(+e.sueldo||0)>0)?'pagado':'pendiente';c.fechaPago=e.fechaPago||c.fechaPago;}}
     else { c.estado=((+c.montoPagado||0)>=(+c.monto||0)&&(+c.monto||0)>0)?'pagado':'pendiente'; }
     allCxp.push(c);
   });
@@ -3050,21 +3205,16 @@ function renderCxP(){
         fechaPago:g.fechaPago||'',fecha:g.fecha||hoy,vencimiento:g.vencimiento||'',gastoId:g.id,_readonly:true});
     }
   });
-  empleados.forEach(e=>{
-    if(!cxp.find(x=>String(x.empleadoId)===String(e.id))){
-      allCxp.push({id:'emp_'+e.id,proveedor:e.nombre||'Sin nombre',concepto:'Sueldo: '+(e.rol||''),
-        monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,fechaPago:e.fechaPago||'',
-        estado:((+e.montoPagado||0)>=(+e.sueldo||0)&&(+e.sueldo||0)>0)?'pagado':'pendiente',fecha:hoy,vencimiento:'',empleadoId:e.id,_readonly:true});
-    }
-  });
   const q=(document.getElementById('cxp-buscar')?.value||'').trim().toLowerCase();
   let f=allCxp.filter(x=>{
     const pp=Math.max(0,(+x.monto||0)-(+x.montoPagado||0));
-    // Por defecto (sin filtro de estado) ocultamos lo que ya está 100% pagado
-    if(!estadoFiltro && (+x.monto||0)>0 && pp<=0.5) return false;
+    // Estado REAL según montos (no según el estado interno, que puede quedar viejo)
+    const estadoReal = ((+x.monto||0)>0 && pp<=0.5) ? 'pagado' : 'pendiente';
+    // Por defecto ocultamos lo 100% pagado
+    if(!estadoFiltro && estadoReal==='pagado') return false;
+    if(estadoFiltro && estadoReal!==estadoFiltro) return false;
     if(desde&&x.fecha&&x.fecha<desde)return false;
     if(hasta&&x.fecha&&x.fecha>hasta)return false;
-    if(estadoFiltro&&x.estado!==estadoFiltro)return false;
     if(q && !(((x.proveedor||'')+' '+(x.concepto||'')).toLowerCase().includes(q))) return false;
     return true;
   });
@@ -3091,13 +3241,13 @@ function renderCxP(){
     else if(vencido)       { badgeColor='#B83232'; badgeBg='#FEF2F2'; label='Vencido'; }
     else                   { badgeColor='#8A6A00'; badgeBg='#FEFCE8'; label='Por pagar'; }
 
-    const tipoBadge=x.gastoId?'<span class="badge badge-gray" style="margin-right:4px;">Gasto</span>':x.empleadoId?'<span class="badge badge-blue" style="margin-right:4px;">Sueldo</span>':'';
+    const tipoBadge=x.gastoId?'<span class="badge badge-gray" style="margin-right:4px;">Gasto</span>':_esSueldoCxp(x)?'<span class="badge badge-blue" style="margin-right:4px;">Sueldo</span>':'';
 
     // Botón 💲 y menú ⋯
     const btnPagar = !estaPagado
       ? `<button title="Registrar pago" style="border:none;background:none;cursor:pointer;font-size:18px;padding:2px 4px;" onclick="pagarCxPItem('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">💲</button>`
       : '';
-    const _recComp = x.gastoId?gastos.find(g=>String(g.id)===String(x.gastoId)) : x.empleadoId?empleados.find(e=>String(e.id)===String(x.empleadoId)) : cxp.find(c=>c.id===x.id);
+    const _recComp = x.gastoId?gastos.find(g=>String(g.id)===String(x.gastoId)) : (cxp.find(c=>c.id===x.id) || (x.empleadoId?empleados.find(e=>String(e.id)===String(x.empleadoId)):null));
     const btnComp = (_recComp && _recComp.comprobante)
       ? `<button title="Ver comprobante" style="border:none;background:none;cursor:pointer;font-size:16px;padding:2px 4px;" onclick="_verComprobanteDe('${x.id}','${x.gastoId||''}','${x.empleadoId||''}')">📎</button>`
       : '';
@@ -3159,14 +3309,18 @@ function confirmarPagoCxP(id){
   const r = cxp.find(x=>x.id===id); if(!r) return;
   const monto = parseFloat(document.getElementById('cp_monto').value)||0;
   if(monto<=0){ toast('⚠️ Ingresá un monto válido'); return; }
+  const _antesP = +r.montoPagado||0;
   r.montoPagado = Math.min((+r.montoPagado||0) + monto, +r.monto||0);
   r.fechaPago   = document.getElementById('cp_fecha').value||today();
   const notas   = document.getElementById('cp_notas').value.trim();
   if(notas) r.notasPago = (r.notasPago?r.notasPago+' | ':'')+notas;
   r.estado = r.montoPagado >= (+r.monto||0) ? 'pagado' : 'pendiente';
   _aplicarComprobante(r);
-  { const _cu=(document.getElementById('cp_cuenta')?.value||'ODSA').trim()||'ODSA'; const _fp=document.getElementById('cp_fecha')?.value||today(); _registrarEnCaja({cuenta:_cu,tipo:'egreso',concepto:'Pago '+(r.proveedor||r.concepto||'cuenta'),monto,fecha:_fp}); }
-  save('cxp',cxp); closeModal(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(monto)+' registrado');
+  { const _cu=(document.getElementById('cp_cuenta')?.value||'ODSA').trim()||'ODSA'; const _fp=document.getElementById('cp_fecha')?.value||today();
+    var _aplic=(+r.montoPagado||0)-_antesP;
+    const _pid=_registrarPago({refTipo:'cxp',refId:r.id,tipo:_esSueldoCxp(r)?'Sueldo':'Cuenta por pagar',concepto:r.concepto||'',proveedor:r.proveedor||'',monto:_aplic,montoIngresado:monto,fecha:_fp,cuenta:_cu,notas});
+    _registrarEnCaja({cuenta:_cu,tipo:'egreso',concepto:'Pago '+(r.proveedor||r.concepto||'cuenta'),monto,fecha:_fp,pagoId:_pid}); }
+  save('cxp',cxp); closeModal(); renderCxP(); updateDashboard(); toast('Pago de '+fmt(_aplic)+' registrado'+(monto-_aplic>0.5?' (el saldo era menor a lo ingresado)':''));
 }
 function revertirPagoCxP(id){
   const label = id.startsWith('emp_') ? (empleados.find(e=>e.id===id.replace('emp_',''))?.nombre||'empleado') : id.startsWith('gas_') ? (gastos.find(g=>g.id===id.replace('gas_',''))?.descripcion||'gasto') : (cxp.find(x=>x.id===id)?.proveedor||'proveedor');
@@ -3185,10 +3339,10 @@ function confirmarRevertirCxP(id){
     if(e){ e.estado='pendiente'; e.montoPagado=0; delete e.fechaPago; delete e.notasPago; save('empleados',empleados); }
   } else if(id.startsWith('gas_')){
     const g = gastos.find(x=>x.id===id.replace('gas_',''));
-    if(g){ g.estado='pendiente'; g.montoPagado=0; delete g.fechaPago; delete g.notasPago; localStorage.setItem(dbKey('gastos'),JSON.stringify(gastos)); saveSupa('gastos',gastos).catch(()=>{}); }
+    if(g){ _marcarPagosRevertidos('gasto', g.id); g.estado='pendiente'; g.montoPagado=0; delete g.fechaPago; delete g.notasPago; localStorage.setItem(dbKey('gastos'),JSON.stringify(gastos)); saveSupa('gastos',gastos).catch(()=>{}); }
   } else {
     const r = cxp.find(x=>x.id===id);
-    if(r){ r.estado='pendiente'; r.montoPagado=0; delete r.fechaPago; delete r.notasPago; save('cxp',cxp); }
+    if(r){ _marcarPagosRevertidos('cxp', r.id); r.estado='pendiente'; r.montoPagado=0; delete r.fechaPago; delete r.notasPago; save('cxp',cxp); }
   }
   closeModal(); renderCxP(); updateDashboard(); toast('Pago revertido');
 }
@@ -3199,11 +3353,6 @@ function pagarCxPItem(id, gastoId, empleadoId){
     const gid = gastoId || id.replace('gas_','');
     const g = gastos.find(x=>String(x.id)===String(gid));
     if(g){ pagarGasto(g.id); return; }
-  }
-  // Para filas virtuales de empleados: pagar directamente en empleados
-  if(empleadoId || id.startsWith('emp_')){
-    const eid = empleadoId || id.replace('emp_','');
-    marcarPagoEmp(eid); return;
   }
   pagarCxP(id);
 }
@@ -3269,10 +3418,8 @@ function _cxpFiltradasPDF(){
   let all=[];
   cxp.forEach(c=>{ let cc=Object.assign({},c);
     if(cc.gastoId){const g=gastos.find(gg=>String(gg.id)===String(cc.gastoId));if(g){cc.montoPagado=+(g.montoPagado)||0;cc.estado=g.estado||cc.estado;}}
-    else if(cc.empleadoId){const e=empleados.find(ee=>String(ee.id)===String(cc.empleadoId));if(e){cc.montoPagado=+(e.montoPagado)||0;cc.estado=e.estado==='pagado'?'pagado':'pendiente';}}
     all.push(cc); });
   gastos.forEach(g=>{ if(!cxp.find(x=>String(x.gastoId)===String(g.id))) all.push({proveedor:g.descripcion||'Sin nombre',concepto:'Gasto: '+(g.categoria||''),monto:+g.monto||0,montoPagado:+g.montoPagado||0,estado:g.estado==='pagado'?'pagado':'pendiente',fecha:g.fecha||hoy,vencimiento:g.vencimiento||''}); });
-  empleados.forEach(e=>{ if(!cxp.find(x=>String(x.empleadoId)===String(e.id))) all.push({proveedor:e.nombre||'Sin nombre',concepto:'Sueldo: '+(e.rol||''),monto:+e.sueldo||0,montoPagado:+e.montoPagado||0,estado:e.estado==='pagado'?'pagado':'pendiente',fecha:hoy,vencimiento:''}); });
   return all.filter(x=>{ if(desde&&x.fecha&&x.fecha<desde)return false; if(hasta&&x.fecha&&x.fecha>hasta)return false; if(estadoFiltro&&x.estado!==estadoFiltro)return false; return true; });
 }
 function exportarPaginaPDF(){
@@ -3448,8 +3595,7 @@ function verGastosMes(){
   const m=today().slice(0,7);
   const rows=[];
   gastos.filter(g=>(g.fecha||'').startsWith(m)).forEach(g=>rows.push({tipo:'Gasto',cls:'badge-gray',nombre:g.descripcion||g.categoria||'Gasto',sub:g.categoria||'',monto:+g.monto||0,fecha:g.fecha||''}));
-  empleados.forEach(e=>rows.push({tipo:'Sueldo',cls:'badge-blue',nombre:e.nombre||'Empleado',sub:e.rol||'',monto:+e.sueldo||0,fecha:''}));
-  cxp.filter(c=>!c.gastoId&&!c.empleadoId&&(c.fecha||'').startsWith(m)).forEach(c=>rows.push({tipo:'Por pagar',cls:'badge-yellow',nombre:c.proveedor||c.concepto||'Cuenta por pagar',sub:c.concepto||'',monto:+c.monto||0,fecha:c.fecha||''}));
+  cxp.filter(c=>!c.gastoId&&(c.fecha||'').startsWith(m)).forEach(c=>rows.push({tipo:_esSueldoCxp(c)?'Sueldo':'Por pagar',cls:_esSueldoCxp(c)?'badge-blue':'badge-yellow',nombre:c.proveedor||c.concepto||'Cuenta por pagar',sub:c.concepto||'',monto:+c.monto||0,fecha:c.fecha||''}));
   const total=rows.reduce((a,r)=>a+r.monto,0);
   const filas=rows.length?rows.map(r=>`<tr>
     <td style="white-space:nowrap;"><span class="badge ${r.cls}">${r.tipo}</span></td>
@@ -3548,7 +3694,7 @@ function _aplicarComprobante(rec){
   else { delete rec.comprobante; delete rec.comprobanteNombre; delete rec.comprobanteTipo; }
 }
 function _verComprobanteDe(id, gastoId, empleadoId){
-  let rec = gastoId?gastos.find(g=>String(g.id)===String(gastoId)) : empleadoId?empleados.find(e=>String(e.id)===String(empleadoId)) : cxp.find(x=>x.id===id);
+  let rec = gastoId?gastos.find(g=>String(g.id)===String(gastoId)) : (cxp.find(x=>x.id===id) || (empleadoId?empleados.find(e=>String(e.id)===String(empleadoId)):null));
   if(rec && rec.comprobante) _verComprobante(rec.comprobante, rec.comprobanteTipo, rec.comprobanteNombre);
   else toast('No hay comprobante adjunto');
 }
@@ -3557,7 +3703,6 @@ function _verComprobanteDe(id, gastoId, empleadoId){
 function _cxpTodas(){
   const rows=[];
   gastos.forEach(g=>{const p=+(g.montoPagado)||0; rows.push({nombre:g.descripcion||'Gasto',porPagar:Math.max(0,(+g.monto||0)-p),vencimiento:g.vencimiento||''});});
-  empleados.forEach(e=>{const p=+(e.montoPagado)||0; rows.push({nombre:e.nombre||'Sueldo',porPagar:Math.max(0,(+e.sueldo||0)-p),vencimiento:''});});
   cxp.filter(c=>!c.gastoId&&!c.empleadoId).forEach(c=>{const p=+(c.montoPagado)||0; rows.push({nombre:c.proveedor||c.concepto||'Cuenta',porPagar:Math.max(0,(+c.monto||0)-p),vencimiento:c.vencimiento||''});});
   return rows;
 }
@@ -3853,8 +3998,8 @@ function _ingresosMes(ym,dd){
 }
 function _gastosMesTotal(ym,dd){
   const g=(gastos||[]).filter(x=>_enMD(x.fecha||'',ym,dd)).reduce((a,x)=>a+(+x.monto||0),0);
-  const s=(empleados||[]).reduce((a,e)=>a+(+e.sueldo||0),0);
-  const c=(cxp||[]).filter(x=>!x.gastoId&&!x.empleadoId&&_enMD(x.fecha||'',ym,dd)).reduce((a,x)=>a+(+x.monto||0),0);
+  const s=0; // los sueldos cuentan solo si los cargaste en Por pagar
+  const c=(cxp||[]).filter(x=>!x.gastoId&&_enMD(x.fecha||'',ym,dd)).reduce((a,x)=>a+(+x.monto||0),0);
   return g+s+c;
 }
 function _ingresosPorCliente(ym,dd){
@@ -3863,7 +4008,7 @@ function _ingresosPorCliente(ym,dd){
 function _gastosPorRubro(ym,dd){
   const m={};
   (gastos||[]).filter(g=>_enMD(g.fecha||'',ym,dd)).forEach(g=>{ const k=(g.categoria||g.descripcion||'Gasto'); m[k]=(m[k]||0)+(+g.monto||0); });
-  (cxp||[]).filter(c=>!c.gastoId&&!c.empleadoId&&_enMD(c.fecha||'',ym,dd)).forEach(c=>{ const k=(c.proveedor||c.concepto||'Cuenta'); m[k]=(m[k]||0)+(+c.monto||0); });
+  (cxp||[]).filter(c=>!c.gastoId&&_enMD(c.fecha||'',ym,dd)).forEach(c=>{ const k=(c.proveedor||c.concepto||'Cuenta'); m[k]=(m[k]||0)+(+c.monto||0); });
   return m;
 }
 function _driversHTML(actMap, prevMap, subirBueno){
@@ -3927,13 +4072,14 @@ function renderComparativa(){
 }
 
 function updateDashboard(){
+  try{ renderGastosMes(); renderHistorialPagos(); }catch(e){ console.log('gastos mes/historial:',e); }
   // Home enfocado en el MES EN CURSO (facturación, gastos y ganancia del mes actual)
   const _mesCur = today().substring(0,7);
   const _factsMes = facturas.filter(f=>f.fecha&&f.fecha.startsWith(_mesCur));
   const tf=_factsMes.reduce((a,x)=>a+montoArs(x),0);
   const _gastosMes = gastos.filter(g=>g.fecha&&g.fecha.startsWith(_mesCur)).reduce((a,x)=>a+(+x.monto||0),0);
-  const _sueldos = empleados.reduce((a,e)=>a+(+e.sueldo||0),0);
-  const _cxpMes = cxp.filter(c=>!c.gastoId && !c.empleadoId && (c.fecha||'').startsWith(_mesCur)).reduce((a,c)=>a+(+c.monto||0),0);
+  const _sueldos = 0; // los sueldos cuentan solo si los cargaste en Por pagar
+  const _cxpMes = cxp.filter(c=>!c.gastoId && (c.fecha||'').startsWith(_mesCur)).reduce((a,c)=>a+(+c.monto||0),0);
   const tg=_gastosMes + _sueldos + _cxpMes;
   // Por cobrar: usar getCxCAll() igual que la pantalla CxC para que coincidan
   const tp=getCxCAll().filter(x=>x.estado!=='cobrado').reduce((a,x)=>a+(+x.monto||0),0);
@@ -4137,8 +4283,7 @@ const modals={
     {id:'email',label:'Email',type:'email',ph:'empleado@empresa.com'},
     {id:'rol',label:'Rol / Cargo',type:'text',ph:'Ej: Community Manager'},
     {id:'empresa',label:'Empresa',type:'text',ph:'ODSA SRL'},
-    {id:'sueldo',label:'Sueldo ($)',type:'number',ph:'0'},
-    {id:'estado',label:'Estado de pago',type:'select',opts:['pendiente','pagado']},
+    {id:'sueldo',label:'Sueldo de referencia ($) — opcional',type:'number',ph:'0'},
   ]},
   'add-proveedor':{title:'Nuevo proveedor',sub:'Registrá un proveedor',fields:[
     {id:'nombre',label:'Nombre del proveedor',type:'text',ph:'Ej: Adobe'},
@@ -4241,15 +4386,10 @@ function saveModal(type){
     },
     'add-empleado':()=>{
       const n=gf('nombre');if(!n){toast('⚠️ Ingresá el nombre');return;}
-      const eId=uid(); const sueldo=gf('sueldo');
-      empleados.push({id:eId,nombre:n,email:gf('email'),rol:gf('rol'),empresa:gf('empresa'),sueldo,estado:gf('estado')||'pendiente'});
+      // Desde v11.9.35 el empleado NO genera cuentas por pagar solo: los sueldos se cargan a mano en Por pagar.
+      empleados.push({id:uid(),nombre:n,email:gf('email'),rol:gf('rol'),empresa:gf('empresa'),sueldo:gf('sueldo')});
       save('empleados',empleados);
-      // Auto-crear CxP si sueldo pendiente
-      if(sueldo && gf('estado')!=='pagado'){
-        cxp.push({id:uid(),proveedor:n,concepto:'Sueldo '+gf('rol'),monto:sueldo,fecha:today(),vencimiento:'',estado:'pendiente',empleadoId:eId});
-        save('cxp',cxp); renderCxP();
-      }
-      closeModal();renderEmpleados();toast('✅ Empleado agregado y CxP creada');
+      closeModal();renderEmpleados();toast('✅ Empleado agregado');
     },
     'add-proveedor':()=>{
       const n=gf('nombre');if(!n){toast('⚠️ Ingresá el nombre');return;}
@@ -4370,6 +4510,7 @@ function goTo(page,el){
   if(page==='invitaciones') renderInvitaciones();
   if(page==='caja') renderCaja();
   if(page==='licencias') renderLicencias();
+  if(page==='gastos'){ try{ renderGastosMes(); renderHistorialPagos(); }catch(e){} }
 }
 function clearFilter(p){
   const m={gastos:['gasto-desde','gasto-hasta','gasto-cat'],facturacion:['fact-desde','fact-hasta','fact-estado','fact-tipo-filter','fact-buscar'],cxc:['cxc-desde','cxc-hasta','cxc-estado'],cxp:['cxp-desde','cxp-hasta','cxp-estado'],proveedores:['prov-cat'],licencias:['lic-emp','lic-tipo','lic-desde','lic-hasta']};
@@ -4511,17 +4652,16 @@ function zaifiResponde(msg){
 
   // EMPLEADOS
   if(q.match(/emplead|sueldo|salario|equipo|personal/)){
-    if(!empleados.length) return sinDatos;
-    const pendEmp=empleados.filter(e=>e.estado!=='pagado');
-    const totalSueldos=empleados.reduce((a,e)=>a+(+e.sueldo||0),0);
-    let r=`<b>👤 Empleados</b><br><br>`;
-    r+=`👥 Total: <b>${empleados.length}</b> empleado${empleados.length!==1?'s':''}<br>`;
-    r+=`💰 Total sueldos: <b>${fmt(totalSueldos)}</b><br>`;
-    if(pendEmp.length){
-      r+=`<br>⏳ <b>Sueldos pendientes (${pendEmp.length}):</b><br>`;
-      pendEmp.forEach(e=>{ r+=`• ${sanitize(e.nombre)}: ${fmt(e.sueldo)}<br>`; });
+    const _sCxp=(cxp||[]).filter(c=>!c.gastoId&&_esSueldoCxp(c));
+    if(!empleados.length && !_sCxp.length) return sinDatos;
+    const _pendS=_sCxp.filter(c=>(+c.monto||0)-(+c.montoPagado||0)>0.5);
+    let r=`<b>👤 Empleados y sueldos</b><br><br>`;
+    r+=`👥 Empleados cargados: <b>${empleados.length}</b><br>`;
+    if(_pendS.length){
+      r+=`<br>⏳ <b>Sueldos por pagar (${_pendS.length}):</b><br>`;
+      _pendS.forEach(c=>{ r+=`• ${sanitize(c.proveedor||c.concepto||'Sueldos')} (${c.fecha||'sin fecha'}): ${fmt(Math.max(0,(+c.monto||0)-(+c.montoPagado||0)))}<br>`; });
     } else {
-      r+='<br>✅ Todos los sueldos están pagados.';
+      r+='<br>✅ No hay sueldos por pagar cargados.';
     }
     return r;
   }
@@ -5171,7 +5311,7 @@ const editFields = {
   catalogo:   [{id:'nombre',label:'Nombre del servicio',type:'text'},{id:'descripcion',label:'Descripción',type:'text'},{id:'precio',label:'Precio ($)',type:'number'},{id:'icono',label:'Ícono (emoji)',type:'text'}],
   facturas:   [{id:'numero',label:'Número',type:'text'},{id:'cliente',label:'Cliente',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrada','vencida']}],
   gastos:     [{id:'descripcion',label:'Descripción',type:'text'},{id:'proveedor',label:'Proveedor / Origen',type:'text'},{id:'categoria',label:'Categoría',type:'select',opts:['Consultoría','Logística','Sueldos','Aguinaldo','Comisiones','Empleados','Proveedores','Alquiler','Servicios','Otro']},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'notas',label:'Notas (opcional)',type:'text'}],
-  empleados:  [{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'rol',label:'Rol',type:'text'},{id:'empresa',label:'Empresa',type:'text'},{id:'sueldo',label:'Sueldo ($)',type:'number'},{id:'estado',label:'Estado pago',type:'select',opts:['pendiente','pagado']}],
+  empleados:  [{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'rol',label:'Rol',type:'text'},{id:'empresa',label:'Empresa',type:'text'},{id:'sueldo',label:'Sueldo de referencia ($)',type:'number'}],
   proveedores:[{id:'nombre',label:'Nombre',type:'text'},{id:'email',label:'Email',type:'email'},{id:'categoria',label:'Categoría',type:'select',opts:['Servicios','Alquiler','Logística','Proveedores','Otro']},{id:'costo',label:'Costo ($)',type:'number'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['activo','inactivo']}],
   cxc:        [{id:'cliente',label:'Cliente',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','cobrado']}],
   cxp:        [{id:'proveedor',label:'Proveedor',type:'text'},{id:'concepto',label:'Concepto',type:'text'},{id:'monto',label:'Monto ($)',type:'number'},{id:'fecha',label:'Fecha emisión',type:'date'},{id:'vencimiento',label:'Vencimiento',type:'date'},{id:'estado',label:'Estado',type:'select',opts:['pendiente','pagado']}],
@@ -5280,9 +5420,8 @@ function renderPorRubro(){
     bump(g.categoria||'Otro', 'gasto', g.monto);
   });
 
-  // ── SUELDOS (desde la sección Empleados; costo mensual) ──────────────
-  const _totSueldos = empleados.reduce((a,e)=>a+(+e.sueldo||0),0);
-  if(_totSueldos>0) bump('Sueldos', 'gasto', _totSueldos);
+  // ── SUELDOS (solo los que cargaste en Por pagar) ──────────────
+  (cxp||[]).filter(c=>!c.gastoId && _esSueldoCxp(c) && enScope(c.fecha)).forEach(c=> bump('Sueldos','gasto',c.monto));
 
   const filas = Object.entries(rubros)
     .map(([k,r])=>({ ...r, key:k, neto: r.ingreso - r.gasto }))
@@ -5359,10 +5498,10 @@ function verRubroDetalle(idx){
   let gs = gastos.filter(g=>inScope(g.fecha) && norm(g.categoria||'Otro')===rk)
     .map(g=>({ p:g.proveedor||g.descripcion||'—', m:(+g.monto||0), d:g.descripcion||'' }))
     .sort((a,b)=>b.m-a.m);
-  // El rubro Sueldos suma también a cada empleado (fuente: sección Empleados)
+  // El rubro Sueldos suma también los sueldos cargados en Por pagar
   if(rk==='sueldos'){
-    const emp = empleados.filter(e=>(+e.sueldo||0)>0)
-      .map(e=>({ p:e.nombre||'Empleado', m:(+e.sueldo||0), d:e.rol?('Sueldo · '+e.rol):'Sueldo' }));
+    const emp = (cxp||[]).filter(c=>!c.gastoId && _esSueldoCxp(c) && inScope(c.fecha))
+      .map(c=>({ p:c.proveedor||'Sueldos', m:(+c.monto||0), d:c.concepto||'Sueldo' }));
     gs = emp.concat(gs).sort((a,b)=>b.m-a.m);
   }
   let totGas = gs.reduce((a,x)=>a+x.m,0);
@@ -5406,12 +5545,11 @@ function renderLineaCritica(){
   // Gastos del mes seleccionado
   const gastosMes = gastos.filter(g=>(g.fecha||'').slice(0,7)===ym);
   const totalGastosMes = gastosMes.reduce((a,g)=>a+(+g.monto||0),0);
-  // Sueldos: costo fijo mensual (no se filtra por fecha)
-  const totalSueldos = empleados.reduce((a,e)=>a+(+e.sueldo||0),0);
   // Cuentas por pagar cargadas EN ESTE mes (no cuenta deuda de meses anteriores,
-  // ni los espejos de gastos/sueldos para no duplicar)
-  const cxpMes = cxp.filter(c=>!c.gastoId && !c.empleadoId && (c.fecha||'').slice(0,7)===ym);
-  const totalCxpMes = cxpMes.reduce((a,c)=>a+(+c.monto||0),0);
+  // ni los espejos de gastos). Los sueldos ya no salen de Empleados: cuentan los que cargaste en Por pagar.
+  const cxpMes = cxp.filter(c=>!c.gastoId && (c.fecha||'').slice(0,7)===ym);
+  const totalSueldos = cxpMes.filter(c=>_esSueldoCxp(c)).reduce((a,c)=>a+(+c.monto||0),0);
+  const totalCxpMes = cxpMes.filter(c=>!_esSueldoCxp(c)).reduce((a,c)=>a+(+c.monto||0),0);
   // Línea crítica: TODO lo que hay que cubrir en el mes
   const lineaCritica = totalGastosMes + totalSueldos + totalCxpMes;
 
@@ -5450,7 +5588,7 @@ function renderLineaCritica(){
     <div class="table-head"><div><div class="th-title">¿De dónde sale la línea crítica?</div><div class="th-sub">Todo lo que hay que cubrir en ${ym}</div></div></div>
     <table><tbody>
       <tr><td>Gastos del mes</td><td style="text-align:right;font-weight:700;">${fmt(totalGastosMes)}</td></tr>
-      <tr><td>Sueldos (empleados)</td><td style="text-align:right;font-weight:700;">${fmt(totalSueldos)}</td></tr>
+      <tr><td>Sueldos (cargados en Por pagar)</td><td style="text-align:right;font-weight:700;">${fmt(totalSueldos)}</td></tr>
       <tr><td>Cuentas por pagar del mes</td><td style="text-align:right;font-weight:700;">${fmt(totalCxpMes)}</td></tr>
       <tr style="border-top:2px solid #E2DDD5;"><td style="font-weight:800;">Total a cubrir</td><td style="text-align:right;font-weight:800;color:#C0392B;">${fmt(lineaCritica)}</td></tr>
     </tbody></table>
