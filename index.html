@@ -769,7 +769,7 @@ tr:hover td{background:#F5F2EC;}
             <span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">Zai</span><span style="font-family:'Poppins',sans-serif;font-size:30px;font-weight:900;color:#0D0D0D;letter-spacing:-2px;">fi</span>
           </div>
           <span style="font-size:9px;font-weight:700;color:#888880;letter-spacing:2.5px;text-transform:uppercase;font-family:'Poppins',sans-serif;">GESTIÓN EMPRESARIAL</span>
-          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.35 · ARCA</span>
+          <span style="font-size:10px;font-weight:800;color:#6E7C3E;letter-spacing:0.5px;font-family:'Poppins',sans-serif;">v11.9.36 · ARCA</span>
         </div>
       </div>
     </div>
@@ -2849,6 +2849,41 @@ function confirmarRevertirEmp(id){
   e.estado='pendiente'; delete e.montoPagado; delete e.fechaPago; delete e.notasPago;
   save('empleados',empleados); closeModal(); renderEmpleados(); toast('Pago revertido');
 }
+
+
+/* ===== v11.9.36: aviso de clientes nuevos (solo lee; no modifica datos) ===== */
+function _cnVistos(){ try{return JSON.parse(localStorage.getItem('zaifi_clientes_vistos')||'null');}catch(e){return null;} }
+function _cnGuardar(ids){ try{localStorage.setItem('zaifi_clientes_vistos',JSON.stringify(ids));}catch(e){} }
+function _cnMostrar(nuevos){
+  let b=document.getElementById('cn-banner');
+  if(!b){
+    b=document.createElement('div'); b.id='cn-banner';
+    b.style.cssText='position:fixed;top:16px;right:16px;max-width:340px;background:#0D0D0D;color:#fff;padding:14px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.25);font-family:inherit;';
+    document.body.appendChild(b);
+  }
+  const nombres=nuevos.map(c=>String(c.nombre||'(sin nombre)').replace(/[<>&"]/g,'')).slice(0,5);
+  b.innerHTML='<div>🆕 '+(nuevos.length===1?'Nuevo cliente':nuevos.length+' clientes nuevos')+': '+nombres.join(', ')+(nuevos.length>5?'…':'')+'</div>'
+   +'<div style="margin-top:10px;display:flex;gap:8px;"><button id="cn-ver" style="background:#1A7A52;color:#fff;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:inherit;">Ver</button>'
+   +'<button id="cn-cerrar" style="background:transparent;color:#fff;border:1px solid #666;border-radius:8px;padding:6px 12px;font-weight:600;cursor:pointer;font-family:inherit;">Cerrar</button></div>';
+  document.getElementById('cn-cerrar').onclick=()=>b.remove();
+  document.getElementById('cn-ver').onclick=async()=>{ b.remove(); try{ await recargarDesdeSupa(); goTo('clientes'); }catch(e){} };
+}
+async function chequearClientesNuevos(){
+  try{
+    if(!getSession()) return;
+    const remotos=_dedupById(await loadSupa('clientes'))||[];
+    const locales=new Set((clientes||[]).map(c=>String(c.id)));
+    let vistos=_cnVistos();
+    if(!vistos){ _cnGuardar(remotos.map(c=>String(c.id)).concat([...locales])); return; } // primera vez: no avisa por los existentes
+    const set=new Set(vistos);
+    const nuevos=remotos.filter(c=>c&&c.id!=null&&!set.has(String(c.id))&&!locales.has(String(c.id)));
+    // lo que ya está en esta lista o ya se avisó, queda como visto
+    _cnGuardar([...new Set(vistos.concat(remotos.map(c=>String(c.id)),[...locales]))]);
+    if(nuevos.length) _cnMostrar(nuevos);
+  }catch(e){ console.log('chequearClientesNuevos',e); }
+}
+setInterval(chequearClientesNuevos,60000);
+setTimeout(chequearClientesNuevos,5000);
 
 /* ===== v11.9.35: sueldos manuales + Gastos del mes + Historial de pagos ===== */
 // Un "sueldo" es una cuenta por pagar que cargás vos (o una vieja ligada a un empleado).
